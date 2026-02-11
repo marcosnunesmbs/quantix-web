@@ -1,0 +1,973 @@
+openapi: 3.0.0
+info:
+  title: Quantix Personal Finance Manager API
+  description: API for managing personal finances including transactions, credit cards, categories, and recurring payments
+  version: 1.0.0
+  contact:
+    name: Quantix Support
+    email: support@quantix.example.com
+
+servers:
+  - url: https://api.quantix.example.com
+    description: Production server
+  - url: https://staging.quantix.example.com
+    description: Staging server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: API-KEY
+      description: API key for authentication, configured via QUANTIX_API_KEY environment variable
+
+  schemas:
+    Category:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the category
+          example: "cat_123456789"
+        name:
+          type: string
+          description: Name of the category
+          example: "Groceries"
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          description: Type of the category
+          example: "EXPENSE"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the category was created
+          example: "2026-01-30T10:00:00Z"
+
+    Transaction:
+      type: object
+      required:
+        - type
+        - name
+        - amount
+        - date
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the transaction
+          example: "txn_123456789"
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          description: Type of the transaction
+          example: "EXPENSE"
+        name:
+          type: string
+          description: Description of the transaction
+          example: "Weekly groceries"
+        amount:
+          type: number
+          format: float
+          minimum: 0
+          description: Amount of the transaction
+          example: 125.75
+        date:
+          type: string
+          format: date
+          description: Date of the transaction
+          example: "2026-01-30"
+        categoryId:
+          type: string
+          description: ID of the associated category
+          example: "cat_123456789"
+        paymentMethod:
+          type: string
+          enum: [CASH, PIX, DEBIT, CREDIT]
+          description: Method of payment
+          example: "CREDIT"
+        creditCardId:
+          type: string
+          description: ID of the associated credit card (required if paymentMethod is CREDIT)
+          example: "cc_123456789"
+        installmentGroupId:
+          type: string
+          description: ID to group installment transactions
+          example: "ig_123456789"
+        installmentNumber:
+          type: integer
+          minimum: 1
+          description: Current installment number in a series
+          example: 2
+        installmentTotal:
+          type: integer
+          minimum: 1
+          description: Total number of installments in the series
+          example: 5
+        recurrenceRuleId:
+          type: string
+          description: ID of the associated recurrence rule
+          example: "rr_123456789"
+        accountId:
+          type: string
+          description: ID of the associated account (required if paymentMethod is not CREDIT)
+          example: "acc_123456789"
+        paid:
+          type: boolean
+          default: false
+          description: Whether the transaction has been paid/received
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the transaction was created
+          example: "2026-01-30T10:00:00Z"
+
+    CreditCard:
+      type: object
+      required:
+        - name
+        - limitAmount
+        - closingDay
+        - dueDay
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the credit card
+          example: "cc_123456789"
+        name:
+          type: string
+          description: Name of the credit card
+          example: "Nubank Platinum"
+        brand:
+          type: string
+          description: Brand of the credit card
+          example: "Visa"
+        limitAmount:
+          type: number
+          format: float
+          minimum: 0
+          description: Credit limit of the card
+          example: 5000.00
+        closingDay:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day of the month when the billing cycle closes
+          example: 15
+        dueDay:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day of the month when the bill is due
+          example: 22
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the credit card was added
+          example: "2026-01-30T10:00:00Z"
+
+    RecurrenceRule:
+      type: object
+      required:
+        - frequency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the recurrence rule
+          example: "rr_123456789"
+        frequency:
+          type: string
+          enum: [MONTHLY, WEEKLY, YEARLY]
+          description: Frequency of recurrence
+          example: "MONTHLY"
+        interval:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Interval multiplier for the frequency
+          example: 1
+        endDate:
+          type: string
+          format: date
+          description: Date when the recurrence should end
+          example: "2026-12-31"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the recurrence rule was created
+          example: "2026-01-30T10:00:00Z"
+
+    Statement:
+      type: object
+      properties:
+        cardId:
+          type: string
+          description: ID of the credit card
+          example: "cc_123456789"
+        periodStart:
+          type: string
+          format: date
+          description: Start date of the billing period
+          example: "2026-02-16"
+        periodEnd:
+          type: string
+          format: date
+          description: End date of the billing period
+          example: "2026-03-15"
+        dueDate:
+          type: string
+          format: date
+          description: Due date of the statement
+          example: "2026-03-22"
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+          description: List of transactions in the statement period
+        total:
+          type: number
+          format: float
+          description: Total amount of the statement
+          example: 3450.00
+        availableLimit:
+          type: number
+          format: float
+          description: Available credit limit
+          example: 1550.00
+
+    Account:
+      type: object
+      required:
+        - name
+        - type
+        - initialBalance
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the account
+          example: "acc_123456789"
+        name:
+          type: string
+          description: Name of the account
+          example: "Itaú Checking Account"
+        type:
+          type: string
+          enum: [BANK_ACCOUNT, WALLET, SAVINGS_ACCOUNT, INVESTMENT_ACCOUNT, OTHER]
+          description: Type of account
+          example: "BANK_ACCOUNT"
+        initialBalance:
+          type: number
+          format: float
+          description: Initial balance when the account was created
+          example: 1000.00
+        currentBalance:
+          type: number
+          format: float
+          description: Current balance of the account
+          example: 850.00
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the account was created
+          example: "2026-02-11T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the account was last updated
+          example: "2026-02-11T15:30:00Z"
+
+    AccountBalance:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: ID of the account
+          example: "acc_123456789"
+        currentBalance:
+          type: number
+          format: float
+          description: Current balance of the account
+          example: 850.00
+        calculatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the balance was calculated
+          example: "2026-02-11T16:00:00Z"
+
+    LinkTransactionToAccountRequest:
+      type: object
+      required:
+        - transactionId
+        - direction
+        - amount
+      properties:
+        transactionId:
+          type: string
+          description: ID of the transaction to link
+          example: "txn_123456789"
+        direction:
+          type: string
+          enum: [INFLOW, OUTFLOW]
+          description: Direction of the transaction flow
+          example: "OUTFLOW"
+        amount:
+          type: number
+          format: float
+          description: Amount of the transaction
+          example: 150.00
+
+    Summary:
+      type: object
+      properties:
+        month:
+          type: string
+          description: Month for the summary (YYYY-MM format)
+          example: "2026-03"
+        income:
+          type: number
+          format: float
+          description: Total income for the month
+          example: 10000.00
+        expenses:
+          type: number
+          format: float
+          description: Total expenses for the month
+          example: 4000.00
+        creditCardStatements:
+          type: array
+          items:
+            type: object
+            properties:
+              cardName:
+                type: string
+                description: Name of the credit card
+                example: "Nubank"
+              dueDate:
+                type: string
+                format: date
+                description: Due date of the statement
+                example: "2026-03-22"
+              total:
+                type: number
+                format: float
+                description: Total amount of the statement
+                example: 2500.00
+        balance:
+          type: number
+          format: float
+          description: Net balance (income - expenses)
+          example: 3500.00
+
+    CreateTransactionRequest:
+      type: object
+      required:
+        - type
+        - name
+        - amount
+        - date
+      properties:
+        type:
+          $ref: '#/components/schemas/Transaction/properties/type'
+        name:
+          $ref: '#/components/schemas/Transaction/properties/name'
+        amount:
+          $ref: '#/components/schemas/Transaction/properties/amount'
+        date:
+          $ref: '#/components/schemas/Transaction/properties/date'
+        categoryId:
+          $ref: '#/components/schemas/Transaction/properties/categoryId'
+        paymentMethod:
+          $ref: '#/components/schemas/Transaction/properties/paymentMethod'
+        creditCardId:
+          $ref: '#/components/schemas/Transaction/properties/creditCardId'
+        installments:
+          type: integer
+          minimum: 1
+          description: Number of installments (optional)
+          example: 3
+        targetDueMonth:
+          type: string
+          pattern: "^\\d{4}-\\d{2}$"
+          description: Target month for due date in YYYY-MM format (optional)
+          example: "2026-03"
+        accountId:
+          type: string
+          description: ID of the associated account (required if paymentMethod is not CREDIT)
+          example: "acc_123456789"
+        recurrence:
+          type: object
+          properties:
+            frequency:
+              $ref: '#/components/schemas/RecurrenceRule/properties/frequency'
+            interval:
+              $ref: '#/components/schemas/RecurrenceRule/properties/interval'
+            endDate:
+              $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
+
+  responses:
+    UnauthorizedError:
+      description: API key is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                example: 401
+              error:
+                type: string
+                example: "Unauthorized"
+              message:
+                type: string
+                example: "Invalid API key"
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /categories:
+    post:
+      summary: Create a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                  example: "Groceries"
+                type:
+                  type: string
+                  enum: [INCOME, EXPENSE]
+                  example: "EXPENSE"
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      summary: Get all categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /categories/{id}:
+    delete:
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Category ID
+      responses:
+        '200':
+          description: Category deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Category not found
+
+  /credit-cards:
+    post:
+      summary: Create a new credit card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - limitAmount
+                - closingDay
+                - dueDay
+              properties:
+                name:
+                  type: string
+                  example: "Nubank Platinum"
+                brand:
+                  type: string
+                  example: "Visa"
+                limitAmount:
+                  type: number
+                  format: float
+                  example: 5000.00
+                closingDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                  example: 15
+                dueDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                  example: 22
+      responses:
+        '201':
+          description: Credit card created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCard'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      summary: Get all credit cards
+      responses:
+        '200':
+          description: List of credit cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditCard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /credit-cards/{id}/statement:
+    get:
+      summary: Get credit card statement for a specific month
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Month in YYYY-MM format
+          example: "2026-03"
+      responses:
+        '200':
+          description: Credit card statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statement'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
+
+  /credit-cards/{id}/pay-statement:
+    post:
+      summary: Mark all transactions in a credit card statement as paid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Month in YYYY-MM format
+          example: "2026-03"
+      responses:
+        '200':
+          description: Statement marked as paid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Statement for March 2026 marked as paid"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card or statement not found
+
+  /transactions:
+    post:
+      summary: Create a new transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - name
+                - amount
+                - date
+              properties:
+                type:
+                  $ref: '#/components/schemas/Transaction/properties/type'
+                name:
+                  $ref: '#/components/schemas/Transaction/properties/name'
+                amount:
+                  $ref: '#/components/schemas/Transaction/properties/amount'
+                date:
+                  $ref: '#/components/schemas/Transaction/properties/date'
+                categoryId:
+                  $ref: '#/components/schemas/Transaction/properties/categoryId'
+                paymentMethod:
+                  $ref: '#/components/schemas/Transaction/properties/paymentMethod'
+                creditCardId:
+                  $ref: '#/components/schemas/Transaction/properties/creditCardId'
+                accountId:
+                  type: string
+                  description: ID of the associated account (required if paymentMethod is not CREDIT)
+                  example: "acc_123456789"
+                installments:
+                  type: integer
+                  minimum: 1
+                  description: Number of installments (optional)
+                  example: 3
+                targetDueMonth:
+                  type: string
+                  pattern: "^\\d{4}-\\d{2}$"
+                  description: Target month for due date in YYYY-MM format (optional)
+                  example: "2026-03"
+                recurrence:
+                  type: object
+                  properties:
+                    frequency:
+                      $ref: '#/components/schemas/RecurrenceRule/properties/frequency'
+                    interval:
+                      $ref: '#/components/schemas/RecurrenceRule/properties/interval'
+                    endDate:
+                      $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      summary: Get all transactions
+      parameters:
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Filter transactions by month (YYYY-MM format)
+          example: "2026-03"
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /transactions/{id}/pay:
+    patch:
+      summary: Mark a transaction as paid/received
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID
+      responses:
+        '200':
+          description: Transaction marked as paid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transaction not found
+
+  /transactions/{id}:
+    delete:
+      summary: Delete a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID
+      responses:
+        '200':
+          description: Transaction deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transaction not found
+
+  /summary:
+    get:
+      summary: Get monthly financial summary
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Month in YYYY-MM format
+          example: "2026-03"
+      responses:
+        '200':
+          description: Monthly financial summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summary'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /accounts:
+    post:
+      summary: Create a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+              properties:
+                name:
+                  type: string
+                  description: Name of the account
+                  example: "Itaú Checking Account"
+                type:
+                  type: string
+                  enum: [BANK_ACCOUNT, WALLET, SAVINGS_ACCOUNT, INVESTMENT_ACCOUNT, OTHER]
+                  description: Type of account
+                  example: "BANK_ACCOUNT"
+                initialBalance:
+                  type: number
+                  format: float
+                  description: Initial balance for the account
+                  example: 1000.00
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    get:
+      summary: Get all accounts
+      responses:
+        '200':
+          description: List of accounts with current balances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /accounts/{id}:
+    get:
+      summary: Get a specific account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account not found
+
+    patch:
+      summary: Update an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the account
+                  example: "Itaú Savings Account"
+                type:
+                  type: string
+                  enum: [BANK_ACCOUNT, WALLET, SAVINGS_ACCOUNT, INVESTMENT_ACCOUNT, OTHER]
+                  description: Type of account
+                  example: "SAVINGS_ACCOUNT"
+      responses:
+        '200':
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account not found
+
+    delete:
+      summary: Delete an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID
+      responses:
+        '204':
+          description: Account deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account not found
+        '409':
+          description: Cannot delete account with associated transactions
+
+  /accounts/{id}/balance:
+    get:
+      summary: Get the current balance for an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID
+      responses:
+        '200':
+          description: Account balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountBalance'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account not found
+
+  /accounts/{id}/transactions:
+    get:
+      summary: Get all transactions linked to an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID
+      responses:
+        '200':
+          description: List of transactions linked to the account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account not found
+
+  /accounts/{id}/link-transaction:
+    patch:
+      summary: Link a transaction to an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkTransactionToAccountRequest'
+      responses:
+        '200':
+          description: Transaction linked to account successfully
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account or transaction not found
