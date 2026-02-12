@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
+import TransactionSummaryCards from '../components/TransactionSummaryCards';
 import MonthSelector from '../components/MonthSelector';
 import { useTransactions } from '../hooks/useTransactions';
 import { CreateTransactionRequest } from '../types/apiTypes';
@@ -90,6 +91,9 @@ const TransactionsPage: React.FC = () => {
       
       {!loading && !error && (
         <div>
+          {/* Summary Cards - Always show, component handles empty state */}
+          <TransactionSummaryCards transactions={transactions} />
+          
           <TransactionList
             transactions={transactions}
             onPay={handlePay}

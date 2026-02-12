@@ -247,6 +247,71 @@ components:
           description: Available credit limit
           example: 1550.00
 
+    StatementStatus:
+      type: object
+      properties:
+        cardId:
+          type: string
+          description: ID of the credit card
+          example: "cc_123456789"
+        month:
+          type: string
+          description: Month for the statement (YYYY-MM format)
+          example: "2026-03"
+        periodStart:
+          type: string
+          format: date
+          description: Start date of the billing period
+          example: "2026-02-16"
+        periodEnd:
+          type: string
+          format: date
+          description: End date of the billing period
+          example: "2026-03-15"
+        dueDate:
+          type: string
+          format: date
+          description: Due date of the statement
+          example: "2026-03-22"
+        total:
+          type: number
+          format: float
+          description: Total amount of the statement
+          example: 3450.00
+        isPaid:
+          type: boolean
+          description: Whether the statement has been fully paid
+          example: true
+        paidAmount:
+          type: number
+          format: float
+          description: Amount already paid
+          example: 3450.00
+        unpaidAmount:
+          type: number
+          format: float
+          description: Amount remaining to be paid
+          example: 0.00
+        paymentAccountId:
+          type: string
+          nullable: true
+          description: ID of the account used for payment (if paid)
+          example: "acc_123456789"
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the statement was paid
+          example: "2026-03-20T10:30:00Z"
+        transactionCount:
+          type: integer
+          description: Total number of transactions in the statement
+          example: 15
+        paidTransactionCount:
+          type: integer
+          description: Number of paid transactions in the statement
+          example: 15
+
     Account:
       type: object
       required:
@@ -628,6 +693,36 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Credit card or statement not found
+
+  /credit-cards/{id}/statement-status:
+    get:
+      summary: Get credit card statement payment status for a specific month
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Month in YYYY-MM format
+          example: "2026-03"
+      responses:
+        '200':
+          description: Credit card statement status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementStatus'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
 
   /transactions:
     post:
