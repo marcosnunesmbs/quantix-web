@@ -26,12 +26,22 @@ export const createTransaction = async (transactionData: CreateTransactionReques
   }
 };
 
-export const updateTransactionPaidStatus = async (id: string): Promise<Transaction> => {
+export const payTransaction = async (id: string): Promise<Transaction> => {
   try {
     const response = await api.patch(`/transactions/${id}/pay`);
     return response.data;
   } catch (error) {
-    console.error('Error updating transaction paid status:', error);
+    console.error('Error paying transaction:', error);
+    throw error;
+  }
+};
+
+export const unpayTransaction = async (id: string): Promise<Transaction> => {
+  try {
+    const response = await api.patch(`/transactions/${id}/unpay`);
+    return response.data;
+  } catch (error) {
+    console.error('Error unpaying transaction:', error);
     throw error;
   }
 };

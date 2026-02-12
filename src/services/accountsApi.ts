@@ -50,7 +50,9 @@ export const deleteAccount = async (id: string): Promise<void> => {
 export const getAccountBalance = async (id: string): Promise<number> => {
   try {
     const response = await api.get(`/accounts/${id}/balance`);
-    return response.data.currentBalance;
+    // Handle both direct object response and wrapped response (e.g. { data: { ... } })
+    const data = response.data.data || response.data;
+    return data.currentBalance;
   } catch (error) {
     console.error('Error fetching account balance:', error);
     throw error;

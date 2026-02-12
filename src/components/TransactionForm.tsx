@@ -1,95 +1,327 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { CreateTransactionRequest, Category, Account, CreditCard } from '../types/apiTypes';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Repeat, CreditCard } from 'lucide-react';
+import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
+
+type TransactionFormType = 'RECEITA' | 'DESPESA' | 'CARTAO';
+
+interface TransactionFormData {
+  type: TransactionFormType;
+  description: string;
+  amount: number;
+  date: string;
+  categoryId: string;
+  paymentMethod: 'CASH' | 'PIX' | 'DEBIT' | 'CREDIT' | undefined;
+  accountId?: string;
+  creditCardId?: string;
+  paid: boolean;
+  installments?: number;
+  isRecurring: boolean;
+  recurrence?: {
+    frequency: 'MONTHLY' | 'WEEKLY' | 'YEARLY';
+    interval: number;
+    endDate?: string;
+  };
+  isInstallment: boolean;
+}
 
 interface TransactionFormProps {
   onSubmit: (transactionData: CreateTransactionRequest) => void;
   onCancel: () => void;
 }
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState<Omit<CreateTransactionRequest, 'recurrence'>>({
-    type: 'EXPENSE',
-    name: '',
-    amount: 0,
-    date: new Date().toISOString().split('T')[0],
-    categoryId: '',
-    paymentMethod: undefined,
-    creditCardId: '',
-    accountId: '',
-    installments: undefined,
-    targetDueMonth: undefined
-  });
+const today = () => new Date().toISOString().split('T')[0];
 
+const isToday = (dateStr: string) => dateStr === today();
+
+const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
+  // Data fetching hooks
   const { categories, loading: categoriesLoading } = useCategories();
   const { accounts, loading: accountsLoading } = useAccounts();
   const { creditCards, loading: creditCardsLoading } = useCreditCards();
 
+  // Track if user manually changed paid status
+  const [paidManuallyChanged, setPaidManuallyChanged] = useState(false);
+
+  const getInitialFormData = (): TransactionFormData => ({
+    type: 'DESPESA',
+    description: '',
+    amount: 0,
+    date: today(),
+    categoryId: '',
+    paymentMethod: undefined,
+    accountId: '',
+    creditCardId: '',
+    paid: true,
+    installments: undefined,
+    isRecurring: false,
+    recurrence: undefined,
+    isInstallment: false,
+  });
+
+  const [formData, setFormData] = useState<TransactionFormData>(getInitialFormData());
+
+  // Get filtered categories based on transaction type
+  const getFilteredCategories = useCallback((): Category[] => {
+    if (!categories) return [];
+    switch (formData.type) {
+      case 'RECEITA':
+        return categories.filter((c: Category) => c.type === 'INCOME');
+      case 'DESPESA':
+      case 'CARTAO':
+        return categories.filter((c: Category) => c.type === 'EXPENSE');
+      default:
+        return [];
+    }
+  }, [categories, formData.type]);
+
+  // Get available payment methods (excluding CREDIT for RECEITA/DESPESA)
+  const getAvailablePaymentMethods = useCallback((): Array<{ value: string; label: string }> => {
+    const allMethods = [
+      { value: 'CASH', label: 'Dinheiro' },
+      { value: 'PIX', label: 'PIX' },
+      { value: 'DEBIT', label: 'Débito' },
+    ];
+    return allMethods;
+  }, []);
+
+  // Handle type change - reset incompatible fields
+  const handleTypeChange = (newType: TransactionFormType) => {
+    setFormData(prev => {
+      const updates: Partial<TransactionFormData> = { type: newType };
+
+      // Reset fields based on new type
+      if (newType === 'CARTAO') {
+        // CARTAO: remove account and recurrence, set payment to CREDIT
+        updates.accountId = undefined;
+        updates.paymentMethod = 'CREDIT';
+        updates.paid = false;
+        updates.isRecurring = false;
+        updates.recurrence = undefined;
+        // Keep creditCardId if exists
+      } else if (newType === 'DESPESA') {
+        // DESPESA: remove credit card and installments
+        updates.creditCardId = undefined;
+        updates.installments = undefined;
+        updates.isInstallment = false;
+        updates.paymentMethod = prev.paymentMethod === 'CREDIT' ? undefined : prev.paymentMethod;
+      } else if (newType === 'RECEITA') {
+        // RECEITA: remove credit card, installments, and recurrence
+        updates.creditCardId = undefined;
+        updates.installments = undefined;
+        updates.isInstallment = false;
+        updates.isRecurring = false;
+        updates.recurrence = undefined;
+        updates.paymentMethod = prev.paymentMethod === 'CREDIT' ? undefined : prev.paymentMethod;
+      }
+
+      // Recalculate paid based on date
+      updates.paid = isToday(updates.date || prev.date);
+      setPaidManuallyChanged(false);
+
+      return { ...prev, ...updates };
+    });
+  };
+
+  // Handle field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'amount' ? parseFloat(value) || 0 : value
-    }));
+    const { name, value, type } = e.target;
+
+    if (name === 'type') {
+      handleTypeChange(value as TransactionFormType);
+      return;
+    }
+
+    setFormData(prev => {
+      let updates: Partial<TransactionFormData> = {};
+
+      if (type === 'checkbox') {
+        const checked = (e.target as HTMLInputElement).checked;
+        if (name === 'paid') {
+          setPaidManuallyChanged(true);
+          updates.paid = checked;
+        } else if (name === 'isRecurring') {
+          updates.isRecurring = checked;
+          if (checked) {
+            updates.recurrence = {
+              frequency: 'MONTHLY',
+              interval: 1,
+              endDate: undefined,
+            };
+          } else {
+            updates.recurrence = undefined;
+          }
+        } else if (name === 'isInstallment') {
+          updates.isInstallment = checked;
+          updates.installments = checked ? 2 : undefined;
+        }
+      } else if (name === 'amount') {
+        updates.amount = parseFloat(value) || 0;
+      } else if (name === 'installments') {
+        updates.installments = parseInt(value) || 2;
+      } else if (name === 'interval') {
+        updates.recurrence = {
+          frequency: prev.recurrence?.frequency || 'MONTHLY',
+          ...prev.recurrence,
+          interval: parseInt(value) || 1,
+        };
+      } else if (name === 'recurrenceEndDate') {
+        updates.recurrence = {
+          frequency: prev.recurrence?.frequency || 'MONTHLY',
+          interval: prev.recurrence?.interval || 1,
+          endDate: value || undefined,
+        };
+      } else if (name === 'frequency') {
+        updates.recurrence = {
+          frequency: value as 'MONTHLY' | 'WEEKLY' | 'YEARLY',
+          interval: prev.recurrence?.interval || 1,
+          endDate: prev.recurrence?.endDate,
+        };
+      } else {
+        updates[name as keyof TransactionFormData] = value as never;
+      }
+
+      return { ...prev, ...updates };
+    });
+  };
+
+  // Auto-update paid status when date changes (only if not manually changed)
+  useEffect(() => {
+    if (!paidManuallyChanged) {
+      setFormData(prev => ({
+        ...prev,
+        paid: isToday(prev.date),
+      }));
+    }
+  }, [formData.date, paidManuallyChanged]);
+
+  // Validation
+  const getValidationErrors = (): string[] => {
+    const errors: string[] = [];
+
+    if (formData.type === 'CARTAO') {
+      if (!formData.creditCardId) {
+        errors.push('Selecione um cartão de crédito');
+      }
+      if (formData.isInstallment && (!formData.installments || formData.installments < 2)) {
+        errors.push('Parcelamento requer no mínimo 2 parcelas');
+      }
+    }
+
+    if ((formData.type === 'RECEITA' || formData.type === 'DESPESA') && !formData.accountId) {
+      errors.push('Selecione uma conta');
+    }
+
+    if (formData.type === 'DESPESA' && formData.isRecurring) {
+      if (!formData.recurrence?.frequency) {
+        errors.push('Selecione a frequência da recorrência');
+      }
+      if (!formData.recurrence?.interval || formData.recurrence.interval < 1) {
+        errors.push('Intervalo deve ser no mínimo 1');
+      }
+    }
+
+    if (formData.amount <= 0) {
+      errors.push('Valor deve ser maior que zero');
+    }
+
+    if (!formData.description.trim()) {
+      errors.push('Descrição é obrigatória');
+    }
+
+    if (!formData.categoryId) {
+      errors.push('Selecione uma categoria');
+    }
+
+    return errors;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const errors = getValidationErrors();
+    if (errors.length > 0) {
+      // Could show toast/alert here
+      alert(errors.join('\n'));
+      return;
+    }
+
+    // Transform form data to API format
+    const apiData: CreateTransactionRequest = {
+      type: formData.type === 'RECEITA' ? 'INCOME' : 'EXPENSE',
+      name: formData.description,
+      amount: formData.amount,
+      date: formData.date,
+      categoryId: formData.categoryId || undefined,
+      paymentMethod: formData.paymentMethod,
+      accountId: formData.accountId,
+      creditCardId: formData.creditCardId,
+      installments: formData.isInstallment ? formData.installments : undefined,
+      recurrence: formData.isRecurring ? formData.recurrence : undefined,
+    };
+
+    onSubmit(apiData);
   };
+
+  const filteredCategories = getFilteredCategories();
+  const availablePaymentMethods = getAvailablePaymentMethods();
+  const validationErrors = getValidationErrors();
+  const canSubmit = validationErrors.length === 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Add Transaction</h2>
-            <button 
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Nova Transação</h2>
+            <button
               onClick={onCancel}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               <X size={20} />
             </button>
           </div>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Type Selector - Main Controller */}
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Type
+                Tipo de Transação *
               </label>
               <select
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white transition-colors"
                 required
               >
-                <option value="INCOME">Income</option>
-                <option value="EXPENSE">Expense</option>
+                <option value="RECEITA">🟢 Receita</option>
+                <option value="DESPESA">🔴 Despesa</option>
+                <option value="CARTAO">🟣 Cartão de Crédito</option>
               </select>
             </div>
-            
-            <div className="mb-4">
+
+            {/* Description */}
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
+                Descrição *
               </label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Enter description"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Ex: Supermercado, Salário..."
                 required
               />
             </div>
-            
-            <div className="mb-4">
+
+            {/* Amount */}
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Amount
+                Valor (R$) *
               </label>
               <input
                 type="number"
@@ -97,137 +329,311 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                 value={formData.amount || ''}
                 onChange={handleChange}
                 step="0.01"
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="0.00"
+                min="0.01"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                placeholder="0,00"
                 required
               />
             </div>
-            
-            <div className="mb-4">
+
+            {/* Date */}
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Date
+                Data *
               </label>
               <input
                 type="date"
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
                 required
               />
             </div>
-            
-            <div className="mb-4">
+
+            {/* Category - Filtered by type */}
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Category
+                Categoria *
               </label>
               {categoriesLoading ? (
-                <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
-                  Loading...
+                <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-500">
+                  Carregando categorias...
                 </div>
               ) : (
                 <select
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                  required
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((category: Category) => (
+                  <option value="">Selecione uma categoria</option>
+                  {filteredCategories.map((category: Category) => (
                     <option key={category.id} value={category.id}>
-                      {category.name} ({category.type})
+                      {category.name}
                     </option>
                   ))}
                 </select>
               )}
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.type === 'RECEITA' ? 'Apenas categorias de receita' : 'Apenas categorias de despesa'}
+              </p>
             </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Payment Method
-              </label>
-              <select
-                name="paymentMethod"
-                value={formData.paymentMethod || ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">Select payment method</option>
-                <option value="CASH">Cash</option>
-                <option value="PIX">PIX</option>
-                <option value="DEBIT">Debit</option>
-                <option value="CREDIT">Credit</option>
-              </select>
-            </div>
-            
-            {(formData.paymentMethod === 'CREDIT') && (
-              <div className="mb-4">
+
+            {/* Payment Method - Hidden for CARTAO */}
+            {formData.type !== 'CARTAO' && (
+              <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Credit Card
+                  Método de Pagamento
                 </label>
-                {creditCardsLoading ? (
-                  <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
-                    Loading...
-                  </div>
-                ) : (
-                  <select
-                    name="creditCardId"
-                    value={formData.creditCardId}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="">Select a credit card</option>
-                    {creditCards.map((card: CreditCard) => (
-                      <option key={card.id} value={card.id}>
-                        {card.name} ({card.brand || 'No Brand'})
-                      </option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  name="paymentMethod"
+                  value={formData.paymentMethod || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Selecione...</option>
+                  {availablePaymentMethods.map(method => (
+                    <option key={method.value} value={method.value}>
+                      {method.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
-            
-            {(formData.paymentMethod !== 'CREDIT') && (
-              <div className="mb-4">
+
+            {/* CARTAO specific fields */}
+            {formData.type === 'CARTAO' && (
+              <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                  <CreditCard size={18} />
+                  <span className="font-medium text-sm">Compra no Cartão</span>
+                </div>
+
+                {/* Credit Card Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Cartão de Crédito *
+                  </label>
+                  {creditCardsLoading ? (
+                    <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
+                      Carregando...
+                    </div>
+                  ) : (
+                    <select
+                      name="creditCardId"
+                      value={formData.creditCardId || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+                      required
+                    >
+                      <option value="">Selecione um cartão</option>
+                      {creditCards.map((card: CreditCardType) => (
+                        <option key={card.id} value={card.id}>
+                          {card.name} ({card.brand || 'Sem marca'})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Installment Toggle */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isInstallment"
+                    id="isInstallment"
+                    checked={formData.isInstallment}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isInstallment" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Parcelar compra?
+                  </label>
+                </div>
+
+                {/* Installment Count */}
+                {formData.isInstallment && (
+                  <div className="animate-fadeIn">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Número de Parcelas *
+                    </label>
+                    <input
+                      type="number"
+                      name="installments"
+                      value={formData.installments || ''}
+                      onChange={handleChange}
+                      min="2"
+                      step="1"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Ex: 3"
+                      required={formData.isInstallment}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Mínimo 2 parcelas</p>
+                  </div>
+                )}
+
+                {/* Payment Method Badge */}
+                <div className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2 py-1 rounded">
+                  Método: CRÉDITO (automático)
+                </div>
+              </div>
+            )}
+
+            {/* Account Selector - Hidden for CARTAO */}
+            {formData.type !== 'CARTAO' && (
+              <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Account
+                  Conta *
                 </label>
                 {accountsLoading ? (
                   <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
-                    Loading...
+                    Carregando...
                   </div>
                 ) : (
                   <select
                     name="accountId"
-                    value={formData.accountId}
+                    value={formData.accountId || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                    required
                   >
-                    <option value="">Select an account</option>
+                    <option value="">Selecione uma conta</option>
                     {accounts.map((account: Account) => (
                       <option key={account.id} value={account.id}>
-                        {account.name} ({account.type.replace('_', ' ')})
+                        {account.name}
                       </option>
                     ))}
                   </select>
                 )}
               </div>
             )}
-            
-            <div className="flex justify-end space-x-3 mt-6">
+
+            {/* Paid Checkbox - Hidden for CARTAO */}
+            {formData.type !== 'CARTAO' && (
+              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <input
+                  type="checkbox"
+                  name="paid"
+                  id="paid"
+                  checked={formData.paid}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                />
+                <label htmlFor="paid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  Já está pago?
+                  <span className="text-xs text-gray-500 block">
+                    {isToday(formData.date) ? '(auto: hoje)' : '(auto: data futura)'}
+                  </span>
+                </label>
+              </div>
+            )}
+
+            {/* Recurrence - Only for DESPESA */}
+            {formData.type === 'DESPESA' && (
+              <div className="space-y-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isRecurring"
+                    id="isRecurring"
+                    checked={formData.isRecurring}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isRecurring" className="ml-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Repeat size={16} />
+                    <span>Despesa recorrente?</span>
+                  </label>
+                </div>
+
+                {formData.isRecurring && (
+                  <div className="space-y-3 animate-fadeIn border-t border-amber-200 dark:border-amber-800 pt-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Frequência *
+                      </label>
+                      <select
+                        name="frequency"
+                        value={formData.recurrence?.frequency || 'MONTHLY'}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                        required={formData.isRecurring}
+                      >
+                        <option value="MONTHLY">Mensal</option>
+                        <option value="WEEKLY">Semanal</option>
+                        <option value="YEARLY">Anual</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Intervalo (a cada X)
+                      </label>
+                      <input
+                        type="number"
+                        name="interval"
+                        value={formData.recurrence?.interval || 1}
+                        onChange={handleChange}
+                        min="1"
+                        step="1"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Ex: 2 = a cada 2 {formData.recurrence?.frequency === 'MONTHLY' ? 'meses' : formData.recurrence?.frequency === 'WEEKLY' ? 'semanas' : 'anos'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Data de término (opcional)
+                      </label>
+                      <input
+                        type="date"
+                        name="recurrenceEndDate"
+                        value={formData.recurrence?.endDate || ''}
+                        onChange={handleChange}
+                        min={formData.date}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Validation Messages */}
+            {validationErrors.length > 0 && (
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">Corrija os seguintes erros:</p>
+                <ul className="text-xs text-red-600 dark:text-red-400 list-disc list-inside">
+                  {validationErrors.map((error, idx) => (
+                    <li key={idx}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                disabled={!canSubmit}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${
+                  canSubmit
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
               >
-                Add Transaction
+                Salvar Transação
               </button>
             </div>
           </form>

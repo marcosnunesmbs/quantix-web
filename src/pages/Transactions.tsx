@@ -10,13 +10,16 @@ const TransactionsPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM format
   
-  const { 
-    transactions, 
-    loading, 
-    error, 
-    createNewTransaction, 
-    updateTransactionPaid, 
-    removeTransaction 
+  const {
+    transactions,
+    loading,
+    error,
+    createNewTransaction,
+    payTransaction,
+    unpayTransaction,
+    removeTransaction,
+    isPaying,
+    isUnpaying
   } = useTransactions(selectedMonth);
 
   const handleFormSubmit = async (transactionData: CreateTransactionRequest) => {
@@ -44,12 +47,19 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
-  const handleTogglePaid = async (id: string) => {
+  const handlePay = async (id: string) => {
     try {
-      await updateTransactionPaid(id);
+      await payTransaction(id);
     } catch (err) {
-      console.error('Error updating transaction paid status:', err);
-      // In a real app, you might want to show an error message to the user
+      console.error('Error paying transaction:', err);
+    }
+  };
+
+  const handleUnpay = async (id: string) => {
+    try {
+      await unpayTransaction(id);
+    } catch (err) {
+      console.error('Error unpaying transaction:', err);
     }
   };
 
@@ -80,10 +90,13 @@ const TransactionsPage: React.FC = () => {
       
       {!loading && !error && (
         <div>
-          <TransactionList 
-            transactions={transactions} 
-            onTogglePaid={handleTogglePaid}
+          <TransactionList
+            transactions={transactions}
+            onPay={handlePay}
+            onUnpay={handleUnpay}
             onDelete={handleDelete}
+            isPaying={isPaying}
+            isUnpaying={isUnpaying}
           />
         </div>
       )}

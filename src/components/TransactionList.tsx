@@ -5,14 +5,20 @@ interface TransactionListProps {
   transactions: Transaction[];
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (id: string) => void;
-  onTogglePaid?: (id: string) => void;
+  onPay?: (id: string) => void;
+  onUnpay?: (id: string) => void;
+  isPaying?: boolean;
+  isUnpaying?: boolean;
 }
 
-const TransactionList: React.FC<TransactionListProps> = ({ 
-  transactions, 
-  onEdit, 
-  onDelete, 
-  onTogglePaid 
+const TransactionList: React.FC<TransactionListProps> = ({
+  transactions,
+  onEdit,
+  onDelete,
+  onPay,
+  onUnpay,
+  isPaying,
+  isUnpaying
 }) => {
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -49,7 +55,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 Type
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Paid
+                Status
               </th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Actions
@@ -90,16 +96,23 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => onTogglePaid && onTogglePaid(transaction.id)}
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        transaction.paid
-                          ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-400'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-400'
-                      }`}
-                    >
-                      {transaction.paid ? 'Paid' : 'Unpaid'}
-                    </button>
+                    {transaction.paid ? (
+                      <button
+                        onClick={() => onUnpay && onUnpay(transaction.id)}
+                        disabled={isUnpaying}
+                        className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50"
+                      >
+                        {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Received' : 'Paid'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onPay && onPay(transaction.id)}
+                        disabled={isPaying}
+                        className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-400 hover:bg-yellow-200 disabled:opacity-50"
+                      >
+                        {isPaying ? '...' : transaction.type === 'INCOME' ? 'Not Received' : 'Unpaid'}
+                      </button>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">

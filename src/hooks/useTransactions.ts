@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTransactions, createTransaction, updateTransactionPaidStatus, deleteTransaction } from '../services/transactionsApi';
+import { getTransactions, createTransaction, payTransaction, unpayTransaction, deleteTransaction } from '../services/transactionsApi';
 import { queryKeys } from '../lib/queryClient';
 
 export const useTransactions = (month?: string) => {
@@ -26,8 +26,18 @@ export const useTransactions = (month?: string) => {
     },
   });
 
-  const updatePaidMutation = useMutation({
-    mutationFn: updateTransactionPaidStatus,
+  const payMutation = useMutation({
+    mutationFn: payTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    },
+  });
+
+  const unpayMutation = useMutation({
+    mutationFn: unpayTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -52,10 +62,12 @@ export const useTransactions = (month?: string) => {
     loading: isLoading,
     error: error?.message || null,
     createNewTransaction: createMutation.mutateAsync,
-    updateTransactionPaid: updatePaidMutation.mutateAsync,
+    payTransaction: payMutation.mutateAsync,
+    unpayTransaction: unpayMutation.mutateAsync,
     removeTransaction: deleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
-    isUpdating: updatePaidMutation.isPending,
+    isPaying: payMutation.isPending,
+    isUnpaying: unpayMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 };
