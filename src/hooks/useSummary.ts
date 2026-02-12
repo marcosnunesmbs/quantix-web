@@ -1,31 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Summary } from '../types/apiTypes';
+import { useQuery } from '@tanstack/react-query';
 import { getMonthlySummary } from '../services/summaryApi';
+import { queryKeys } from '../lib/queryClient';
 
 export const useSummary = (month: string) => {
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: summary, isLoading, error } = useQuery({
+    queryKey: queryKeys.summary(month),
+    queryFn: () => getMonthlySummary(month),
+    enabled: !!month,
+  });
 
-  useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        setLoading(true);
-        const data = await getMonthlySummary(month);
-        setSummary(data);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch summary');
-        console.error('Error in useSummary hook:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (month) {
-      fetchSummary();
-    }
-  }, [month]);
-
-  return { summary, loading, error };
+  return {
+    summary: summary || null,
+    loading: isLoading,
+    error: error?.message || null,
+  };
 };

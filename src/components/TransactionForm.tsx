@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { CreateTransactionRequest, Category, Account, CreditCard } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';

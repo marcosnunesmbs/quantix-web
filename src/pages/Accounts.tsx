@@ -21,7 +21,7 @@ const AccountsPage: React.FC = () => {
   const handleFormSubmit = async (accountData: CreateAccountRequest) => {
     try {
       if (editingAccount?.id) {
-        await updateExistingAccount(editingAccount.id, accountData);
+        await updateExistingAccount({ id: editingAccount.id, data: accountData });
       } else {
         await createNewAccount(accountData);
       }

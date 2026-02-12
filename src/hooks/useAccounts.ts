@@ -1,71 +1,69 @@
-import { useState, useEffect } from 'react';
-import { Account, CreateAccountRequest } from '../types/apiTypes';
-import { getAccounts, createAccount, updateAccount, deleteAccount } from '../services/accountsApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CreateAccountRequest } from '../types/apiTypes';
+import { getAccounts, createAccount, updateAccount, deleteAccount, getAccountTransactions } from '../services/accountsApi';
+import { queryKeys } from '../lib/queryClient';
 
 export const useAccounts = () => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  
+  const { data: accounts = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.accounts,
+    queryFn: getAccounts,
+  });
 
-  const fetchAccounts = async () => {
-    try {
-      setLoading(true);
-      const data = await getAccounts();
-      setAccounts(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch accounts');
-      console.error('Error in useAccounts hook:', err);
-    } finally {
-      setLoading(false);
-    }
+  const createMutation = useMutation({
+    mutationFn: createAccount,
+    onSuccess: () => {
+      // Invalida o cache de contas
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Invalida o resumo (pois pode afetar saldos)
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateAccountRequest> }) =>
+      updateAccount(id, data),
+    onSuccess: (_, variables) => {
+      // Invalida a conta específica e a lista
+      queryClient.invalidateQueries({ queryKey: queryKeys.account(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteAccount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+
+  return {
+    accounts,
+    loading: isLoading,
+    error: error?.message || null,
+    createNewAccount: createMutation.mutateAsync,
+    updateExistingAccount: updateMutation.mutateAsync,
+    removeAccount: deleteMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
+};
 
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
+export const useAccountTransactions = (accountId: string) => {
+  const { data: transactions = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.accountTransactions(accountId),
+    queryFn: () => getAccountTransactions(accountId),
+    enabled: !!accountId,
+  });
 
-  const createNewAccount = async (accountData: CreateAccountRequest) => {
-    try {
-      const newAccount = await createAccount(accountData);
-      setAccounts(prev => [...prev, newAccount]);
-      return newAccount;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
-      throw err;
-    }
-  };
-
-  const updateExistingAccount = async (id: string, accountData: Partial<CreateAccountRequest>) => {
-    try {
-      const updatedAccount = await updateAccount(id, accountData);
-      setAccounts(prev => 
-        prev.map(acc => acc.id === id ? updatedAccount : acc)
-      );
-      return updatedAccount;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update account');
-      throw err;
-    }
-  };
-
-  const removeAccount = async (id: string) => {
-    try {
-      await deleteAccount(id);
-      setAccounts(prev => prev.filter(a => a.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete account');
-      throw err;
-    }
-  };
-
-  return { 
-    accounts, 
-    loading, 
-    error, 
-    fetchAccounts,
-    createNewAccount,
-    updateExistingAccount,
-    removeAccount
+  return {
+    transactions,
+    loading: isLoading,
+    error: error?.message || null,
   };
 };

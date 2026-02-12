@@ -1,71 +1,61 @@
-import { useState, useEffect } from 'react';
-import { Transaction, CreateTransactionRequest } from '../types/apiTypes';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, createTransaction, updateTransactionPaidStatus, deleteTransaction } from '../services/transactionsApi';
+import { queryKeys } from '../lib/queryClient';
 
 export const useTransactions = (month?: string) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  
+  const { data: transactions = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.transactions(month),
+    queryFn: () => getTransactions(month),
+  });
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      const data = await getTransactions(month);
-      setTransactions(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch transactions');
-      console.error('Error in useTransactions hook:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createMutation = useMutation({
+    mutationFn: createTransaction,
+    onSuccess: () => {
+      // Invalida a lista de transações
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
+      // Invalida todas as transações (sem filtro de mês)
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      // Invalida o resumo (receitas/despesas mudaram)
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      // Invalida contas (saldos podem ter mudado)
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Invalida cartões de crédito (se houver transação de cartão)
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+    },
+  });
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [month]);
+  const updatePaidMutation = useMutation({
+    mutationFn: updateTransactionPaidStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+    },
+  });
 
-  const createNewTransaction = async (transactionData: CreateTransactionRequest) => {
-    try {
-      const newTransaction = await createTransaction(transactionData);
-      setTransactions(prev => [...prev, newTransaction]);
-      return newTransaction;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create transaction');
-      throw err;
-    }
-  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+    },
+  });
 
-  const updateTransactionPaid = async (id: string) => {
-    try {
-      const updatedTransaction = await updateTransactionPaidStatus(id);
-      setTransactions(prev => 
-        prev.map(t => t.id === id ? updatedTransaction : t)
-      );
-      return updatedTransaction;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update transaction paid status');
-      throw err;
-    }
-  };
-
-  const removeTransaction = async (id: string) => {
-    try {
-      await deleteTransaction(id);
-      setTransactions(prev => prev.filter(t => t.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete transaction');
-      throw err;
-    }
-  };
-
-  return { 
-    transactions, 
-    loading, 
-    error, 
-    fetchTransactions,
-    createNewTransaction,
-    updateTransactionPaid,
-    removeTransaction
+  return {
+    transactions,
+    loading: isLoading,
+    error: error?.message || null,
+    createNewTransaction: createMutation.mutateAsync,
+    updateTransactionPaid: updatePaidMutation.mutateAsync,
+    removeTransaction: deleteMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    isUpdating: updatePaidMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 };

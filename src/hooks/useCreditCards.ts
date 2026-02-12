@@ -1,68 +1,61 @@
-import { useState, useEffect } from 'react';
-import { CreditCard } from '../types/apiTypes';
-import { getCreditCards, createCreditCard, getCreditCardStatement, payCreditCardStatement, CreateCreditCardRequest } from '../services/creditCardsApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PaymentStatementRequest } from '../types/apiTypes';
+import { getCreditCards, createCreditCard, getCreditCardStatement, payCreditCardStatement } from '../services/creditCardsApi';
+import { queryKeys } from '../lib/queryClient';
 
 export const useCreditCards = () => {
-  const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  
+  const { data: creditCards = [], isLoading, error } = useQuery({
+    queryKey: queryKeys.creditCards,
+    queryFn: getCreditCards,
+  });
 
-  const fetchCreditCards = async () => {
-    try {
-      setLoading(true);
-      const data = await getCreditCards();
-      setCreditCards(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch credit cards');
-      console.error('Error in useCreditCards hook:', err);
-    } finally {
-      setLoading(false);
-    }
+  const createMutation = useMutation({
+    mutationFn: createCreditCard,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+    },
+  });
+
+  const payStatementMutation = useMutation({
+    mutationFn: ({ id, paymentData }: { id: string; paymentData: PaymentStatementRequest }) =>
+      payCreditCardStatement(id, paymentData),
+    onSuccess: (_, variables) => {
+      // Invalida o cartão específico
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCard(variables.id) });
+      // Invalida a lista de cartões
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      // Invalida transações (novas transações de pagamento)
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      // Invalida contas (saldo pode ter mudado)
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Invalida resumo
+      queryClient.invalidateQueries({ queryKey: ['summary'] });
+    },
+  });
+
+  return {
+    creditCards,
+    loading: isLoading,
+    error: error?.message || null,
+    createNewCreditCard: createMutation.mutateAsync,
+    payStatement: payStatementMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    isPaying: payStatementMutation.isPending,
   };
+};
 
-  useEffect(() => {
-    fetchCreditCards();
-  }, []);
+export const useCreditCardStatement = (id: string, month: string) => {
+  const { data: statement, isLoading, error } = useQuery({
+    queryKey: queryKeys.creditCardStatement(id, month),
+    queryFn: () => getCreditCardStatement(id, month),
+    enabled: !!id && !!month,
+  });
 
-  const createNewCreditCard = async (cardData: CreateCreditCardRequest) => {
-    try {
-      const newCard = await createCreditCard(cardData);
-      setCreditCards(prev => [...prev, newCard]);
-      return newCard;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create credit card');
-      throw err;
-    }
-  };
-
-  const fetchStatement = async (id: string, month: string) => {
-    try {
-      const statement = await getCreditCardStatement(id, month);
-      return statement;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch statement');
-      throw err;
-    }
-  };
-
-  const payStatement = async (id: string, paymentData: any) => {
-    try {
-      const result = await payCreditCardStatement(id, paymentData);
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to pay statement');
-      throw err;
-    }
-  };
-
-  return { 
-    creditCards, 
-    loading, 
-    error, 
-    fetchCreditCards,
-    createNewCreditCard,
-    fetchStatement,
-    payStatement
+  return {
+    statement,
+    loading: isLoading,
+    error: error?.message || null,
   };
 };
