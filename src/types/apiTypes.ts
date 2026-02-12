@@ -23,6 +23,7 @@ export interface Transaction {
   installmentTotal?: number;
   recurrenceRuleId?: string;
   accountId?: string;
+  account?: Account;
   paid: boolean;
   createdAt: string; // date-time format
 }

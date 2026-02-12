@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Banknote } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -105,12 +105,21 @@ const TransactionList: React.FC<TransactionListProps> = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{transaction.name}</div>
-                      {transaction.creditCard && (
+                      {transaction.creditCard ? (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-full">
                           <CreditCard size={12} />
                           {transaction.creditCard.name}
                         </span>
-                      )}
+                      ) : transaction.account ? (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${
+                          transaction.type === 'INCOME'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                        }`}>
+                          <Banknote size={12} />
+                          {transaction.account.name}
+                        </span>
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
