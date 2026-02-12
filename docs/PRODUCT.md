@@ -16,6 +16,7 @@ Unlike basic trackers, Quantix understands how credit cards actually work.
 - **Virtual Summaries:** Instead of cluttering your monthly view with every coffee bought on credit, Quantix rolls them up into a **Single Monthly Invoice** based on your card's closing date.
 - **Smart Period Calculation:** It automatically calculates which invoice a purchase belongs to. Buying on the 16th with a closing date of the 15th? That expense moves to next month's bill automatically.
 - **Limit Tracking:** Monitor your available credit limit in real-time.
+- **Account-Based Payment:** When paying credit card bills, you can select which account to debit for the payment, automatically linking all transactions in the statement to that account.
 
 ### 3. Installment Engine
 Handle "Buy Now, Pay Later" scenarios effortlessly.

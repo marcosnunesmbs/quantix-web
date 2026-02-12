@@ -1,4 +1,4 @@
-import { Search, Bell, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { ThemeToggle } from './ThemeToggle';
@@ -11,7 +11,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     const location = useLocation();
     const links = [
         { name: 'Dashboard', path: '/' },
-        { name: 'Wallet', path: '/account' },
+        { name: 'Wallet', path: '/accounts' },
         { name: 'Transactions', path: '/transactions' },
         { name: 'Cards', path: '/cards' },
         { name: 'Reports', path: '/reports' },

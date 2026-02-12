@@ -74,7 +74,6 @@ Although the domain is decoupled, the underlying schema uses SQLite.
 | `transactions` | Ledger of all financial movements | `id`, `type`, `name`, `amount`, `date`, `paymentMethod`, `creditCardId`, `categoryId`, `accountId`, `installmentGroupId`, `installmentNumber`, `installmentTotal`, `recurrenceRuleId`, `paid` |
 | `recurrence_rules` | Rules for repeating transactions | `id`, `transactionId`, `frequency`, `interval`, `startDate`, `endDate`, `active` |
 | `accounts` | Financial accounts (bank, wallet, etc.) | `id`, `name`, `type`, `initialBalance`, `currentBalance`, `createdAt`, `updatedAt` |
-| `account_transaction_links` | Links transactions to accounts | `id`, `accountId`, `transactionId`, `direction`, `amount`, `createdAt` |
 
 ## 🔄 Key Data Flows
 

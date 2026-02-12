@@ -111,7 +111,7 @@ API-KEY: your_api_key_here
 * `GET /credit-cards/:id` - Get a specific credit card
 * `PATCH /credit-cards/:id` - Update a credit card
 * `GET /credit-cards/:id/statement` - Get credit card statement for a month
-* `POST /credit-cards/:id/pay-statement` - Mark all transactions in a statement as paid
+* `POST /credit-cards/:id/pay-statement` - Mark all transactions in a statement as paid and link them to a specific account
 * `DELETE /credit-cards/:id` - Delete a credit card
 
 #### Accounts
@@ -122,7 +122,6 @@ API-KEY: your_api_key_here
 * `DELETE /accounts/:id` - Delete an account (if no transactions are linked)
 * `GET /accounts/:id/balance` - Get the current balance for an account
 * `GET /accounts/:id/transactions` - Get all transactions linked to an account
-* `PATCH /accounts/:id/link-transaction` - Link a transaction to an account
 
 #### Summary
 * `GET /summary` - Get monthly financial summary
@@ -164,6 +163,17 @@ curl -X POST http://localhost:3000/transactions \
 ```bash
 curl -X GET "http://localhost:3000/credit-cards/card-id-here/statement?month=2026-02" \
   -H "API-KEY: your_api_key_here"
+```
+
+#### Pay Credit Card Statement
+```bash
+curl -X POST "http://localhost:3000/credit-cards/card-id-here/pay-statement" \
+  -H "Content-Type: application/json" \
+  -H "API-KEY: your_api_key_here" \
+  -d '{
+    "month": "2026-02",
+    "paymentAccountId": "acc-checking-account-id"
+  }'
 ```
 
 ### Swagger Documentation

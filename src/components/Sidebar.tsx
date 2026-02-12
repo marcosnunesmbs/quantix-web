@@ -12,10 +12,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const navItems = [
     { icon: LayoutGrid, path: '/', label: 'Dashboard' },
-    { icon: Wallet, path: '/account', label: 'Wallet' },
+    { icon: Wallet, path: '/accounts', label: 'Accounts' },
     { icon: ArrowLeftRight, path: '/transactions', label: 'Transactions' },
-    { icon: CreditCard, path: '/cards', label: 'Cards' },
+    { icon: CreditCard, path: '/credit-cards', label: 'Credit Cards' },
     { icon: PieChart, path: '/reports', label: 'Reports' },
+    { icon: LayoutGrid, path: '/categories', label: 'Categories' },
   ];
 
   return (
