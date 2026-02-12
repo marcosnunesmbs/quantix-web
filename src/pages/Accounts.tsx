@@ -1,22 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import AccountForm from '../components/AccountForm';
 import AccountList from '../components/AccountList';
 import { useAccounts } from '../hooks/useAccounts';
+import { getAccountBalance } from '../services/accountsApi';
 import { CreateAccountRequest } from '../services/accountsApi';
 
 const AccountsPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Partial<CreateAccountRequest> & { id?: string } | undefined>();
   
-  const { 
-    accounts, 
-    loading, 
-    error, 
-    createNewAccount, 
-    updateExistingAccount, 
-    removeAccount 
+  const {
+    accounts,
+    loading,
+    error,
+    createNewAccount,
+    updateExistingAccount,
+    removeAccount
   } = useAccounts();
+
+  // State to hold account balances
+  const [accountBalances, setAccountBalances] = useState<Record<string, number>>({});
+
+  // Function to fetch balances for all accounts
+  const fetchAllBalances = async () => {
+    if (accounts && accounts.length > 0) {
+      const balances: Record<string, number> = {};
+      
+      // Fetch balance for each account
+      const balancePromises = accounts.map(async (account) => {
+        try {
+          const balance = await getAccountBalance(account.id);
+          return { id: account.id, balance };
+        } catch (err) {
+          console.error(`Error fetching balance for account ${account.id}:`, err);
+          // If there's an error, we'll still use the currentBalance from the account object
+          return { id: account.id, balance: account.currentBalance };
+        }
+      });
+
+      const results = await Promise.all(balancePromises);
+      
+      // Update the balances state
+      results.forEach(({ id, balance }) => {
+        balances[id] = balance;
+      });
+      
+      setAccountBalances(balances);
+    }
+  };
+
+  // Fetch balances when accounts change
+  useEffect(() => {
+    fetchAllBalances();
+  }, [accounts]);
+
+  // Memoize the accounts with updated balances
+  const accountsWithUpdatedBalances = React.useMemo(() => {
+    return accounts.map(account => ({
+      ...account,
+      currentBalance: accountBalances[account.id] ?? account.currentBalance
+    }));
+  }, [accounts, accountBalances]);
 
   const handleFormSubmit = async (accountData: CreateAccountRequest) => {
     try {
@@ -77,8 +122,8 @@ const AccountsPage: React.FC = () => {
       
       {!loading && !error && (
         <div>
-          <AccountList 
-            accounts={accounts} 
+          <AccountList
+            accounts={accountsWithUpdatedBalances}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

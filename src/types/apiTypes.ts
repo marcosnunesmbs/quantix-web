@@ -61,6 +61,7 @@ export interface Account {
   currentBalance: number;
   createdAt: string; // date-time format
   updatedAt: string; // date-time format
+  accountBalances?: AccountBalance[] | null; // Optional field to hold balance history if needed
 }
 
 export interface AccountBalance {
