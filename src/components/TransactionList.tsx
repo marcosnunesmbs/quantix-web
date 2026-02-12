@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote } from 'lucide-react';
+import { CreditCard, Banknote, Trash2, Pencil } from 'lucide-react'; // Added icons
 import { Transaction } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -55,7 +55,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
   };
 
   const formatDate = (dateString: string): string => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    // Format: 12 de fev. de 2026
+    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
@@ -63,129 +64,102 @@ const TransactionList: React.FC<TransactionListProps> = ({
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
+  if (!transactions || transactions.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center text-gray-500 dark:text-gray-400">
+        No transactions found
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Description
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Date
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Category
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Amount
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Type
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {!transactions || transactions.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No transactions found
-                </td>
-              </tr>
-            ) : (
-              Array.isArray(sortedTransactions) && sortedTransactions.map((transaction) => (
-                <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-750">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">{transaction.name}</div>
-                      {transaction.creditCard ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-full">
-                          <CreditCard size={12} />
-                          {transaction.creditCard.name}
-                        </span>
-                      ) : transaction.account ? (
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${
-                          transaction.type === 'INCOME'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                        }`}>
-                          <Banknote size={12} />
-                          {transaction.account.name}
-                        </span>
-                      ) : null}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(transaction.date)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{transaction.category?.name || 'Uncategorized'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${transaction.type === 'INCOME' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                      {transaction.type === 'INCOME' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      transaction.type === 'INCOME' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-400' 
-                        : 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-400'
-                    }`}>
-                      {transaction.type}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sortedTransactions.map((transaction) => (
+          <div key={transaction.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border border-gray-100 dark:border-gray-700 flex flex-col justify-between">
+            {/* Top Row: Name + Badges & Actions */}
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-gray-900 dark:text-white truncate max-w-[200px]" title={transaction.name}>
+                    {transaction.name}
+                  </span>
+                  {transaction.creditCard ? (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-md">
+                      <CreditCard size={10} />
+                      {transaction.creditCard.name}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {transaction.paid ? (
-                      <button
-                        onClick={() => onUnpay && onUnpay(transaction.id)}
-                        disabled={isUnpaying}
-                        className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50"
-                      >
-                        {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Received' : 'Paid'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => onPay && onPay(transaction.id)}
-                        disabled={isPaying}
-                        className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-400 hover:bg-yellow-200 disabled:opacity-50"
-                      >
-                        {isPaying ? '...' : transaction.type === 'INCOME' ? 'Not Received' : 'Unpaid'}
-                      </button>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
-                      {onEdit && (
-                        <button
-                          onClick={() => onEdit(transaction)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                        >
-                          Edit
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          onClick={() => handleDeleteClick(transaction)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  ) : transaction.account ? (
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md ${
+                      transaction.type === 'INCOME'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                    }`}>
+                      <Banknote size={10} />
+                      {transaction.account.name}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                 {onEdit && (
+                  <button
+                    onClick={() => onEdit(transaction)}
+                    className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    title="Edit"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={() => handleDeleteClick(transaction)}
+                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Middle Row: Date & Amount */}
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {formatDate(transaction.date)}
+              </span>
+              <span className={`text-base font-bold ${transaction.type === 'INCOME' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                {transaction.type === 'INCOME' ? '+' : '-'}{formatCurrency(transaction.amount)}
+              </span>
+            </div>
+
+            {/* Bottom Row: Category & Status */}
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                 {transaction.category?.name || 'Uncategorized'}
+              </span>
+              
+               {/* Status Button */}
+               {transaction.paid ? (
+                  <button
+                    onClick={() => onUnpay && onUnpay(transaction.id)}
+                    disabled={isUnpaying}
+                    className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50 transition-colors"
+                  >
+                    {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Received' : 'Paid'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onPay && onPay(transaction.id)}
+                    disabled={isPaying}
+                    className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200 disabled:opacity-50 transition-colors"
+                  >
+                    {isPaying ? '...' : transaction.type === 'INCOME' ? 'Not Received' : 'Unpaid'}
+                  </button>
+                )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -197,7 +171,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
-    </div>
+    </>
   );
 };
 

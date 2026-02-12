@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { CreditCard } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -33,6 +34,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
   const handleCancelDelete = () => {
     setDeleteModal({ isOpen: false, cardId: null, cardName: '' });
   };
+
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -41,83 +43,102 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
     }).format(amount);
   };
 
+  const getCardGradient = (brand?: string) => {
+    const b = brand?.toLowerCase() || '';
+    if (b.includes('nubank')) return 'bg-gradient-to-br from-[#820AD1] to-[#400566]'; // Nubank purple
+    if (b.includes('itau') || b.includes('itaú')) return 'bg-gradient-to-br from-[#FF6200] to-[#F59000]'; // Itau orange
+    if (b.includes('inter')) return 'bg-gradient-to-br from-[#FF7A00] to-[#FF9000]'; // Inter orange
+    if (b.includes('c6')) return 'bg-gradient-to-br from-[#242424] to-[#000000]'; // Carbon
+    if (b.includes('elo')) return 'bg-gradient-to-br from-[#fbbf24] to-[#d97706]'; // Yellowish
+    return 'bg-gradient-to-br from-blue-900 to-blue-700'; // Default Blue
+  };
+
+  if (!creditCards || creditCards.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center text-gray-500 dark:text-gray-400">
+        No credit cards found
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Name
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Brand
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Limit
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Billing Cycle
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {!creditCards || creditCards.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No credit cards found
-                </td>
-              </tr>
-            ) : (
-              Array.isArray(creditCards) && creditCards.map((card) => (
-                <tr key={card.id} className="hover:bg-gray-50 dark:hover:bg-gray-750">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{card.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{card.brand || 'N/A'}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(card.limitAmount)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Close: {card.closingDay}, Due: {card.dueDay}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
-                      {onEdit && (
-                        <button
-                          onClick={() => onEdit(card)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                        >
-                          Edit
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          onClick={() => handleDeleteClick(card)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {creditCards.map((card) => (
+          <div key={card.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+            {/* Valid Card Visual */}
+            <div className={`relative w-full aspect-[1.586/1] rounded-xl p-5 text-white shadow-md ${getCardGradient(card.brand)} flex flex-col justify-between overflow-hidden`}>
+              
+              {/* Decorative Curves overlay */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full transform translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full transform -translate-x-1/3 translate-y-1/2 pointer-events-none"></div>
+
+              {/* Card Header */}
+              <div className="flex justify-between items-start z-10">
+                <div>
+                  <h3 className="font-bold text-lg tracking-wide truncate max-w-[140px]" title={card.name}>
+                    {card.name}
+                  </h3>
+                  <div className="flex gap-1 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                    <span className="text-sm font-mono opacity-80 ml-1">1234</span>
+                  </div>
+                </div>
+                {card.brand && (
+                  <span className="font-bold italic opacity-90 text-right">
+                    {card.brand}
+                  </span>
+                )}
+              </div>
+
+              {/* Card Footer */}
+              <div className="flex justify-between items-end z-10">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs opacity-75 font-medium uppercase tracking-wider">Limit</span>
+                    <span className="text-lg font-bold tracking-tight">{formatCurrency(card.limitAmount)}</span>
+                  </div>
+                  <div className="text-[11px] opacity-90 font-medium">
+                    Close: {card.closingDay} • Due: {card.dueDay}
+                  </div>
+                </div>
+
+                {/* Generic Network Logo Circles */}
+                <div className="flex -space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white/10"></div>
+                  <div className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm border border-white/10"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+               {onEdit && (
+                <button
+                  onClick={() => onEdit(card)}
+                  className="p-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Pencil size={16} />
+                  Edit
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => handleDeleteClick(card)}
+                  className="p-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
         title="Excluir Cartão de Crédito"
@@ -126,7 +147,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
-    </div>
+    </>
   );
 };
 

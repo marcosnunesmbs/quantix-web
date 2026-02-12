@@ -27,7 +27,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                  <Menu size={24} />
                </button>
                <h1 className="text-xl md:text-2xl font-bold text-emerald-600 flex items-center gap-2">
-                <span className="text-2xl md:text-3xl">Q</span> Quixotic
+                <span className="text-2xl md:text-3xl">Q</span>uantix
                </h1>
             </div>
 
