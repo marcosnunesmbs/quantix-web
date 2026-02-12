@@ -13,7 +13,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
         { name: 'Dashboard', path: '/' },
         { name: 'Wallet', path: '/accounts' },
         { name: 'Transactions', path: '/transactions' },
-        { name: 'Cards', path: '/cards' },
+        { name: 'Cards', path: '/credit-cards' },
         { name: 'Reports', path: '/reports' },
     ];
 

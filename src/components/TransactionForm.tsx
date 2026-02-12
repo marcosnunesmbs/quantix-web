@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { CreateTransactionRequest } from '../types/apiTypes';
+import { CreateTransactionRequest, Category, Account, CreditCard } from '../types/apiTypes';
+import { useCategories } from '../hooks/useCategories';
+import { useAccounts } from '../hooks/useAccounts';
+import { useCreditCards } from '../hooks/useCreditCards';
 
 interface TransactionFormProps {
   onSubmit: (transactionData: CreateTransactionRequest) => void;
@@ -20,6 +23,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
     installments: undefined,
     targetDueMonth: undefined
   });
+
+  const { categories, loading: categoriesLoading } = useCategories();
+  const { accounts, loading: accountsLoading } = useAccounts();
+  const { creditCards, loading: creditCardsLoading } = useCreditCards();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -113,16 +120,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Category ID
+                Category
               </label>
-              <input
-                type="text"
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Category ID"
-              />
+              {categoriesLoading ? (
+                <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
+                  Loading...
+                </div>
+              ) : (
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category: Category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name} ({category.type})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             
             <div className="mb-4">
@@ -146,32 +164,54 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
             {(formData.paymentMethod === 'CREDIT') && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Credit Card ID
+                  Credit Card
                 </label>
-                <input
-                  type="text"
-                  name="creditCardId"
-                  value={formData.creditCardId}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Credit Card ID"
-                />
+                {creditCardsLoading ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
+                    Loading...
+                  </div>
+                ) : (
+                  <select
+                    name="creditCardId"
+                    value={formData.creditCardId}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">Select a credit card</option>
+                    {creditCards.map((card: CreditCard) => (
+                      <option key={card.id} value={card.id}>
+                        {card.name} ({card.brand || 'No Brand'})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             )}
             
             {(formData.paymentMethod !== 'CREDIT') && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Account ID
+                  Account
                 </label>
-                <input
-                  type="text"
-                  name="accountId"
-                  value={formData.accountId}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Account ID"
-                />
+                {accountsLoading ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
+                    Loading...
+                  </div>
+                ) : (
+                  <select
+                    name="accountId"
+                    value={formData.accountId}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">Select an account</option>
+                    {accounts.map((account: Account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name} ({account.type.replace('_', ' ')})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             )}
             

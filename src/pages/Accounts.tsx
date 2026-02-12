@@ -7,7 +7,7 @@ import { CreateAccountRequest } from '../services/accountsApi';
 
 const AccountsPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<any>(null);
+  const [editingAccount, setEditingAccount] = useState<Partial<CreateAccountRequest> & { id?: string } | undefined>();
   
   const { 
     accounts, 
@@ -20,13 +20,13 @@ const AccountsPage: React.FC = () => {
 
   const handleFormSubmit = async (accountData: CreateAccountRequest) => {
     try {
-      if (editingAccount) {
+      if (editingAccount?.id) {
         await updateExistingAccount(editingAccount.id, accountData);
       } else {
         await createNewAccount(accountData);
       }
       setShowForm(false);
-      setEditingAccount(null);
+      setEditingAccount(undefined);
     } catch (err) {
       console.error('Error saving account:', err);
       // In a real app, you might want to show an error message to the user
@@ -35,11 +35,13 @@ const AccountsPage: React.FC = () => {
 
   const handleFormCancel = () => {
     setShowForm(false);
-    setEditingAccount(null);
+    setEditingAccount(undefined);
   };
 
   const handleEdit = (account: any) => {
-    setEditingAccount(account);
+    // Extract only the fields needed for the form (avoid sending read-only fields like createdAt, updatedAt, currentBalance)
+    const { id, name, type, initialBalance } = account;
+    setEditingAccount({ id, name, type, initialBalance });
     setShowForm(true);
   };
 

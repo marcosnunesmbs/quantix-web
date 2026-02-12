@@ -5,17 +5,15 @@ import { CreateAccountRequest } from '../types/apiTypes';
 interface AccountFormProps {
   onSubmit: (accountData: CreateAccountRequest) => void;
   onCancel: () => void;
-  initialData?: CreateAccountRequest;
+  initialData?: Partial<CreateAccountRequest> & { id?: string };
 }
 
 const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialData }) => {
-  const [formData, setFormData] = useState<CreateAccountRequest>(
-    initialData || {
-      name: '',
-      type: 'BANK_ACCOUNT',
-      initialBalance: 0
-    }
-  );
+  const [formData, setFormData] = useState<CreateAccountRequest>({
+    name: initialData?.name || '',
+    type: initialData?.type || 'BANK_ACCOUNT',
+    initialBalance: initialData?.initialBalance || 0
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

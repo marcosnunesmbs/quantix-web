@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface MonthSelectorProps {
   selectedMonth: string;
@@ -6,47 +6,64 @@ interface MonthSelectorProps {
 }
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, onMonthChange }) => {
-  // Format month for display
-  const formatMonthDisplay = (month: string): string => {
-    const [year, monthNum] = month.split('-');
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-    return `${monthNames[parseInt(monthNum) - 1]} ${year}`;
-  };
+  const [year, setYear] = useState<number>(parseInt(selectedMonth.split('-')[0]));
+  const [month, setMonth] = useState<number>(parseInt(selectedMonth.split('-')[1]));
 
-  // Generate months for the selector (last 12 months)
-  const generateMonths = (): { value: string; display: string }[] => {
-    const months = [];
-    const currentDate = new Date();
-    
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(currentDate);
-      date.setMonth(currentDate.getMonth() - i);
-      const monthStr = date.toISOString().slice(0, 7); // YYYY-MM format
-      months.push({
-        value: monthStr,
-        display: formatMonthDisplay(monthStr)
-      });
+  // Month names for display
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  // Generate years (current year and previous 5 years)
+  const generateYears = (): number[] => {
+    const years = [];
+    const currentYear = new Date().getFullYear();
+    for (let i = 0; i < 6; i++) {
+      years.push(currentYear - i);
     }
-    
-    return months;
+    return years.sort((a, b) => b - a); // Sort descending
   };
 
-  const months = generateMonths();
+  const years = generateYears();
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newYear = parseInt(e.target.value);
+    setYear(newYear);
+    onMonthChange(`${newYear.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}`);
+  };
+
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMonth = parseInt(e.target.value);
+    setMonth(newMonth);
+    onMonthChange(`${year.toString().padStart(4, '0')}-${newMonth.toString().padStart(2, '0')}`);
+  };
 
   return (
-    <select 
-      value={selectedMonth} 
-      onChange={(e) => onMonthChange(e.target.value)}
-      className="ml-2 bg-transparent border-none focus:outline-none focus:ring-0 text-sm font-medium text-gray-600 dark:text-gray-300"
-    >
-      {months.map((month) => (
-        <option key={month.value} value={month.value}>
-          {month.display}
-        </option>
-      ))}
-    </select>
+    <div className="flex gap-2">
+      <select 
+        value={month} 
+        onChange={handleMonthChange}
+        className="bg-transparent border-none focus:outline-none focus:ring-0 text-sm font-medium text-gray-600 dark:text-gray-300"
+      >
+        {monthNames.map((name, index) => (
+          <option key={index + 1} value={index + 1}>
+            {name.substring(0, 3)} {/* Abbreviated month name */}
+          </option>
+        ))}
+      </select>
+      <select 
+        value={year} 
+        onChange={handleYearChange}
+        className="bg-transparent border-none focus:outline-none focus:ring-0 text-sm font-medium text-gray-600 dark:text-gray-300"
+      >
+        {years.map((yr) => (
+          <option key={yr} value={yr}>
+            {yr}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 };
 
