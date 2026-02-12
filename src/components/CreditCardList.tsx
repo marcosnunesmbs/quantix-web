@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Pencil, Trash2, FileText } from 'lucide-react';
 import { CreditCard } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -10,11 +11,17 @@ interface CreditCardListProps {
 }
 
 const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, onDelete }) => {
+  const navigate = useNavigate();
+
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; cardId: string | null; cardName: string }>({
     isOpen: false,
     cardId: null,
     cardName: ''
   });
+
+  const handleViewStatements = (cardId: string) => {
+    navigate(`/credit-cards/${cardId}/statements`);
+  };
 
   const handleDeleteClick = (card: CreditCard) => {
     setDeleteModal({
@@ -116,6 +123,13 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
 
             {/* Actions */}
             <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <button
+                onClick={() => handleViewStatements(card.id)}
+                className="p-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <FileText size={16} />
+                Faturas
+              </button>
                {onEdit && (
                 <button
                   onClick={() => onEdit(card)}

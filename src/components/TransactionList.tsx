@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, Trash2, Pencil } from 'lucide-react'; // Added icons
+import { CreditCard, Banknote, Trash2, Pencil, Info } from 'lucide-react'; // Added icons
 import { Transaction } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -28,6 +28,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
     transactionName: ''
   });
 
+  const [payModal, setPayModal] = useState<{ isOpen: boolean; transactionId: string | null; transactionName: string }>({
+    isOpen: false,
+    transactionId: null,
+    transactionName: ''
+  });
+
+  const [creditCardInfoModal, setCreditCardInfoModal] = useState<{ isOpen: boolean; creditCardName: string }>({
+    isOpen: false,
+    creditCardName: ''
+  });
+
   const handleDeleteClick = (transaction: Transaction) => {
     setDeleteModal({
       isOpen: true,
@@ -45,6 +56,39 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   const handleCancelDelete = () => {
     setDeleteModal({ isOpen: false, transactionId: null, transactionName: '' });
+  };
+
+  const handlePayClick = (transaction: Transaction) => {
+    // Se for transação de cartão de crédito (expense e tem creditCard), mostrar modal informativo
+    if (transaction.type === 'EXPENSE' && transaction.creditCard) {
+      setCreditCardInfoModal({
+        isOpen: true,
+        creditCardName: transaction.creditCard.name
+      });
+      return;
+    }
+
+    // Caso contrário, abrir modal de confirmação
+    setPayModal({
+      isOpen: true,
+      transactionId: transaction.id,
+      transactionName: transaction.name
+    });
+  };
+
+  const handleConfirmPay = () => {
+    if (payModal.transactionId && onPay) {
+      onPay(payModal.transactionId);
+    }
+    setPayModal({ isOpen: false, transactionId: null, transactionName: '' });
+  };
+
+  const handleCancelPay = () => {
+    setPayModal({ isOpen: false, transactionId: null, transactionName: '' });
+  };
+
+  const handleCloseCreditCardInfo = () => {
+    setCreditCardInfoModal({ isOpen: false, creditCardName: '' });
   };
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -144,15 +188,19 @@ const TransactionList: React.FC<TransactionListProps> = ({
                   <button
                     onClick={() => onUnpay && onUnpay(transaction.id)}
                     disabled={isUnpaying}
-                    className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50 transition-colors"
+                    className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Received' : 'Paid'}
                   </button>
                 ) : (
                   <button
-                    onClick={() => onPay && onPay(transaction.id)}
+                    onClick={() => onPay && handlePayClick(transaction)}
                     disabled={isPaying}
-                    className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200 disabled:opacity-50 transition-colors"
+                    className={`px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 disabled:opacity-50 transition-colors ${
+                      transaction.type === 'EXPENSE' && transaction.creditCard
+                        ? 'cursor-help'
+                        : 'hover:bg-yellow-200 cursor-pointer'
+                    }`}
                   >
                     {isPaying ? '...' : transaction.type === 'INCOME' ? 'Not Received' : 'Unpaid'}
                   </button>
@@ -171,6 +219,52 @@ const TransactionList: React.FC<TransactionListProps> = ({
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
+
+      {/* Pay Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={payModal.isOpen}
+        title="Confirmar Pagamento"
+        message={`Deseja marcar a transação "${payModal.transactionName}" como paga?`}
+        confirmLabel="Confirmar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmPay}
+        onCancel={handleCancelPay}
+        isLoading={isPaying}
+      />
+
+      {/* Credit Card Info Modal */}
+      {creditCardInfoModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-sm">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Info className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Informação
+                  </h3>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Esta despesa do cartão <strong>{creditCardInfoModal.creditCardName}</strong> deve ser paga através da fatura do cartão. Vá até a página de Cartões de Crédito para pagar a fatura correspondente.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={handleCloseCreditCardInfo}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                >
+                  Entendi
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

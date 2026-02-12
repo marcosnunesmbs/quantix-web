@@ -10,6 +10,7 @@ interface ConfirmationModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   isLoading?: boolean;
+  children?: React.ReactNode;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -21,6 +22,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   onCancel,
   isLoading = false,
+  children,
 }) => {
   if (!isOpen) return null;
 
@@ -50,6 +52,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {message}
               </p>
+              {children && <div className="mt-4">{children}</div>}
             </div>
           </div>
 

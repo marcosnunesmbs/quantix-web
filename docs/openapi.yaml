@@ -719,6 +719,10 @@ paths:
   /transactions/{id}/pay:
     patch:
       summary: Mark a transaction as paid/received
+      description: |
+        Marks a transaction as paid or received.
+        **Note:** Credit card transactions cannot be marked as paid directly. They are automatically
+        marked as paid when the credit card statement is paid via the `POST /credit-cards/{id}/pay-statement` endpoint.
       parameters:
         - name: id
           in: path
@@ -733,6 +737,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Cannot mark credit card transaction as paid directly
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -748,6 +754,21 @@ paths:
           schema:
             type: string
           description: Transaction ID
+        - name: mode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [SINGLE, PENDING, ALL]
+            default: SINGLE
+          description: |
+            Deletion mode for recurring transactions:
+            - **SINGLE**: Delete only this specific transaction (default)
+            - **PENDING**: Delete this transaction and all future unpaid transactions with the same recurrence rule
+            - **ALL**: Delete this transaction and ALL transactions (paid or unpaid) with the same recurrence rule
+            
+            If the transaction is not part of a recurrence series, this parameter is ignored.
+          example: SINGLE
       responses:
         '200':
           description: Transaction deleted successfully
