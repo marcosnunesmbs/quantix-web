@@ -83,6 +83,9 @@ components:
           type: string
           description: ID of the associated category
           example: "cat_123456789"
+        category:
+          $ref: '#/components/schemas/Category'
+          description: Associated category object
         paymentMethod:
           type: string
           enum: [CASH, PIX, DEBIT, CREDIT]
@@ -92,6 +95,9 @@ components:
           type: string
           description: ID of the associated credit card (required if paymentMethod is CREDIT)
           example: "cc_123456789"
+        creditCard:
+          $ref: '#/components/schemas/CreditCard'
+          description: Associated credit card object
         installmentGroupId:
           type: string
           description: ID to group installment transactions
@@ -114,6 +120,9 @@ components:
           type: string
           description: ID of the associated account (required if paymentMethod is not CREDIT)
           example: "acc_123456789"
+        account:
+          $ref: '#/components/schemas/Account'
+          description: Associated account object
         paid:
           type: boolean
           default: false
@@ -355,7 +364,13 @@ components:
         amount:
           $ref: '#/components/schemas/Transaction/properties/amount'
         date:
-          $ref: '#/components/schemas/Transaction/properties/date'
+          type: string
+          format: date
+          description: |
+            Date of the transaction.
+            For CREDIT payments, if targetDueMonth is provided, the date will be calculated based on the credit card's due day.
+            Otherwise, this date will be used directly.
+          example: "2026-01-30"
         categoryId:
           $ref: '#/components/schemas/Transaction/properties/categoryId'
         paymentMethod:
@@ -370,7 +385,11 @@ components:
         targetDueMonth:
           type: string
           pattern: "^\\d{4}-\\d{2}$"
-          description: Target month for due date in YYYY-MM format (optional)
+          description: |
+            Target month for due date in YYYY-MM format (optional).
+            When provided for CREDIT payments, the transaction date(s) will be set to the credit card's due day in the specified month.
+            For installments, each installment will be scheduled in subsequent months on the due day.
+            Example: if credit card due day is 10, and targetDueMonth is "2026-03", the transaction date will be 2026-03-10.
           example: "2026-03"
         accountId:
           type: string

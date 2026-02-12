@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Account } from '../types/apiTypes';
+import ConfirmationModal from './ConfirmationModal';
 
 interface AccountListProps {
   accounts: Account[];
@@ -8,6 +9,30 @@ interface AccountListProps {
 }
 
 const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete }) => {
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; accountId: string | null; accountName: string }>({
+    isOpen: false,
+    accountId: null,
+    accountName: ''
+  });
+
+  const handleDeleteClick = (account: Account) => {
+    setDeleteModal({
+      isOpen: true,
+      accountId: account.id,
+      accountName: account.name
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteModal.accountId && onDelete) {
+      onDelete(deleteModal.accountId);
+    }
+    setDeleteModal({ isOpen: false, accountId: null, accountName: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ isOpen: false, accountId: null, accountName: '' });
+  };
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -71,7 +96,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
                       )}
                       {onDelete && (
                         <button
-                          onClick={() => onDelete(account.id)}
+                          onClick={() => handleDeleteClick(account)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
                           Delete
@@ -85,6 +110,16 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        title="Excluir Conta"
+        message={`Tem certeza que deseja excluir a conta "${deleteModal.accountName}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

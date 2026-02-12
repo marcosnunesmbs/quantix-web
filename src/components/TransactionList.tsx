@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { CreditCard } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
+import ConfirmationModal from './ConfirmationModal';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -20,6 +22,30 @@ const TransactionList: React.FC<TransactionListProps> = ({
   isPaying,
   isUnpaying
 }) => {
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; transactionId: string | null; transactionName: string }>({
+    isOpen: false,
+    transactionId: null,
+    transactionName: ''
+  });
+
+  const handleDeleteClick = (transaction: Transaction) => {
+    setDeleteModal({
+      isOpen: true,
+      transactionId: transaction.id,
+      transactionName: transaction.name
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteModal.transactionId && onDelete) {
+      onDelete(deleteModal.transactionId);
+    }
+    setDeleteModal({ isOpen: false, transactionId: null, transactionName: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ isOpen: false, transactionId: null, transactionName: '' });
+  };
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -32,6 +58,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
@@ -70,16 +100,24 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 </td>
               </tr>
             ) : (
-              Array.isArray(transactions) && transactions.map((transaction) => (
+              Array.isArray(sortedTransactions) && sortedTransactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-750">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{transaction.name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{transaction.name}</div>
+                      {transaction.creditCard && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded-full">
+                          <CreditCard size={12} />
+                          {transaction.creditCard.name}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(transaction.date)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{transaction.categoryId || 'Uncategorized'}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{transaction.category?.name || 'Uncategorized'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={`text-sm font-medium ${transaction.type === 'INCOME' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
@@ -126,7 +164,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                       )}
                       {onDelete && (
                         <button
-                          onClick={() => onDelete(transaction.id)}
+                          onClick={() => handleDeleteClick(transaction)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
                           Delete
@@ -140,6 +178,16 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        title="Excluir Transação"
+        message={`Tem certeza que deseja excluir a transação "${deleteModal.transactionName}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

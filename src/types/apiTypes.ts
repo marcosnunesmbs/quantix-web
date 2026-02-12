@@ -14,8 +14,10 @@ export interface Transaction {
   amount: number;
   date: string; // date format
   categoryId?: string;
+  category?: Category;
   paymentMethod?: 'CASH' | 'PIX' | 'DEBIT' | 'CREDIT';
   creditCardId?: string;
+  creditCard?: CreditCard;
   installmentGroupId?: string;
   installmentNumber?: number;
   installmentTotal?: number;

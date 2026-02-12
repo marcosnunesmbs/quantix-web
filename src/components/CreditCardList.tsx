@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CreditCard } from '../types/apiTypes';
+import ConfirmationModal from './ConfirmationModal';
 
 interface CreditCardListProps {
   creditCards: CreditCard[];
@@ -8,6 +9,30 @@ interface CreditCardListProps {
 }
 
 const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, onDelete }) => {
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; cardId: string | null; cardName: string }>({
+    isOpen: false,
+    cardId: null,
+    cardName: ''
+  });
+
+  const handleDeleteClick = (card: CreditCard) => {
+    setDeleteModal({
+      isOpen: true,
+      cardId: card.id,
+      cardName: card.name
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteModal.cardId && onDelete) {
+      onDelete(deleteModal.cardId);
+    }
+    setDeleteModal({ isOpen: false, cardId: null, cardName: '' });
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal({ isOpen: false, cardId: null, cardName: '' });
+  };
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -77,7 +102,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
                       )}
                       {onDelete && (
                         <button
-                          onClick={() => onDelete(card.id)}
+                          onClick={() => handleDeleteClick(card)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
                           Delete
@@ -91,6 +116,16 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        title="Excluir Cartão de Crédito"
+        message={`Tem certeza que deseja excluir o cartão "${deleteModal.cardName}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

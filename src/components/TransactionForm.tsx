@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Repeat, CreditCard } from 'lucide-react';
-import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType } from '../types/apiTypes';
+import { X, Repeat, CreditCard, Plus } from 'lucide-react';
+import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType, CreateCategoryRequest } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
+import CategoryForm from './CategoryForm';
 
 type TransactionFormType = 'RECEITA' | 'DESPESA' | 'CARTAO';
 
@@ -25,6 +26,7 @@ interface TransactionFormData {
     endDate?: string;
   };
   isInstallment: boolean;
+  targetDueMonth?: string;
 }
 
 interface TransactionFormProps {
@@ -36,30 +38,55 @@ const today = () => new Date().toISOString().split('T')[0];
 
 const isToday = (dateStr: string) => dateStr === today();
 
+// Generate available target due months (current month + 3 months ahead)
+const generateTargetDueMonths = (): Array<{ value: string; label: string }> => {
+  const months: Array<{ value: string; label: string }> = [];
+  const now = new Date();
+  const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+  for (let i = 0; i < 4; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const label = `${monthNames[month]}/${year}`;
+    months.push({ value, label });
+  }
+
+  return months;
+};
+
 const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
   // Data fetching hooks
-  const { categories, loading: categoriesLoading } = useCategories();
+  const { categories, loading: categoriesLoading, createNewCategory } = useCategories();
   const { accounts, loading: accountsLoading } = useAccounts();
   const { creditCards, loading: creditCardsLoading } = useCreditCards();
 
   // Track if user manually changed paid status
   const [paidManuallyChanged, setPaidManuallyChanged] = useState(false);
 
-  const getInitialFormData = (): TransactionFormData => ({
-    type: 'DESPESA',
-    description: '',
-    amount: 0,
-    date: today(),
-    categoryId: '',
-    paymentMethod: undefined,
-    accountId: '',
-    creditCardId: '',
-    paid: true,
-    installments: undefined,
-    isRecurring: false,
-    recurrence: undefined,
-    isInstallment: false,
-  });
+  // Category form modal state
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+
+  const getInitialFormData = (): TransactionFormData => {
+    const targetDueMonths = generateTargetDueMonths();
+    return {
+      type: 'DESPESA',
+      description: '',
+      amount: 0,
+      date: today(),
+      categoryId: '',
+      paymentMethod: undefined,
+      accountId: '',
+      creditCardId: '',
+      paid: true,
+      installments: undefined,
+      isRecurring: false,
+      recurrence: undefined,
+      isInstallment: false,
+      targetDueMonth: targetDueMonths[0]?.value,
+    };
+  };
 
   const [formData, setFormData] = useState<TransactionFormData>(getInitialFormData());
 
@@ -108,12 +135,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
         updates.isInstallment = false;
         updates.paymentMethod = prev.paymentMethod === 'CREDIT' ? undefined : prev.paymentMethod;
       } else if (newType === 'RECEITA') {
-        // RECEITA: remove credit card, installments, and recurrence
+        // RECEITA: remove credit card and installments, keep recurrence
         updates.creditCardId = undefined;
         updates.installments = undefined;
         updates.isInstallment = false;
-        updates.isRecurring = false;
-        updates.recurrence = undefined;
         updates.paymentMethod = prev.paymentMethod === 'CREDIT' ? undefined : prev.paymentMethod;
       }
 
@@ -214,7 +239,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       errors.push('Selecione uma conta');
     }
 
-    if (formData.type === 'DESPESA' && formData.isRecurring) {
+    if ((formData.type === 'DESPESA' || formData.type === 'RECEITA') && formData.isRecurring) {
       if (!formData.recurrence?.frequency) {
         errors.push('Selecione a frequência da recorrência');
       }
@@ -258,6 +283,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       accountId: formData.accountId,
       creditCardId: formData.creditCardId,
       installments: formData.isInstallment ? formData.installments : undefined,
+      targetDueMonth: formData.type === 'CARTAO' ? formData.targetDueMonth : undefined,
       recurrence: formData.isRecurring ? formData.recurrence : undefined,
     };
 
@@ -268,6 +294,19 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
   const availablePaymentMethods = getAvailablePaymentMethods();
   const validationErrors = getValidationErrors();
   const canSubmit = validationErrors.length === 0;
+
+  // Handle new category creation
+  const handleCategorySubmit = async (categoryData: CreateCategoryRequest) => {
+    try {
+      const newCategory = await createNewCategory(categoryData);
+      setShowCategoryForm(false);
+      // Select the newly created category
+      setFormData(prev => ({ ...prev, categoryId: newCategory.id }));
+    } catch (err) {
+      console.error('Error creating category:', err);
+      alert('Erro ao criar categoria');
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -361,20 +400,30 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                   Carregando categorias...
                 </div>
               ) : (
-                <select
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
-                  required
-                >
-                  <option value="">Selecione uma categoria</option>
-                  {filteredCategories.map((category: Category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleChange}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="">Selecione uma categoria</option>
+                    {filteredCategories.map((category: Category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryForm(true)}
+                    className="px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-md transition-colors"
+                    title="Adicionar nova categoria"
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
               )}
               <p className="text-xs text-gray-500 mt-1">
                 {formData.type === 'RECEITA' ? 'Apenas categorias de receita' : 'Apenas categorias de despesa'}
@@ -474,6 +523,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                   </div>
                 )}
 
+                {/* Target Due Month */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Mês de vencimento da fatura *
+                  </label>
+                  <select
+                    name="targetDueMonth"
+                    value={formData.targetDueMonth || ''}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    {generateTargetDueMonths().map(month => (
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">A compra será incluída nesta fatura</p>
+                </div>
+
                 {/* Payment Method Badge */}
                 <div className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2 py-1 rounded">
                   Método: CRÉDITO (automático)
@@ -530,9 +600,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
               </div>
             )}
 
-            {/* Recurrence - Only for DESPESA */}
-            {formData.type === 'DESPESA' && (
-              <div className="space-y-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            {/* Recurrence - For DESPESA and RECEITA */}
+            {(formData.type === 'DESPESA' || formData.type === 'RECEITA') && (
+              <div className={`space-y-3 p-4 rounded-lg border ${formData.type === 'RECEITA' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -540,16 +610,16 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                     id="isRecurring"
                     checked={formData.isRecurring}
                     onChange={handleChange}
-                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                    className={`h-4 w-4 border-gray-300 rounded ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
                   />
                   <label htmlFor="isRecurring" className="ml-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <Repeat size={16} />
-                    <span>Despesa recorrente?</span>
+                    <span>{formData.type === 'RECEITA' ? 'Receita recorrente?' : 'Despesa recorrente?'}</span>
                   </label>
                 </div>
 
                 {formData.isRecurring && (
-                  <div className="space-y-3 animate-fadeIn border-t border-amber-200 dark:border-amber-800 pt-3">
+                  <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Frequência *
@@ -558,7 +628,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                         name="frequency"
                         value={formData.recurrence?.frequency || 'MONTHLY'}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
                         required={formData.isRecurring}
                       >
                         <option value="MONTHLY">Mensal</option>
@@ -578,7 +648,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                         onChange={handleChange}
                         min="1"
                         step="1"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
                       />
                       <p className="text-xs text-gray-500 mt-1">
                         Ex: 2 = a cada 2 {formData.recurrence?.frequency === 'MONTHLY' ? 'meses' : formData.recurrence?.frequency === 'WEEKLY' ? 'semanas' : 'anos'}
@@ -595,7 +665,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                         value={formData.recurrence?.endDate || ''}
                         onChange={handleChange}
                         min={formData.date}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
                       />
                     </div>
                   </div>
@@ -639,6 +709,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
           </form>
         </div>
       </div>
+
+      {/* Category Form Modal */}
+      {showCategoryForm && (
+        <CategoryForm
+          onSubmit={handleCategorySubmit}
+          onCancel={() => setShowCategoryForm(false)}
+          defaultType={formData.type === 'RECEITA' ? 'INCOME' : 'EXPENSE'}
+        />
+      )}
     </div>
   );
 };

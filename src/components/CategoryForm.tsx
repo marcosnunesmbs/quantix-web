@@ -5,12 +5,13 @@ import { CreateCategoryRequest } from '../types/apiTypes';
 interface CategoryFormProps {
   onSubmit: (categoryData: CreateCategoryRequest) => void;
   onCancel: () => void;
+  defaultType?: 'INCOME' | 'EXPENSE';
 }
 
-const CategoryForm: React.FC<CategoryFormProps> = ({ onSubmit, onCancel }) => {
+const CategoryForm: React.FC<CategoryFormProps> = ({ onSubmit, onCancel, defaultType = 'EXPENSE' }) => {
   const [formData, setFormData] = useState<CreateCategoryRequest>({
     name: '',
-    type: 'EXPENSE'
+    type: defaultType
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
