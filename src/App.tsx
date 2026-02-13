@@ -8,6 +8,7 @@ import Accounts from './pages/Accounts';
 import CreditCards from './pages/CreditCards';
 import CreditCardStatements from './pages/CreditCardStatements';
 import Reports from './pages/Reports';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -15,15 +16,17 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
 
-        <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/accounts" element={<Accounts />} />
-          <Route path="/credit-cards" element={<CreditCards />} />
-          <Route path="/credit-cards/:cardId/statements" element={<CreditCardStatements />} />
-          <Route path="/reports" element={<Reports />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/accounts" element={<Accounts />} />
+            <Route path="/credit-cards" element={<CreditCards />} />
+            <Route path="/credit-cards/:cardId/statements" element={<CreditCardStatements />} />
+            <Route path="/reports" element={<Reports />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

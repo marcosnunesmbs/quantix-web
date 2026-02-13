@@ -1,6 +1,6 @@
 import { LayoutGrid, PieChart, Wallet, LogOut, ArrowLeftRight, CreditCard, X, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -9,6 +9,12 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('QUANTIX_API_KEY');
+    navigate('/login');
+  };
 
   const navItems = [
     { icon: LayoutGrid, path: '/', label: 'Dashboard' },
@@ -82,7 +88,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 Settings
               </span>
             </button>
-            <button className="group relative w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+            <button 
+              onClick={handleLogout}
+              className="group relative w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"
+            >
               <LogOut size={20} />
               <span className="absolute left-14 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none shadow-md">
                 Logout
