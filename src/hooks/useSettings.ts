@@ -11,7 +11,10 @@ export const useSettings = () => {
 
   const getStoredSettings = (): Settings | undefined => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : undefined;
+    if (!stored) return undefined;
+    const parsed = JSON.parse(stored);
+    // Handle envelope { data: Settings } that may have been stored previously
+    return parsed?.data ?? parsed;
   };
 
   const { data: settings, isLoading, error } = useQuery({

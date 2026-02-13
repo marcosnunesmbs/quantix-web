@@ -34,6 +34,13 @@ const TransactionList: React.FC<TransactionListProps> = ({
     transactionName: ''
   });
 
+  const [unpayModal, setUnpayModal] = useState<{ isOpen: boolean; transactionId: string | null; transactionName: string; transactionType: 'INCOME' | 'EXPENSE' }>({
+    isOpen: false,
+    transactionId: null,
+    transactionName: '',
+    transactionType: 'EXPENSE'
+  });
+
   const [creditCardInfoModal, setCreditCardInfoModal] = useState<{ isOpen: boolean; creditCardName: string }>({
     isOpen: false,
     creditCardName: ''
@@ -89,6 +96,26 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   const handleCancelPay = () => {
     setPayModal({ isOpen: false, transactionId: null, transactionName: '' });
+  };
+
+  const handleUnpayClick = (transaction: Transaction) => {
+    setUnpayModal({
+      isOpen: true,
+      transactionId: transaction.id,
+      transactionName: transaction.name,
+      transactionType: transaction.type,
+    });
+  };
+
+  const handleConfirmUnpay = () => {
+    if (unpayModal.transactionId && onUnpay) {
+      onUnpay(unpayModal.transactionId);
+    }
+    setUnpayModal({ isOpen: false, transactionId: null, transactionName: '', transactionType: 'EXPENSE' });
+  };
+
+  const handleCancelUnpay = () => {
+    setUnpayModal({ isOpen: false, transactionId: null, transactionName: '', transactionType: 'EXPENSE' });
   };
 
   const handleCloseCreditCardInfo = () => {
@@ -204,7 +231,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                {/* Status Button */}
                {transaction.paid ? (
                   <button
-                    onClick={() => onUnpay && onUnpay(transaction.id)}
+                    onClick={() => onUnpay && handleUnpayClick(transaction)}
                     disabled={isUnpaying}
                     className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50 transition-colors cursor-pointer"
                   >
@@ -306,7 +333,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                   
                   {/* Status Button */}
                   <button
-                    onClick={() => onUnpay && onUnpay(transaction.id)}
+                    onClick={() => onUnpay && handleUnpayClick(transaction)}
                     disabled={isUnpaying}
                     className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50 transition-colors cursor-pointer"
                   >
@@ -389,6 +416,18 @@ const TransactionList: React.FC<TransactionListProps> = ({
         onConfirm={handleConfirmPay}
         onCancel={handleCancelPay}
         isLoading={isPaying}
+      />
+
+      {/* Unpay Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={unpayModal.isOpen}
+        title="Desfazer Pagamento"
+        message={`Deseja marcar "${unpayModal.transactionName}" como ${unpayModal.transactionType === 'INCOME' ? 'não recebida' : 'não paga'}?`}
+        confirmLabel="Confirmar"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmUnpay}
+        onCancel={handleCancelUnpay}
+        isLoading={isUnpaying}
       />
 
       {/* Credit Card Info Modal */}
