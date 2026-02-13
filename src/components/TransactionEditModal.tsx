@@ -4,19 +4,6 @@ import { Transaction, Category, Account } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 
-const generateTargetDueMonths = (): Array<{ value: string; label: string }> => {
-  const months: Array<{ value: string; label: string }> = [];
-  const now = new Date();
-  const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-  // Current month + some months back and forward, roughly
-  // The user might be editing a transaction from the past, so we should ideally check the transaction date
-  // But usually credit card assignment is for current/future statements or fixing recent past.
-  // Let's generate a range around the transaction date if it exists, or current date.
-  
-  return months; // We will implement dynamic generation inside component to pivot around transaction date
-};
-
 const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   isOpen,
   onClose,
@@ -75,16 +62,11 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
       };
 
       if (isCreditCardTransaction) {
-        // For credit card, we send the targetDueMonth instead of just date if that's the intention.
-        // Or if the backend expects `date` to be the due date? 
-        // Usually, `date` is purchase date. valid for history.
-        // `targetDueMonth` forces it into a specific statement.
-        // If we want to CHANGE the billing month, we should send `targetDueMonth`.
-        // We should probably keep the original purchase date (which is `date` state here, but we are hiding the input).
-        // So we keep `date` as is (purchase date) and send `targetDueMonth`.
         updateData.targetDueMonth = targetDueMonth;
-        // We might also need to send the date if the user edited it, but here we are replacing date editing with month selection.
-        // So we assume the purchase date (`date`) remains unchanged or is just not editable here.
+        // Keep the original date or let backend handle it based on targetDueMonth
+        if (date) {
+           updateData.date = date;
+        }
       } else {
         updateData.date = date; // Normal date editing for non-CC
         updateData.paymentMethod = paymentMethod;
