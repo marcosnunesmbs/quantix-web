@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, User, Globe, DollarSign } from 'lucide-react';
+import { Save, User, Globe } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
-import { UpdateSettingsRequest } from '../types/apiTypes';
+import { UpdateSettingsRequest, Settings } from '../types/apiTypes';
 
 const SettingsPage: React.FC = () => {
   const { settings, loading, updateSettings, isUpdating, createSettings } = useSettings();
@@ -10,9 +10,9 @@ const SettingsPage: React.FC = () => {
   const [formData, setFormData] = useState<UpdateSettingsRequest>(() => {
     if (settings) {
       return {
-        userName: settings.data?.userName || '',
-        language: settings.data?.language || 'pt-BR',
-        currency: settings.data?.currency || 'BRL',
+        userName: settings.userName || '',
+        language: settings.language || 'pt-BR',
+        currency: settings.currency || 'BRL',
       };
     }
     
@@ -20,11 +20,11 @@ const SettingsPage: React.FC = () => {
     const stored = localStorage.getItem('quantix_settings');
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
+        const parsed = JSON.parse(stored) as Settings;
         return {
-          userName: parsed.data.userName || '',
-          language: parsed.data.language || 'pt-BR',
-          currency: parsed.data.currency || 'BRL',
+          userName: parsed.userName || '',
+          language: parsed.language || 'pt-BR',
+          currency: parsed.currency || 'BRL',
         };
       } catch (e) {
         // ignore error
@@ -43,9 +43,9 @@ const SettingsPage: React.FC = () => {
   useEffect(() => {
     if (settings) {
       setFormData({
-        userName: settings.data?.userName || '',
-        language: settings.data?.language || 'pt-BR',
-        currency: settings.data?.currency || 'BRL',
+        userName: settings.userName || '',
+        language: settings.language || 'pt-BR',
+        currency: settings.currency || 'BRL',
       });
       setHasSettings(true);
     }

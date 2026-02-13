@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useTransactionModal } from '../context/TransactionModalContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import BottomNavigation from '../components/BottomNavigation';
@@ -7,6 +9,7 @@ import { Outlet } from 'react-router-dom';
 
 const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { openModal } = useTransactionModal();
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex transition-colors duration-300">
@@ -22,6 +25,15 @@ const Layout = () => {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Desktop FAB */}
+            <button
+                onClick={openModal}
+                className="hidden md:flex fixed bottom-8 right-8 z-40 items-center justify-center w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+                aria-label="Adicionar transação"
+            >
+                <Plus size={28} />
+            </button>
 
             <BottomNavigation />
             <GlobalTransactionModal />

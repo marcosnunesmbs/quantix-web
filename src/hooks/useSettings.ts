@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSettings, updateSettings, createSettings } from '../services/settingsApi';
 import { queryKeys } from '../lib/queryClient';
-import { Settings, UpdateSettingsRequest } from '../types/apiTypes';
+import { Settings } from '../types/apiTypes';
 import { useEffect } from 'react';
 
 const STORAGE_KEY = 'quantix_settings';
