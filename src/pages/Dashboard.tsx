@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, DollarSign, CreditCard as CardIcon } from 'lu
 import SummaryCard from '../components/SummaryCard';
 import MonthSelector from '../components/MonthSelector';
 import { useSummary } from '../hooks/useSummary';
+import { useSettings } from '../hooks/useSettings';
 
 const Dashboard = () => {
   // Default to current month
@@ -10,12 +11,13 @@ const Dashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth);
   
   const { summary, loading, error } = useSummary(selectedMonth);
+  const { settings } = useSettings();
 
   // Format currency helper
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(settings?.language || 'pt-BR', {
       style: 'currency',
-      currency: 'USD',
+      currency: settings?.currency || 'BRL',
       minimumFractionDigits: 2
     }).format(amount);
   };
@@ -25,7 +27,7 @@ const Dashboard = () => {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-medium text-gray-900 dark:text-white">Welcome Back, <span className="text-gray-500 dark:text-gray-400">Sujon</span></h1>
+          <h1 className="text-3xl font-medium text-gray-900 dark:text-white">Welcome Back, <span className="text-gray-500 dark:text-gray-400">{settings?.userName || 'User'}</span></h1>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-4 py-2 rounded-full border border-gray-100 dark:border-gray-800 shadow-sm text-sm font-medium text-gray-600 dark:text-gray-300">

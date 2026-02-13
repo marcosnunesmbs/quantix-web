@@ -127,6 +127,20 @@ export interface CreateCreditCardRequest {
   dueDay: number;
 }
 
+export interface Settings {
+  userName: string;
+  language: 'pt-BR' | 'ENG';
+  currency: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateSettingsRequest {
+  userName?: string;
+  language?: 'pt-BR' | 'ENG';
+  currency?: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF';
+}
+
 export interface ApiResponse<T> {
   data: T;
 }

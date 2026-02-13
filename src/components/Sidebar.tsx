@@ -23,6 +23,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     { icon: CreditCard, path: '/credit-cards', label: 'Credit Cards' },
     { icon: PieChart, path: '/reports', label: 'Reports' },
     { icon: LayoutGrid, path: '/categories', label: 'Categories' },
+    { icon: Settings, path: '/settings', label: 'Settings' },
   ];
 
   return (
@@ -82,12 +83,6 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           </nav>
     
           <div className="flex flex-col gap-6 mt-auto px-2 pb-4">
-            <button className="group relative w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-              <Settings size={20} />
-              <span className="absolute left-14 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none shadow-md">
-                Settings
-              </span>
-            </button>
             <button 
               onClick={handleLogout}
               className="group relative w-12 h-12 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-red-500 transition-colors"

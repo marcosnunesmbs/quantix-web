@@ -515,6 +515,38 @@ components:
             endDate:
               $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
 
+    Settings:
+      type: object
+      required:
+        - userName
+        - language
+        - currency
+      properties:
+        userName:
+          type: string
+          description: Name of the user
+          example: "John Doe"
+        language:
+          type: string
+          enum: [pt-BR, ENG]
+          description: Preferred language
+          example: "pt-BR"
+        currency:
+          type: string
+          enum: [BRL, USD, EUR, GBP, JPY, CAD, AUD, CHF]
+          description: Default currency
+          example: "BRL"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when settings were created
+          example: "2026-01-30T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when settings were last updated
+          example: "2026-01-30T10:00:00Z"
+
   responses:
     UnauthorizedError:
       description: API key is missing or invalid
@@ -1340,4 +1372,91 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Account not found
+
+  /settings:
+    post:
+      summary: Create global settings (only if not exists)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userName
+                - language
+                - currency
+              properties:
+                userName:
+                  type: string
+                  example: "John Doe"
+                language:
+                  type: string
+                  enum: [pt-BR, ENG]
+                  example: "pt-BR"
+                currency:
+                  type: string
+                  enum: [BRL, USD, EUR, GBP, JPY, CAD, AUD, CHF]
+                  example: "BRL"
+      responses:
+        '201':
+          description: Settings created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          description: Settings already exist
+
+    get:
+      summary: Get global settings
+      responses:
+        '200':
+          description: Settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Settings not found
+
+    put:
+      summary: Update global settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userName:
+                  type: string
+                  example: "John Doe"
+                language:
+                  type: string
+                  enum: [pt-BR, ENG]
+                  example: "pt-BR"
+                currency:
+                  type: string
+                  enum: [BRL, USD, EUR, GBP, JPY, CAD, AUD, CHF]
+                  example: "BRL"
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Settings not found
 

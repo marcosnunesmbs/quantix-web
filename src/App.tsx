@@ -8,6 +8,7 @@ import Accounts from './pages/Accounts';
 import CreditCards from './pages/CreditCards';
 import CreditCardStatements from './pages/CreditCardStatements';
 import Reports from './pages/Reports';
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path="/credit-cards" element={<CreditCards />} />
             <Route path="/credit-cards/:cardId/statements" element={<CreditCardStatements />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
       </Routes>
