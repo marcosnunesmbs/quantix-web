@@ -32,14 +32,22 @@ export const createCreditCard = async (cardData: CreateCreditCardRequest): Promi
 
 export const getCreditCardStatement = async (id: string, month: string): Promise<Statement> => {
   try {
+    console.log('Fetching statement for:', { id, month });
     const response = await api.get(`/credit-cards/${id}/statement`, {
       params: {
         month
       }
     });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching credit card statement:', error);
+    console.log('Statement response:', response.data);
+    // A API retorna { data: Statement } ao invés de Statement diretamente
+    return response.data.data || response.data;
+  } catch (error: any) {
+    console.error('Error fetching credit card statement:', {
+      error,
+      message: error?.message,
+      response: error?.response?.data,
+      status: error?.response?.status
+    });
     throw error;
   }
 };

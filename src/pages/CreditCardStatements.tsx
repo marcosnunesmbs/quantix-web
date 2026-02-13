@@ -20,12 +20,24 @@ const CreditCardStatements: React.FC = () => {
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
 
-  const { statement, loading: isLoadingStatement } = useCreditCardStatement(cardId || '', selectedMonth);
+  const { statement, loading: isLoadingStatement, error: statementError } = useCreditCardStatement(cardId || '', selectedMonth);
   const { accounts, loading: isLoadingAccounts } = useAccounts();
   const { creditCards, loading: isLoadingCards } = useCreditCards();
   const payStatementMutation = usePayCreditCardStatement();
 
   const currentCard = creditCards?.find((c) => c.id === cardId);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('CreditCardStatements Debug:', {
+      cardId,
+      selectedMonth,
+      statement,
+      isLoadingStatement,
+      statementError,
+      currentCard
+    });
+  }, [cardId, selectedMonth, statement, isLoadingStatement, statementError, currentCard]);
 
   // Reset selected account when accounts load
   useEffect(() => {
@@ -126,6 +138,12 @@ const CreditCardStatements: React.FC = () => {
       </div>
 
       {/* Statement Summary */}
+      {statementError && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+          <p className="text-red-800 dark:text-red-200 font-medium">Erro ao carregar fatura:</p>
+          <p className="text-red-600 dark:text-red-400 text-sm mt-1">{statementError}</p>
+        </div>
+      )}
       {statement ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -252,7 +270,7 @@ const CreditCardStatements: React.FC = () => {
           >
             {accounts?.map((account) => (
               <option key={account.id} value={account.id}>
-                {account.name} - {formatCurrency(account.currentBalance)}
+                {account.name}
               </option>
             ))}
           </select>

@@ -70,8 +70,25 @@ export const useCreditCards = () => {
 export const useCreditCardStatement = (id: string, month: string) => {
   const { data: statement, isLoading, error } = useQuery({
     queryKey: queryKeys.creditCardStatement(id, month),
-    queryFn: () => getCreditCardStatement(id, month),
+    queryFn: async () => {
+      try {
+        return await getCreditCardStatement(id, month);
+      } catch (error: any) {
+        // Se for 404, retorna null ao invés de erro
+        if (error?.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
     enabled: !!id && !!month,
+    retry: (failureCount, error: any) => {
+      // Não fazer retry se for 404
+      if (error?.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 1;
+    },
   });
 
   return {

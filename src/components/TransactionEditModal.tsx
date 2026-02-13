@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Calendar, Repeat } from 'lucide-react';
+import { X, Save, Repeat } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';

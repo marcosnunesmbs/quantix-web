@@ -1,4 +1,4 @@
-import { LayoutGrid, PieChart, Wallet, LogOut, ArrowLeftRight, CreditCard, X, Settings } from 'lucide-react';
+import { LayoutGrid, PieChart, Wallet, LogOut, ArrowLeftRight, CreditCard, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
