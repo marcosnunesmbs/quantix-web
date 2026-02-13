@@ -144,7 +144,7 @@ export interface CreateCreditCardRequest {
 
 export interface Settings {
   userName: string;
-  language: 'pt-BR' | 'ENG';
+  language: 'pt-BR' | 'en-US';
   currency: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF';
   createdAt?: string;
   updatedAt?: string;
@@ -152,7 +152,7 @@ export interface Settings {
 
 export interface UpdateSettingsRequest {
   userName?: string;
-  language?: 'pt-BR' | 'ENG';
+  language?: 'pt-BR' | 'en-US';
   currency?: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF';
 }
 

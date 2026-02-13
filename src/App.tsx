@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { I18nProvider } from './context/I18nContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
@@ -13,25 +14,27 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <I18nProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<DashboardLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/accounts" element={<Accounts />} />
-            <Route path="/credit-cards" element={<CreditCards />} />
-            <Route path="/credit-cards/:cardId/statements" element={<CreditCardStatements />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<Settings />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/transactions" element={<Transactions />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/accounts" element={<Accounts />} />
+              <Route path="/credit-cards" element={<CreditCards />} />
+              <Route path="/credit-cards/:cardId/statements" element={<CreditCardStatements />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </I18nProvider>
   );
 }
 

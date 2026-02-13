@@ -484,7 +484,7 @@ components:
           example: "John Doe"
         language:
           type: string
-          enum: [pt-BR, ENG]
+          enum: [pt-BR, en-US]
           description: Preferred language
           example: "pt-BR"
         currency:
@@ -1373,7 +1373,7 @@ paths:
                   example: "John Doe"
                 language:
                   type: string
-                  enum: [pt-BR, ENG]
+                  enum: [pt-BR, en-US]
                   example: "pt-BR"
                 currency:
                   type: string
@@ -1421,7 +1421,7 @@ paths:
                   example: "John Doe"
                 language:
                   type: string
-                  enum: [pt-BR, ENG]
+                  enum: [pt-BR, en-US]
                   example: "pt-BR"
                 currency:
                   type: string

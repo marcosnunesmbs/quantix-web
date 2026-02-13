@@ -737,7 +737,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
         <CategoryForm
           onSubmit={handleCategorySubmit}
           onCancel={() => setShowCategoryForm(false)}
-          defaultType={formData.type === 'RECEITA' ? 'INCOME' : 'EXPENSE'}
+          defaultType={formData.type === 'INCOME' ? 'INCOME' : 'EXPENSE'}
         />
       )}
     </div>

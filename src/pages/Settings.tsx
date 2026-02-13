@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, User, Globe } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { UpdateSettingsRequest, Settings } from '../types/apiTypes';
+import LanguageSelector from '../components/LanguageSelector';
 
 const SettingsPage: React.FC = () => {
   const { settings, loading, updateSettings, isUpdating, createSettings } = useSettings();
@@ -124,6 +125,7 @@ const SettingsPage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Language
                     </label>
+                    {/* <LanguageSelector /> */}
                     <select
                     name="language"
                     value={formData.language}
@@ -131,7 +133,7 @@ const SettingsPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
                     >
                     <option value="pt-BR">Português (Brasil)</option>
-                    <option value="ENG">English</option>
+                    <option value="en-US">English</option>
                     </select>
                 </div>
 
