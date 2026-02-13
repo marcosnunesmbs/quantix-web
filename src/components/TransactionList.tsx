@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, Trash2, Pencil, Info } from 'lucide-react'; // Added icons
+import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat } from 'lucide-react'; // Added icons
 import { Transaction } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
 
 interface TransactionListProps {
   transactions: Transaction[];
   onEdit?: (transaction: Transaction) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, mode?: 'SINGLE' | 'PENDING' | 'ALL') => void;
   onPay?: (id: string) => void;
   onUnpay?: (id: string) => void;
   isPaying?: boolean;
@@ -22,11 +22,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
   isPaying,
   isUnpaying
 }) => {
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; transactionId: string | null; transactionName: string }>({
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; transaction: Transaction | null }>({
     isOpen: false,
-    transactionId: null,
-    transactionName: ''
+    transaction: null
   });
+  const [recurrenceMode, setRecurrenceMode] = useState<'SINGLE' | 'PENDING' | 'ALL'>('SINGLE');
 
   const [payModal, setPayModal] = useState<{ isOpen: boolean; transactionId: string | null; transactionName: string }>({
     isOpen: false,
@@ -42,20 +42,24 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const handleDeleteClick = (transaction: Transaction) => {
     setDeleteModal({
       isOpen: true,
-      transactionId: transaction.id,
-      transactionName: transaction.name
+      transaction: transaction
     });
+    setRecurrenceMode('SINGLE');
   };
 
   const handleConfirmDelete = () => {
-    if (deleteModal.transactionId && onDelete) {
-      onDelete(deleteModal.transactionId);
+    if (deleteModal.transaction && onDelete) {
+       if (deleteModal.transaction.recurrenceRuleId) {
+         onDelete(deleteModal.transaction.id, recurrenceMode);
+       } else {
+         onDelete(deleteModal.transaction.id);
+       }
     }
-    setDeleteModal({ isOpen: false, transactionId: null, transactionName: '' });
+    setDeleteModal({ isOpen: false, transaction: null });
   };
 
   const handleCancelDelete = () => {
-    setDeleteModal({ isOpen: false, transactionId: null, transactionName: '' });
+    setDeleteModal({ isOpen: false, transaction: null });
   };
 
   const handlePayClick = (transaction: Transaction) => {
@@ -319,11 +323,61 @@ const TransactionList: React.FC<TransactionListProps> = ({
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
         title="Excluir Transação"
-        message={`Tem certeza que deseja excluir a transação "${deleteModal.transactionName}"? Esta ação não pode ser desfeita.`}
+        message={`Tem certeza que deseja excluir a transação "${deleteModal.transaction?.name}"? Esta ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
-      />
+      >
+        {deleteModal.transaction?.recurrenceRuleId && (
+          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 text-left">
+            <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-300">
+              <Repeat size={16} />
+              <span className="text-sm font-medium">Esta é uma transação recorrente</span>
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deleteRecurrenceMode"
+                  value="SINGLE"
+                  checked={recurrenceMode === 'SINGLE'}
+                  onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Excluir apenas esta transação
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deleteRecurrenceMode"
+                  value="PENDING"
+                  checked={recurrenceMode === 'PENDING'}
+                  onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Esta e as próximas (pendentes)
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deleteRecurrenceMode"
+                  value="ALL"
+                  checked={recurrenceMode === 'ALL'}
+                  onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Todas as transações da série
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+      </ConfirmationModal>
 
       {/* Pay Confirmation Modal */}
       <ConfirmationModal

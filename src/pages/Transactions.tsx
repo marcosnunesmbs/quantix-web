@@ -22,14 +22,12 @@ const TransactionsPage: React.FC = () => {
     isUnpaying
   } = useTransactions(selectedMonth);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this transaction?')) {
-      try {
-        await removeTransaction(id);
-      } catch (err) {
-        console.error('Error deleting transaction:', err);
-        // In a real app, you might want to show an error message to the user
-      }
+  const handleDelete = async (id: string, mode?: 'SINGLE' | 'PENDING' | 'ALL') => {
+    // Confirmation handled by TransactionList
+    try {
+      await removeTransaction({ id, mode });
+    } catch (err) {
+      console.error('Error deleting transaction:', err);
     }
   };
 
@@ -53,9 +51,9 @@ const TransactionsPage: React.FC = () => {
     setEditingTransaction(transaction);
   };
 
-  const handleUpdate = async (id: string, data: any) => {
+  const handleUpdate = async (id: string, data: any, mode?: 'SINGLE' | 'PENDING' | 'ALL') => {
     try {
-      await updateTransaction({ id, data });
+      await updateTransaction({ id, data, mode });
       setEditingTransaction(null);
     } catch (err) {
       console.error('Error updating transaction:', err);

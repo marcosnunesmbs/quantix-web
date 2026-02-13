@@ -28,8 +28,8 @@ export const useTransactions = (month?: string) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateTransactionRequest> }) => 
-      updateTransaction(id, data),
+    mutationFn: ({ id, data, mode }: { id: string; data: Partial<CreateTransactionRequest>; mode?: 'SINGLE' | 'PENDING' | 'ALL' }) => 
+      updateTransaction(id, data, mode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -46,6 +46,8 @@ export const useTransactions = (month?: string) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      // Invalida cartões pois o pagamento pode ter sido feito com saldo de conta e afetar statement status
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
     },
   });
 
@@ -60,7 +62,7 @@ export const useTransactions = (month?: string) => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deleteTransaction,
+    mutationFn: ({ id, mode }: { id: string; mode?: 'SINGLE' | 'PENDING' | 'ALL' }) => deleteTransaction(id, mode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });

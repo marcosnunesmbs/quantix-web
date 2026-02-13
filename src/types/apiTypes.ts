@@ -28,6 +28,8 @@ export interface Transaction {
   createdAt: string; // date-time format
 }
 
+export type RecurrenceUpdateMode = 'SINGLE' | 'PENDING' | 'ALL';
+
 export interface CreditCard {
   id: string;
   name: string;

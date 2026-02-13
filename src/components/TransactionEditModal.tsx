@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Calendar, Repeat } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
@@ -8,7 +8,7 @@ import CurrencyInput from './CurrencyInput';
 interface TransactionEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (id: string, data: any) => Promise<void>;
+  onSave: (id: string, data: any, mode?: 'SINGLE' | 'PENDING' | 'ALL') => Promise<void>;
   transaction: Transaction | null;
 }
 
@@ -29,7 +29,11 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   const [accountId, setAccountId] = useState('');
   // New state for target month
   const [targetDueMonth, setTargetDueMonth] = useState(''); 
+  const [recurrenceMode, setRecurrenceMode] = useState<'SINGLE' | 'PENDING' | 'ALL'>('SINGLE');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Determine if it's a recurring transaction
+  const isRecurring = !!transaction?.recurrenceRuleId;
 
   useEffect(() => {
     if (transaction) {
@@ -39,6 +43,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
       setCategoryId(transaction.categoryId || '');
       setPaymentMethod(transaction.paymentMethod || 'CASH');
       setAccountId(transaction.accountId || '');
+      setRecurrenceMode('SINGLE'); // Reset mode
       
       // Try to determine initial targetDueMonth from transaction date (approximation as we don't have the explicit field in Transaction type yet displayed here, assuming date is the due date for CC transactions usually?)
       // Wait, Transaction type in apiTypes.ts doesn't explicitly have targetDueMonth on the read model, it has date. 
@@ -81,7 +86,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
         updateData.accountId = accountId || null;
       }
 
-      await onSave(transaction.id, updateData);
+      await onSave(transaction.id, updateData, isRecurring ? recurrenceMode : undefined);
       onClose();
     } catch (error) {
       console.error('Failed to update transaction', error);
@@ -235,6 +240,57 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                   </select>
                 </div>
               </>
+            )}
+
+            {/* Recurrence Mode Selector */}
+            {isRecurring && (
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-300">
+                  <Repeat size={16} />
+                  <span className="text-sm font-medium">Esta é uma transação recorrente</span>
+                </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recurrenceMode"
+                      value="SINGLE"
+                      checked={recurrenceMode === 'SINGLE'}
+                      onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Alterar apenas esta transação
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recurrenceMode"
+                      value="PENDING"
+                      checked={recurrenceMode === 'PENDING'}
+                      onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Esta e as próximas (pendentes)
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="recurrenceMode"
+                      value="ALL"
+                      checked={recurrenceMode === 'ALL'}
+                      onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Todas as transações da série (passadas e futuras)
+                    </span>
+                  </label>
+                </div>
+              </div>
             )}
           </div>
 

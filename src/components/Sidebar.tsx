@@ -48,12 +48,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             </div>
             
             {/* Close button for mobile inside sidebar */}
-            <button 
+            {/* <button 
                 onClick={onClose}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 md:hidden"
             >
                 <X size={20} />
-            </button>
+            </button> */}
           </div>
     
           <nav className="flex-1 flex flex-col gap-6 w-full px-2">

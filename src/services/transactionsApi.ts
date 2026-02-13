@@ -48,18 +48,22 @@ export const unpayTransaction = async (id: string): Promise<Transaction> => {
   }
 };
 
-export const deleteTransaction = async (id: string): Promise<void> => {
+export const deleteTransaction = async (id: string, mode?: 'SINGLE' | 'PENDING' | 'ALL'): Promise<void> => {
   try {
-    await api.delete(`/transactions/${id}`);
+    await api.delete(`/transactions/${id}`, {
+      params: mode ? { mode } : undefined
+    });
   } catch (error) {
     console.error('Error deleting transaction:', error);
     throw error;
   }
 };
 
-export const updateTransaction = async (id: string, transactionData: Partial<CreateTransactionRequest>): Promise<Transaction> => {
+export const updateTransaction = async (id: string, transactionData: Partial<CreateTransactionRequest>, mode?: 'SINGLE' | 'PENDING' | 'ALL'): Promise<Transaction> => {
   try {
-    const response = await api.patch(`/transactions/${id}`, transactionData);
+    const response = await api.patch(`/transactions/${id}`, transactionData, {
+      params: mode ? { mode } : undefined
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating transaction:', error);
