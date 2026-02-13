@@ -258,59 +258,10 @@ components:
           type: string
           description: Month for the statement (YYYY-MM format)
           example: "2026-03"
-        periodStart:
-          type: string
-          format: date
-          description: Start date of the billing period
-          example: "2026-02-16"
-        periodEnd:
-          type: string
-          format: date
-          description: End date of the billing period
-          example: "2026-03-15"
-        dueDate:
-          type: string
-          format: date
-          description: Due date of the statement
-          example: "2026-03-22"
-        total:
-          type: number
-          format: float
-          description: Total amount of the statement
-          example: 3450.00
         isPaid:
           type: boolean
-          description: Whether the statement has been fully paid
+          description: Whether all transactions in the statement are paid
           example: true
-        paidAmount:
-          type: number
-          format: float
-          description: Amount already paid
-          example: 3450.00
-        unpaidAmount:
-          type: number
-          format: float
-          description: Amount remaining to be paid
-          example: 0.00
-        paymentAccountId:
-          type: string
-          nullable: true
-          description: ID of the account used for payment (if paid)
-          example: "acc_123456789"
-        paidAt:
-          type: string
-          format: date-time
-          nullable: true
-          description: Timestamp when the statement was paid
-          example: "2026-03-20T10:30:00Z"
-        transactionCount:
-          type: integer
-          description: Total number of transactions in the statement
-          example: 15
-        paidTransactionCount:
-          type: integer
-          description: Number of paid transactions in the statement
-          example: 15
 
     Account:
       type: object
@@ -914,11 +865,11 @@ paths:
                     type: string
                     example: "Statement for March 2026 marked as paid and linked to account acc_123456789"
         '400':
-          description: Invalid input
+          description: Invalid input or statement is already paid
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Credit card or statement not found
+          description: Credit card not found
 
   /credit-cards/{id}/statement-status:
     get:

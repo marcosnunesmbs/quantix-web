@@ -1,9 +1,22 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { payCreditCardStatement } from '../services/creditCardsApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getStatementStatus, payCreditCardStatement } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
 import { PaymentStatementRequest } from '../types/apiTypes';
 
 export { useCreditCardStatement } from './useCreditCards';
+
+export const useStatementStatus = (cardId: string, month: string) => {
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.creditCardStatementStatus(cardId, month),
+    queryFn: () => getStatementStatus(cardId, month),
+    enabled: !!cardId && !!month,
+  });
+
+  return {
+    isPaid: data?.isPaid ?? false,
+    isLoading,
+  };
+};
 
 export const usePayCreditCardStatement = () => {
   const queryClient = useQueryClient();
@@ -15,6 +28,9 @@ export const usePayCreditCardStatement = () => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({
         queryKey: queryKeys.creditCardStatement(variables.cardId, variables.paymentData.month),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.creditCardStatementStatus(variables.cardId, variables.paymentData.month),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });

@@ -58,6 +58,12 @@ export interface Statement {
   availableLimit: number;
 }
 
+export interface StatementStatus {
+  cardId: string;
+  month: string; // YYYY-MM format
+  isPaid: boolean;
+}
+
 export interface Account {
   id: string;
   name: string;

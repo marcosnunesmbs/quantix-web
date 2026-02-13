@@ -19,6 +19,7 @@ export const queryKeys = {
   creditCards: ['creditCards'] as const,
   creditCard: (id: string) => ['creditCards', id] as const,
   creditCardStatement: (id: string, month: string) => ['creditCards', id, 'statement', month] as const,
+  creditCardStatementStatus: (id: string, month: string) => ['creditCards', id, 'statement-status', month] as const,
   categories: ['categories'] as const,
   summary: (month: string) => ['summary', month] as const,
   settings: ['settings'] as const,

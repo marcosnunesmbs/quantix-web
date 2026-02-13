@@ -1,5 +1,5 @@
 import api from './api';
-import { CreditCard, Statement, PaymentStatementRequest } from '../types/apiTypes';
+import { CreditCard, Statement, StatementStatus, PaymentStatementRequest } from '../types/apiTypes';
 
 export interface CreateCreditCardRequest {
   name: string;
@@ -48,6 +48,16 @@ export const getCreditCardStatement = async (id: string, month: string): Promise
       response: error?.response?.data,
       status: error?.response?.status
     });
+    throw error;
+  }
+};
+
+export const getStatementStatus = async (id: string, month: string): Promise<StatementStatus> => {
+  try {
+    const response = await api.get(`/credit-cards/${id}/statement-status`, { params: { month } });
+    return response.data.data || response.data;
+  } catch (error) {
+    console.error('Error fetching statement status:', error);
     throw error;
   }
 };

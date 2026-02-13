@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, CreditCard as CreditCardIcon, DollarSign, Wallet, CheckCircle } from 'lucide-react';
-import { useCreditCardStatement, usePayCreditCardStatement } from '../hooks/useCreditCardStatements';
+import { useCreditCardStatement, usePayCreditCardStatement, useStatementStatus } from '../hooks/useCreditCardStatements';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
 import { Transaction } from '../types/apiTypes';
@@ -23,6 +23,7 @@ const CreditCardStatements: React.FC = () => {
   const { statement, loading: isLoadingStatement, error: statementError } = useCreditCardStatement(cardId || '', selectedMonth);
   const { accounts, loading: isLoadingAccounts } = useAccounts();
   const { creditCards, loading: isLoadingCards } = useCreditCards();
+  const { isPaid: isStatementPaid, isLoading: isLoadingStatus } = useStatementStatus(cardId || '', selectedMonth);
   const payStatementMutation = usePayCreditCardStatement();
 
   const currentCard = creditCards?.find((c) => c.id === cardId);
@@ -85,7 +86,7 @@ const CreditCardStatements: React.FC = () => {
     });
   };
 
-  const isLoading = isLoadingStatement || isLoadingAccounts || isLoadingCards;
+  const isLoading = isLoadingStatement || isLoadingAccounts || isLoadingCards || isLoadingStatus;
 
   if (isLoading) {
     return (
@@ -184,16 +185,23 @@ const CreditCardStatements: React.FC = () => {
             </div>
           </div>
 
-          {/* Pay Statement Button */}
+          {/* Pay Statement Button / Paid Badge */}
           <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
-            <button
-              onClick={() => setPayModalOpen(true)}
-              disabled={payStatementMutation.isPending || !statement.transactions || statement.transactions.length === 0}
-              className="w-full md:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <CheckCircle size={20} />
-              {payStatementMutation.isPending ? 'Processando...' : 'Pagar Fatura'}
-            </button>
+            {isStatementPaid ? (
+              <div className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold rounded-lg">
+                <CheckCircle size={20} />
+                Fatura Paga
+              </div>
+            ) : (
+              <button
+                onClick={() => setPayModalOpen(true)}
+                disabled={payStatementMutation.isPending || !statement.transactions || statement.transactions.length === 0}
+                className="w-full md:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle size={20} />
+                {payStatementMutation.isPending ? 'Processando...' : 'Pagar Fatura'}
+              </button>
+            )}
           </div>
         </div>
       ) : (
