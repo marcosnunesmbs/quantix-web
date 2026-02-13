@@ -3,57 +3,60 @@
 ## 🧠 Project Architecture & Mental Model
 Quantix Finance is a React 18 + Vite frontend for a Personal Finance Management API.
 - **Backend Awareness:** The backend uses a Hexagonal/Domain-centric architecture (NestJS). Key constraints to respect:
-  - **Transactions:** Complex model supporting Installments (split records) and Recurrences.
-  - **Credit Cards:** "Statements" are virtual (calculated on-the-fly based on closing/due days).
-  - **Summary:** Credit card expenses are aggregated into a single line item in monthly summaries.
+  - **Transaction Installments:** A minimal purchase split into months creates multiple transaction records grouped by `installmentGroupId`.
+  - **Credit Card Statements:** Virtual entities calculated dynamically based on `closingDay` and `dueDay`.
+  - **Summary Aggregation:** Credit card expenses in summaries are aggregated into single line items.
 
 ## 🛠 Tech Stack & Key Libraries
 - **Core:** React 18, TypeScript 5+, Vite 6
 - **State/Fetching:** TanStack Query (React Query) v5
 - **Styling:** Tailwind CSS v3 (Emerald theme), `clsx`, `tailwind-merge`
-- **Networking:** Axios with global interceptors
+- **Routing:** React Router v7
+- **I18n:** `i18next`, `react-i18next` (en-US, pt-BR)
 - **Icons:** Lucide React
 
 ## ⚡ Critical Development Patterns
 
 ### 1. Data Fetching (TanStack Query)
-**Strict Rule:** Do not use `useEffect` for data fetching. Use custom hooks in `src/hooks/`.
-- **Query Keys:** ALWAYS import `queryKeys` from `@/lib/queryClient`. NEVER hardcode key strings.
+**Strict Rule:** Logic lives in `src/hooks/`. Do not use `useEffect` for data fetching.
+- **Query Keys:** ALWAYS import `queryKeys` from `@/lib/queryClient`.
   - ✅ `queryKey: queryKeys.account(id)`
   - ❌ `queryKey: ['accounts', id]`
-- **Mutations:** API writes must live in `src/hooks/` and trigger invalidations.
-  - Example: Creating an account must invalidate `queryKeys.accounts` and `queryKeys.summary(month)`.
+- **Mutations:** API writes must live in `src/hooks/` and trigger invalidations for all affected data.
+  - *Example:* Creating a transaction often requires invalidating `['summary']`, `['accounts']`, `['creditCards']`, not just `['transactions']`.
 
 ### 2. Service Layer
 - **Location:** `src/services/`
-- **Pattern:** Pure async functions returning typed data. Error handling is delegated to the caller or global interceptors.
-- **Auth:** `x-api-key` is injected via `src/services/api.ts`. Use `import.meta.env.VITE_QUANTIX_API_KEY`.
+- **Pattern:** Pure async functions utilizing the axios instance from `src/services/api.ts`.
+- **Auth:** `x-api-key` is automatically injected from localStorage `QUANTIX_API_KEY`.
+- **Error Handling:** 401 errors automatically redirect to `/login`.
 
-### 3. Component Structure
-- **Pages:** (`src/pages/`) Orchestrate data fetching and pass props to dumb components.
-- **Components:** (`src/components/`) Focus on UI/Presentation. Avoid business logic here.
-- **Forms:** Use controlled components with local state for simple forms.
+### 3. I18n & Text
+- **Strict Rule:** Never hardcode UI text. Use `t('key')` from `useTranslation()`.
+- **Locales:** Check `src/locales/` for existing keys before creating new ones.
+- **Implementation:** `import { useTranslation } from 'react-i18next'; const { t } = useTranslation();`
 
-## 🎨 Styling Conventions
-- **DarkMode:** Supported via `class` strategy. Use `dark:` modifiers explicitly.
-- **Colors:** Primary is `emerald`. Use semantic names where possible.
-- **Utils:** Use `cn()` (clsx + tailwind-merge) for conditional classes.
+### 4. Component Structure
+- **Pages (`src/pages/`):** Orchestrate data fetching using hooks. Pass plain data to components.
+- **Components (`src/components/`):** Presentational only. Receive data via props.
+- **Styles:** Use `cn()` utility for class composition. `className={cn("base-class", isRed && "bg-red-500")}`.
 
 ## 🚀 Build & Run
 - **Dev:** `npm run dev` (Port 5173)
 - **Build:** `npm run build` (TSC + Vite)
-- **Lint:** `npm run lint` (ESLint 9 + Prettier) - **Fix all lint errors before committing.**
+- **Lint:** `npm run lint` (ESLint 9) - **Must pass before commit.**
 
 ## 📂 File Organization
 ```
 src/
-├── hooks/      # REACT QUERY LOGIC (useAccounts, useTransactions) - Place BL here
-├── services/   # API CLIENTS (axios wrappers) - No React code
-├── lib/        # SINGLETONS (queryClient, utils)
-├── context/    # GLOBAL STATE (ThemeContext only)
+├── hooks/      # REACT QUERY LOGIC (useAccounts, useTransactions) - Place Business Logic here
+├── services/   # API CLIENTS (axios wrappers) - pure TS, no React
+├── lib/        # SINGLETONS (queryClient, utils, apiCache)
+├── context/    # GLOBAL STATE (Theme, I18n, Modals)
+├── locales/    # TRANSLATION JSONs
 └── types/      # SHARED INTERFACES (apiTypes.ts)
 ```
 
-## ⚠️ Common Pitfalls (Project Specific)
-- **Balances:** Account balances are often calculated on fetch. If a balance looks "stale", double-check if the `summary` or `account` queries were invalidated.
-- **Dates:** API expects ISO strings. Ensure complex date math handles timezones correctly or uses UTC to avoid "off-by-one-day" errors in statement calculations.
+## ⚠️ Common Pitfalls
+- **Dates:** API expects ISO strings. Ensure complex date math handles timezones correctly (project sensitive to "off-by-one" in statement calculations).
+- **Balances:** Account balances are often calculated on fetch. If a balance looks "stale", double-check invalidations.

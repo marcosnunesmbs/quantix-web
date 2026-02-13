@@ -78,3 +78,6 @@ The development server runs using Vite and will serve the application at `http:/
 - Custom color palette with emerald as primary color
 - Inter font family
 - Dark mode support with automatic system preference detection
+
+## Qwen Added Memories
+- Ao criar ou modificar páginas ou componentes, textos devem ter locale por padrão

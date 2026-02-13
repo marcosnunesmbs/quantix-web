@@ -79,14 +79,14 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({ trans
               <CheckCircle className="h-4 w-4 mr-1" />
               <span>Pagas</span>
             </div>
-            <span className="font-medium">{formatCurrency(totalIncomePaid)}</span>
+            <span className="font-medium text-emerald-700 dark:text-emerald-300">{formatCurrency(totalIncomePaid)}</span>
           </div>
           <div className="flex items-center justify-between text-sm mt-1">
             <div className="flex items-center text-amber-600 dark:text-amber-400">
               <Clock className="h-4 w-4 mr-1" />
               <span>Pendentes</span>
             </div>
-            <span className="font-medium">{formatCurrency(pendingIncome)}</span>
+            <span className="font-medium text-emerald-700 dark:text-emerald-300">{formatCurrency(pendingIncome)}</span>
           </div>
           <div className="mt-2 pt-2 border-t border-emerald-200 dark:border-emerald-700/50">
             <div className="flex items-center justify-between text-sm font-semibold">
@@ -114,14 +114,14 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({ trans
               <CheckCircle className="h-4 w-4 mr-1" />
               <span>Pagas</span>
             </div>
-            <span className="font-medium">{formatCurrency(totalExpensesPaid)}</span>
+            <span className="font-medium text-red-700 dark:text-red-300">{formatCurrency(totalExpensesPaid)}</span>
           </div>
           <div className="flex items-center justify-between text-sm mt-1">
             <div className="flex items-center text-amber-600 dark:text-amber-400">
               <Clock className="h-4 w-4 mr-1" />
               <span>Pendentes</span>
             </div>
-            <span className="font-medium">{formatCurrency(pendingExpenses)}</span>
+            <span className="font-medium text-red-700 dark:text-red-300">{formatCurrency(pendingExpenses)}</span>
           </div>
           <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-700/50">
             <div className="flex items-center justify-between text-sm font-semibold">
@@ -180,53 +180,53 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({ trans
       </div>
 
       {/* Resumo de Pendentes */}
-      <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl shadow p-5 border border-amber-100 dark:border-amber-800/50">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Resumo de Pendentes</p>
-            <p className="text-2xl font-bold mt-1 text-amber-800 dark:text-amber-100">{formatCurrency(pendingIncome + pendingExpenses)}</p>
-          </div>
-          <div className="p-3 bg-amber-100 dark:bg-amber-800/50 rounded-lg">
-            <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-          </div>
+    <div className="hidden lg:block bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl shadow p-5 border border-amber-100 dark:border-amber-800/50">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+        <p className="text-sm font-medium text-amber-700 dark:text-amber-300">Resumo de Pendentes</p>
+        <p className="text-2xl font-bold mt-1 text-amber-800 dark:text-amber-100">{formatCurrency(pendingIncome + pendingExpenses)}</p>
         </div>
-        
-        <div className="space-y-3">
-          <div className="rounded-lg p-3 border border-amber-100 dark:border-amber-700/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mr-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Receitas Pendentes</p>
-                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(pendingIncome)}</p>
-                </div>
-              </div>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400">
-                {totalIncomeProjected > 0 ? `${((pendingIncome / totalIncomeProjected) * 100).toFixed(1)}%` : '0%'}
-              </span>
-            </div>
-          </div>
-          
-          <div className="rounded-lg p-3 border border-amber-100 dark:border-amber-700/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-2">
-                  <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-red-600 dark:text-red-400">Despesas Pendentes</p>
-                  <p className="text-sm font-bold text-red-700 dark:text-red-300">{formatCurrency(pendingExpenses)}</p>
-                </div>
-              </div>
-              <span className="text-xs text-red-600 dark:text-red-400">
-                {totalExpensesProjected > 0 ? `${((pendingExpenses / totalExpensesProjected) * 100).toFixed(1)}` : '0%'}%
-              </span>
-            </div>
-          </div>
+        <div className="p-3 bg-amber-100 dark:bg-amber-800/50 rounded-lg">
+        <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
         </div>
       </div>
+      
+      <div className="space-y-3">
+        <div className="rounded-lg p-3 border border-amber-100 dark:border-amber-700/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mr-2">
+            <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Receitas Pendentes</p>
+            <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(pendingIncome)}</p>
+            </div>
+          </div>
+          <span className="text-xs text-emerald-600 dark:text-emerald-400">
+            {totalIncomeProjected > 0 ? `${((pendingIncome / totalIncomeProjected) * 100).toFixed(1)}%` : '0%'}
+          </span>
+        </div>
+        </div>
+        
+        <div className="rounded-lg p-3 border border-amber-100 dark:border-amber-700/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-2">
+            <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+            <p className="text-xs font-medium text-red-600 dark:text-red-400">Despesas Pendentes</p>
+            <p className="text-sm font-bold text-red-700 dark:text-red-300">{formatCurrency(pendingExpenses)}</p>
+            </div>
+          </div>
+          <span className="text-xs text-red-600 dark:text-red-400">
+            {totalExpensesProjected > 0 ? `${((pendingExpenses / totalExpensesProjected) * 100).toFixed(1)}` : '0%'}%
+          </span>
+        </div>
+        </div>
+      </div>
+    </div>
     </div>
   );
 };
