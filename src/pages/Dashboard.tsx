@@ -55,16 +55,15 @@ const Dashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-4 py-2 rounded-full border border-gray-100 dark:border-gray-800 shadow-sm text-sm font-medium text-gray-600 dark:text-gray-300">
-            <Calendar size={16} />
             <MonthSelector 
               selectedMonth={selectedMonth} 
               onMonthChange={setSelectedMonth} 
             />
           </div>
-          <button className="flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-4 py-2 rounded-full border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow text-sm font-medium">
+          {/* <button className="flex items-center gap-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-4 py-2 rounded-full border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow text-sm font-medium">
             <Plus size={16} />
             Add New Wallet
-          </button>
+          </button> */}
         </div>
       </div>
 
