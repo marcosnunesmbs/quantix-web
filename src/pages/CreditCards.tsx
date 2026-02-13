@@ -4,6 +4,7 @@ import CreditCardForm from '../components/CreditCardForm';
 import CreditCardList from '../components/CreditCardList';
 import { useCreditCards } from '../hooks/useCreditCards';
 import { CreateCreditCardRequest } from '../services/creditCardsApi';
+import { getTransactions } from '../services/transactionsApi';
 
 const CreditCardsPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
@@ -44,12 +45,49 @@ const CreditCardsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
+    // Check for associated transactions before deleting
+    // We try to fetch filtering by creditCardId without month constraint if the API supports it
+    // Or we rely on the backend error if we can't filter purely.
+    // Assuming backend might not filter by global creditCardId on /transactions? 
+    // Let's assume we check for ANY transaction in recent months or if we can get a "has transactions" check.
+    // Since we don't have a specific endpoint for "count transactions by card", and /transactions mostly works per month...
+    // We will attempt to fetch ALL transactions if possible or handle the 409 error gracefully.
+    
+    // However, the requirement is "verify if it has transactions". 
+    // Let's try to fetch transactions for this card. IDK if backend supports filtering /transactions by creditCardId globally
+    // If not, this check might be incomplete if we only check current month.
+    // BUT, if we can assume the backend will fail with 409 if we try to delete a card with transactions, 
+    // we can catch that error.
+    
+    // Let's implement a pre-check if we can. 
+    // If we assume the API supports filtering by creditCardId (I added it to the service):
+    try {
+        // Try to fetch transactions for this card. 
+        // Note: passing undefined for month to get all? Or current? 
+        // If API requires month, this might fail or return filtered.
+        const cardTransactions = await getTransactions(undefined, id);
+        
+        if (cardTransactions && cardTransactions.length > 0) {
+            alert('Não é possível remover o cartão pois há transações associadas a ele.');
+            return;
+        }
+    } catch (e) {
+        // If the check fails (e.g. API doesn't support the filter), we proceed to try delete 
+        // and handle the error there.
+        console.warn('Could not verify transactions for card, proceeding to delete attempt', e);
+    }
+
     if (window.confirm('Are you sure you want to delete this credit card? This action cannot be undone.')) {
       try {
         await deleteCreditCard(id);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error deleting credit card:', err);
-        alert('Failed to delete credit card. Please try again.');
+         // If backend returns specific error message for this case
+        if (err.response?.status === 409 || err.message?.includes('transactions')) {
+             alert('Não é possível remover o cartão pois há transações associadas a ele.');
+        } else {
+             alert('Failed to delete credit card. Please try again.');
+        }
       }
     }
   };

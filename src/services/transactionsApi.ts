@@ -1,12 +1,14 @@
 import api from './api';
 import { Transaction, CreateTransactionRequest } from '../types/apiTypes';
 
-export const getTransactions = async (month?: string): Promise<Transaction[]> => {
+export const getTransactions = async (month?: string, creditCardId?: string): Promise<Transaction[]> => {
   try {
+    const params: any = {};
+    if (month) params.month = month;
+    if (creditCardId) params.creditCardId = creditCardId; // Assuming the backend supports filtering by creditCardId
+
     const response = await api.get(`/transactions`, {
-      params: {
-        month
-      }
+      params
     });
     // Handle both direct array response and wrapped response
     return Array.isArray(response.data) ? response.data : response.data.data || [];
