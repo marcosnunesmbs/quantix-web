@@ -5,6 +5,7 @@ import CurrencyInput from './CurrencyInput';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
+import { useStatementStatus } from '../hooks/useCreditCardStatements';
 import CategoryForm from './CategoryForm';
 
 type TransactionFormType = 'RECEITA' | 'DESPESA' | 'CARTAO';
@@ -57,6 +58,11 @@ const generateTargetDueMonths = (): Array<{ value: string; label: string }> => {
   return months;
 };
 
+const currentMonth = (() => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+})();
+
 const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
   // Data fetching hooks
   const { categories, loading: categoriesLoading, createNewCategory } = useCategories();
@@ -65,6 +71,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
 
   // Track if user manually changed paid status
   const [paidManuallyChanged, setPaidManuallyChanged] = useState(false);
+
+  // Only show validation errors after first submit attempt
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Category form modal state
   const [showCategoryForm, setShowCategoryForm] = useState(false);
@@ -90,6 +99,25 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
   };
 
   const [formData, setFormData] = useState<TransactionFormData>(getInitialFormData());
+
+  // Check if current month's statement is already paid for the selected card
+  const selectedCardId = formData.type === 'CARTAO' ? (formData.creditCardId || '') : '';
+  const { isPaid: isCurrentMonthPaid } = useStatementStatus(selectedCardId, currentMonth);
+
+  // Available target due months — exclude current month if its statement is already paid
+  const availableTargetDueMonths = generateTargetDueMonths().filter(
+    (m) => !(m.value === currentMonth && isCurrentMonthPaid)
+  );
+
+  // If current month becomes unavailable (fatura paga), bump targetDueMonth to next available
+  useEffect(() => {
+    if (isCurrentMonthPaid && formData.targetDueMonth === currentMonth) {
+      const next = availableTargetDueMonths[0]?.value;
+      if (next) {
+        setFormData(prev => ({ ...prev, targetDueMonth: next }));
+      }
+    }
+  }, [isCurrentMonthPaid, formData.targetDueMonth, availableTargetDueMonths]);
 
   // Get filtered categories based on transaction type
   const getFilteredCategories = useCallback((): Category[] => {
@@ -266,10 +294,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitAttempted(true);
     const errors = getValidationErrors();
     if (errors.length > 0) {
-      // Could show toast/alert here
-      alert(errors.join('\n'));
       return;
     }
 
@@ -531,7 +558,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
                     required
                   >
-                    {generateTargetDueMonths().map(month => (
+                    {availableTargetDueMonths.map(month => (
                       <option key={month.value} value={month.value}>
                         {month.label}
                       </option>
@@ -670,7 +697,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
             )}
 
             {/* Validation Messages */}
-            {validationErrors.length > 0 && (
+            {submitAttempted && validationErrors.length > 0 && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">Corrija os seguintes erros:</p>
                 <ul className="text-xs text-red-600 dark:text-red-400 list-disc list-inside">
