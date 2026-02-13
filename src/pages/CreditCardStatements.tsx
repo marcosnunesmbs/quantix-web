@@ -230,7 +230,13 @@ const CreditCardStatements: React.FC = () => {
                     {transaction.name}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {formatDate(transaction.date)} • {transaction.category?.name || 'Sem categoria'}
+                    {formatDate(transaction.date)} • 
+                    <span
+                          className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                          style={{ backgroundColor: transaction.category?.color ?? '#ef4444' }}
+                        >
+                            {transaction.category?.name || 'Sem categoria'}
+                        </span>
                   </p>
                 </div>
                 <div className="text-right">
