@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { getStatementStatus, payCreditCardStatement } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
 import { PaymentStatementRequest } from '../types/apiTypes';
@@ -25,7 +26,6 @@ export const usePayCreditCardStatement = () => {
     mutationFn: ({ cardId, paymentData }: { cardId: string; paymentData: PaymentStatementRequest }) =>
       payCreditCardStatement(cardId, paymentData),
     onSuccess: (_, variables) => {
-      // Invalidar queries relacionadas
       queryClient.invalidateQueries({
         queryKey: queryKeys.creditCardStatement(variables.cardId, variables.paymentData.month),
       });
@@ -35,6 +35,10 @@ export const usePayCreditCardStatement = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success('Fatura paga com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao pagar fatura.');
     },
   });
 };

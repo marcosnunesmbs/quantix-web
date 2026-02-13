@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import CreditCardForm from '../components/CreditCardForm';
 import CreditCardList from '../components/CreditCardList';
 import { useCreditCards } from '../hooks/useCreditCards';
@@ -68,26 +69,19 @@ const CreditCardsPage: React.FC = () => {
         const cardTransactions = await getTransactions(undefined, id);
         
         if (cardTransactions && cardTransactions.length > 0) {
-            alert('Não é possível remover o cartão pois há transações associadas a ele.');
+            toast.error('Não é possível remover o cartão pois há transações associadas a ele.');
             return;
         }
     } catch (e) {
-        // If the check fails (e.g. API doesn't support the filter), we proceed to try delete 
-        // and handle the error there.
         console.warn('Could not verify transactions for card, proceeding to delete attempt', e);
     }
 
-    if (window.confirm('Are you sure you want to delete this credit card? This action cannot be undone.')) {
-      try {
-        await deleteCreditCard(id);
-      } catch (err: any) {
-        console.error('Error deleting credit card:', err);
-         // If backend returns specific error message for this case
-        if (err.response?.status === 409 || err.message?.includes('transactions')) {
-             alert('Não é possível remover o cartão pois há transações associadas a ele.');
-        } else {
-             alert('Failed to delete credit card. Please try again.');
-        }
+    try {
+      await deleteCreditCard(id);
+    } catch (err: any) {
+      console.error('Error deleting credit card:', err);
+      if (err.response?.status === 409 || err.message?.includes('transactions')) {
+        toast.error('Não é possível remover o cartão pois há transações associadas a ele.');
       }
     }
   };

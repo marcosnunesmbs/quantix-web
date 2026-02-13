@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { PaymentStatementRequest } from '../types/apiTypes';
 import { getCreditCards, createCreditCard, updateCreditCard, deleteCreditCard, getCreditCardStatement, payCreditCardStatement, CreateCreditCardRequest } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
@@ -15,6 +16,10 @@ export const useCreditCards = () => {
     mutationFn: createCreditCard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      toast.success('Cartão criado com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao criar cartão.');
     },
   });
 
@@ -23,8 +28,10 @@ export const useCreditCards = () => {
       updateCreditCard(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      // Also might need to invalidate account balance or summaries if card details like limit change? 
-      // Probably not critical for limit change, but good to be safe.
+      toast.success('Cartão atualizado com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar cartão.');
     },
   });
 
@@ -32,6 +39,10 @@ export const useCreditCards = () => {
     mutationFn: deleteCreditCard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      toast.success('Cartão excluído com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao excluir cartão.');
     },
   });
 
@@ -39,16 +50,15 @@ export const useCreditCards = () => {
     mutationFn: ({ id, paymentData }: { id: string; paymentData: PaymentStatementRequest }) =>
       payCreditCardStatement(id, paymentData),
     onSuccess: (_, variables) => {
-      // Invalida o cartão específico
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCard(variables.id) });
-      // Invalida a lista de cartões
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      // Invalida transações (novas transações de pagamento)
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      // Invalida contas (saldo pode ter mudado)
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      // Invalida resumo
       queryClient.invalidateQueries({ queryKey: ['summary'] });
+      toast.success('Fatura paga com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao pagar fatura.');
     },
   });
 

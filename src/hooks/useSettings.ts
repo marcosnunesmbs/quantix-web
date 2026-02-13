@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { getSettings, updateSettings, createSettings } from '../services/settingsApi';
 import { queryKeys } from '../lib/queryClient';
 import { Settings } from '../types/apiTypes';
@@ -36,16 +37,24 @@ export const useSettings = () => {
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(queryKeys.settings, updatedSettings);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
+      toast.success('Configurações salvas com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao salvar configurações.');
     },
   });
 
   const createMutation = useMutation({
-      mutationFn: createSettings,
-      onSuccess: (newSettings) => {
-          queryClient.setQueryData(queryKeys.settings, newSettings);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-      }
-  })
+    mutationFn: createSettings,
+    onSuccess: (newSettings) => {
+      queryClient.setQueryData(queryKeys.settings, newSettings);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+      toast.success('Configurações salvas com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao salvar configurações.');
+    },
+  });
 
   return {
     settings,

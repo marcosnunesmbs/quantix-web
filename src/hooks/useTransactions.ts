@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { getTransactions, createTransaction, payTransaction, unpayTransaction, deleteTransaction, updateTransaction } from '../services/transactionsApi';
 import { queryKeys } from '../lib/queryClient';
 import { CreateTransactionRequest } from '../types/apiTypes';
 
 export const useTransactions = (month?: string) => {
   const queryClient = useQueryClient();
-  
+
   const { data: transactions = [], isLoading, error } = useQuery({
     queryKey: queryKeys.transactions(month),
     queryFn: () => getTransactions(month),
@@ -14,21 +15,20 @@ export const useTransactions = (month?: string) => {
   const createMutation = useMutation({
     mutationFn: createTransaction,
     onSuccess: () => {
-      // Invalida a lista de transações
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
-      // Invalida todas as transações (sem filtro de mês)
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      // Invalida o resumo (receitas/despesas mudaram)
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      // Invalida contas (saldos podem ter mudado)
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      // Invalida cartões de crédito (se houver transação de cartão)
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      toast.success('Transação criada com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao criar transação.');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data, mode }: { id: string; data: Partial<CreateTransactionRequest>; mode?: 'SINGLE' | 'PENDING' | 'ALL' }) => 
+    mutationFn: ({ id, data, mode }: { id: string; data: Partial<CreateTransactionRequest>; mode?: 'SINGLE' | 'PENDING' | 'ALL' }) =>
       updateTransaction(id, data, mode),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions(month) });
@@ -36,6 +36,10 @@ export const useTransactions = (month?: string) => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      toast.success('Transação atualizada com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar transação.');
     },
   });
 
@@ -46,8 +50,11 @@ export const useTransactions = (month?: string) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      // Invalida cartões pois o pagamento pode ter sido feito com saldo de conta e afetar statement status
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      toast.success('Transação marcada como paga!');
+    },
+    onError: () => {
+      toast.error('Erro ao marcar transação como paga.');
     },
   });
 
@@ -58,6 +65,10 @@ export const useTransactions = (month?: string) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      toast.success('Pagamento desfeito com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao desfazer pagamento.');
     },
   });
 
@@ -69,6 +80,10 @@ export const useTransactions = (month?: string) => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      toast.success('Transação excluída com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao excluir transação.');
     },
   });
 

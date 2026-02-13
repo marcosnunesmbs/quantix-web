@@ -332,7 +332,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       setFormData(prev => ({ ...prev, categoryId: newCategory.id }));
     } catch (err) {
       console.error('Error creating category:', err);
-      alert('Erro ao criar categoria');
     }
   };
 

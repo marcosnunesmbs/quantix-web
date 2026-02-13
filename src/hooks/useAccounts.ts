@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { CreateAccountRequest } from '../types/apiTypes';
 import { getAccounts, createAccount, updateAccount, deleteAccount, getAccountTransactions } from '../services/accountsApi';
 import { queryKeys } from '../lib/queryClient';
 
 export const useAccounts = () => {
   const queryClient = useQueryClient();
-  
+
   const { data: accounts = [], isLoading, error } = useQuery({
     queryKey: queryKeys.accounts,
     queryFn: getAccounts,
@@ -14,10 +15,12 @@ export const useAccounts = () => {
   const createMutation = useMutation({
     mutationFn: createAccount,
     onSuccess: () => {
-      // Invalida o cache de contas
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      // Invalida o resumo (pois pode afetar saldos)
       queryClient.invalidateQueries({ queryKey: ['summary'] });
+      toast.success('Conta criada com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao criar conta.');
     },
   });
 
@@ -25,10 +28,13 @@ export const useAccounts = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateAccountRequest> }) =>
       updateAccount(id, data),
     onSuccess: (_, variables) => {
-      // Invalida a conta específica e a lista
       queryClient.invalidateQueries({ queryKey: queryKeys.account(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
+      toast.success('Conta atualizada com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar conta.');
     },
   });
 
@@ -38,6 +44,10 @@ export const useAccounts = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success('Conta excluída com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao excluir conta.');
     },
   });
 

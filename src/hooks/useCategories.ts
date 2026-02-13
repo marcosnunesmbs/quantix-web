@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { getCategories, createCategory, deleteCategory } from '../services/categoriesApi';
 import { queryKeys } from '../lib/queryClient';
 
 export const useCategories = () => {
   const queryClient = useQueryClient();
-  
+
   const { data: categories = [], isLoading, error } = useQuery({
     queryKey: queryKeys.categories,
     queryFn: getCategories,
@@ -14,6 +15,10 @@ export const useCategories = () => {
     mutationFn: createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      toast.success('Categoria criada com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao criar categoria.');
     },
   });
 
@@ -21,6 +26,10 @@ export const useCategories = () => {
     mutationFn: deleteCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      toast.success('Categoria excluída com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao excluir categoria.');
     },
   });
 

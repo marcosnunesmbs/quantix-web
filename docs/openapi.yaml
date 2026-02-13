@@ -41,6 +41,11 @@ components:
           enum: [INCOME, EXPENSE]
           description: Type of the category
           example: "EXPENSE"
+        color:
+          type: string
+          nullable: true
+          description: Color for the category in hexadecimal format
+          example: "#FF5733"
         createdAt:
           type: string
           format: date-time
@@ -540,6 +545,12 @@ paths:
                   type: string
                   enum: [INCOME, EXPENSE]
                   example: "EXPENSE"
+                color:
+                  type: string
+                  nullable: true
+                  pattern: "^#[0-9A-Fa-f]{6}$"
+                  description: Color in hexadecimal format
+                  example: "#FF5733"
       responses:
         '201':
           description: Category created successfully
@@ -611,6 +622,12 @@ paths:
                   type: string
                   enum: [INCOME, EXPENSE]
                   example: "EXPENSE"
+                color:
+                  type: string
+                  nullable: true
+                  pattern: "^#[0-9A-Fa-f]{6}$"
+                  description: Color in hexadecimal format
+                  example: "#FF5733"
       responses:
         '200':
           description: Category updated successfully
