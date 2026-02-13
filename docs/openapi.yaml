@@ -539,6 +539,64 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
 
   /categories/{id}:
+    get:
+      summary: Get a category by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Category ID
+      responses:
+        '200':
+          description: Category found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Category not found
+
+    patch:
+      summary: Update a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Category ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Groceries"
+                type:
+                  type: string
+                  enum: [INCOME, EXPENSE]
+                  example: "EXPENSE"
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Category not found
+
     delete:
       summary: Delete a category
       parameters:
@@ -616,6 +674,95 @@ paths:
                   $ref: '#/components/schemas/CreditCard'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /credit-cards/{id}:
+    get:
+      summary: Get a credit card by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+      responses:
+        '200':
+          description: Credit card found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCard'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
+
+    patch:
+      summary: Update a credit card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Nubank Platinum"
+                brand:
+                  type: string
+                  example: "Visa"
+                limitAmount:
+                  type: number
+                  format: float
+                  example: 5000.00
+                closingDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                  example: 15
+                dueDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                  example: 22
+      responses:
+        '200':
+          description: Credit card updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditCard'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
+
+    delete:
+      summary: Delete a credit card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+      responses:
+        '200':
+          description: Credit card deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
 
   /credit-cards/{id}/statement:
     get:
@@ -839,7 +986,79 @@ paths:
         '404':
           description: Transaction not found
 
+  /transactions/{id}/unpay:
+    patch:
+      summary: Mark a transaction as unpaid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID
+      responses:
+        '200':
+          description: Transaction marked as unpaid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Transaction not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /transactions/{id}:
+    get:
+      summary: Get a transaction by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID
+      responses:
+        '200':
+          description: Transaction found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transaction not found
+
+    patch:
+      summary: Update a transaction
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Transaction ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transaction not found
+
     delete:
       summary: Delete a transaction
       parameters:

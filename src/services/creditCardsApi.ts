@@ -54,4 +54,23 @@ export const payCreditCardStatement = async (id: string, paymentData: PaymentSta
   }
 };
 
+export const updateCreditCard = async (id: string, cardData: Partial<CreateCreditCardRequest>): Promise<CreditCard> => {
+  try {
+    const response = await api.patch(`/credit-cards/${id}`, cardData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating credit card:', error);
+    throw error;
+  }
+};
+
+export const deleteCreditCard = async (id: string): Promise<void> => {
+  try {
+    await api.delete(`/credit-cards/${id}`);
+  } catch (error) {
+    console.error('Error deleting credit card:', error);
+    throw error;
+  }
+};
+
 // Additional credit card-related API functions can be added here as needed

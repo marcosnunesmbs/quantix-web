@@ -13,14 +13,15 @@ const CreditCardsPage: React.FC = () => {
     creditCards, 
     loading, 
     error, 
-    createNewCreditCard 
+    createNewCreditCard,
+    updateCreditCard,
+    deleteCreditCard
   } = useCreditCards();
 
   const handleFormSubmit = async (cardData: CreateCreditCardRequest) => {
     try {
       if (editingCard) {
-        // Update functionality would go here
-        // For now, just close the form
+        await updateCreditCard({ id: editingCard.id, data: cardData });
       } else {
         await createNewCreditCard(cardData);
       }
@@ -42,11 +43,14 @@ const CreditCardsPage: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (_id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this credit card? This action cannot be undone.')) {
-      // Delete functionality would go here
-      // For now, just show an alert
-      alert('Delete functionality would be implemented here');
+      try {
+        await deleteCreditCard(id);
+      } catch (err) {
+        console.error('Error deleting credit card:', err);
+        alert('Failed to delete credit card. Please try again.');
+      }
     }
   };
 

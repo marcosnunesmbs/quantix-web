@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PaymentStatementRequest } from '../types/apiTypes';
-import { getCreditCards, createCreditCard, getCreditCardStatement, payCreditCardStatement } from '../services/creditCardsApi';
+import { getCreditCards, createCreditCard, updateCreditCard, deleteCreditCard, getCreditCardStatement, payCreditCardStatement, CreateCreditCardRequest } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
 
 export const useCreditCards = () => {
@@ -13,6 +13,23 @@ export const useCreditCards = () => {
 
   const createMutation = useMutation({
     mutationFn: createCreditCard,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateCreditCardRequest> }) =>
+      updateCreditCard(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      // Also might need to invalidate account balance or summaries if card details like limit change? 
+      // Probably not critical for limit change, but good to be safe.
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteCreditCard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
     },
@@ -40,8 +57,12 @@ export const useCreditCards = () => {
     loading: isLoading,
     error: error?.message || null,
     createNewCreditCard: createMutation.mutateAsync,
+    updateCreditCard: updateMutation.mutateAsync,
+    deleteCreditCard: deleteMutation.mutateAsync,
     payStatement: payStatementMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
     isPaying: payStatementMutation.isPending,
   };
 };
