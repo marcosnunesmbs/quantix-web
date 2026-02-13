@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
-import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
 import TransactionEditModal from '../components/TransactionEditModal';
 import TransactionSummaryCards from '../components/TransactionSummaryCards';
 import MonthSelector from '../components/MonthSelector';
 import { useTransactions } from '../hooks/useTransactions';
-import { CreateTransactionRequest, Transaction } from '../types/apiTypes';
+import { Transaction } from '../types/apiTypes';
 
 const TransactionsPage: React.FC = () => {
-  const [showForm, setShowForm] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM format
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
@@ -17,7 +14,6 @@ const TransactionsPage: React.FC = () => {
     transactions,
     loading,
     error,
-    createNewTransaction,
     updateTransaction,
     payTransaction,
     unpayTransaction,
@@ -25,20 +21,6 @@ const TransactionsPage: React.FC = () => {
     isPaying,
     isUnpaying
   } = useTransactions(selectedMonth);
-
-  const handleFormSubmit = async (transactionData: CreateTransactionRequest) => {
-    try {
-      await createNewTransaction(transactionData);
-      setShowForm(false);
-    } catch (err) {
-      console.error('Error creating transaction:', err);
-      // In a real app, you might want to show an error message to the user
-    }
-  };
-
-  const handleFormCancel = () => {
-    setShowForm(false);
-  };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this transaction?')) {
@@ -92,13 +74,6 @@ const TransactionsPage: React.FC = () => {
             selectedMonth={selectedMonth} 
             onMonthChange={setSelectedMonth} 
           />
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            <Plus size={16} />
-            Add Transaction
-          </button>
         </div>
       </div>
 
@@ -120,13 +95,6 @@ const TransactionsPage: React.FC = () => {
             isUnpaying={isUnpaying}
           />
         </div>
-      )}
-
-      {showForm && (
-        <TransactionForm 
-          onSubmit={handleFormSubmit} 
-          onCancel={handleFormCancel} 
-        />
       )}
 
       <TransactionEditModal
