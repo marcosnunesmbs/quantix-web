@@ -3,6 +3,7 @@ import { X, Save } from 'lucide-react';
 import { Transaction, Category, Account } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
+import CurrencyInput from './CurrencyInput';
 
 const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   isOpen,
@@ -14,7 +15,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   const { accounts } = useAccounts();
   
   const [name, setName] = useState('');
-  const [amount, setAmount] = useState(''); // Use string for input handling
+  const [amount, setAmount] = useState(0); // number
   const [date, setDate] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -26,7 +27,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   useEffect(() => {
     if (transaction) {
       setName(transaction.name);
-      setAmount(transaction.amount.toString());
+      setAmount(transaction.amount);
       setDate(transaction.date ? new Date(transaction.date).toISOString().split('T')[0] : '');
       setCategoryId(transaction.categoryId || '');
       setPaymentMethod(transaction.paymentMethod || 'CASH');
@@ -57,7 +58,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
     try {
       const updateData: any = {
         name,
-        amount: parseFloat(amount),
+        amount, // number
         categoryId: categoryId || null,
       };
 
@@ -130,14 +131,10 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Valor
               </label>
-              <input
-                type="number"
-                required
-                step="0.01"
-                min="0"
+              <CurrencyInput
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
+                onChange={setAmount}
+                required
               />
             </div>
 

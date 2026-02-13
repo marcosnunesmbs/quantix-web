@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { CreateCreditCardRequest } from '../types/apiTypes';
+import CurrencyInput from './CurrencyInput';
 
 interface CreditCardFormProps {
   onSubmit: (cardData: CreateCreditCardRequest) => void;
@@ -82,14 +83,9 @@ const CreditCardForm: React.FC<CreditCardFormProps> = ({ onSubmit, onCancel, ini
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Limit Amount
               </label>
-              <input
-                type="number"
-                name="limitAmount"
-                value={formData.limitAmount || ''}
-                onChange={handleChange}
-                step="0.01"
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              <CurrencyInput
+                value={formData.limitAmount}
+                onChange={(value) => setFormData(prev => ({ ...prev, limitAmount: value }))}
                 placeholder="0.00"
                 required
               />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { CreateAccountRequest } from '../types/apiTypes';
+import CurrencyInput from './CurrencyInput';
 
 interface AccountFormProps {
   onSubmit: (accountData: CreateAccountRequest) => void;
@@ -83,14 +84,9 @@ const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialDa
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Initial Balance
               </label>
-              <input
-                type="number"
-                name="initialBalance"
-                value={formData.initialBalance || ''}
-                onChange={handleChange}
-                step="0.01"
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              <CurrencyInput
+                value={formData.initialBalance}
+                onChange={(value) => setFormData(prev => ({ ...prev, initialBalance: value }))}
                 placeholder="0.00"
                 required
               />

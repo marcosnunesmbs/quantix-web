@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Repeat, CreditCard, Plus } from 'lucide-react';
 import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType, CreateCategoryRequest } from '../types/apiTypes';
+import CurrencyInput from './CurrencyInput';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
@@ -362,14 +363,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Valor (R$) *
               </label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount || ''}
-                onChange={handleChange}
-                step="0.01"
-                min="0.01"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+              <CurrencyInput
+                value={formData.amount}
+                onChange={(value) => setFormData(prev => ({ ...prev, amount: value }))}
                 placeholder="0,00"
                 required
               />
