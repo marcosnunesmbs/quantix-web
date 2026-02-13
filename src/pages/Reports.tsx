@@ -128,41 +128,62 @@ const ReportsPage: React.FC = () => {
           </div>
 
           {summary.creditCardStatements && summary.creditCardStatements.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+            <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Credit Card Statements</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Card
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Due Date
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Total Amount
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {summary.creditCardStatements.map((_statement, index) => (
-                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-750">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{summary.creditCardStatements[index].cardName}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{summary.creditCardStatements[index].dueDate}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {formatCurrency(summary.creditCardStatements[index].total)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {summary.creditCardStatements.map((statement, index) => {
+                  const getCardGradient = (name: string) => {
+                    const n = name.toLowerCase();
+                    if (n.includes('nubank')) return 'bg-gradient-to-br from-[#820AD1] to-[#400566]';
+                    if (n.includes('itau') || n.includes('itaú')) return 'bg-gradient-to-br from-[#FF6200] to-[#F59000]';
+                    if (n.includes('inter')) return 'bg-gradient-to-br from-[#FF7A00] to-[#FF9000]';
+                    if (n.includes('c6')) return 'bg-gradient-to-br from-[#242424] to-[#000000]';
+                    if (n.includes('elo')) return 'bg-gradient-to-br from-[#fbbf24] to-[#d97706]';
+                    return 'bg-gradient-to-br from-emerald-600 to-emerald-800';
+                  };
+
+                  return (
+                    <div key={index} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+                       {/* Valid Card Visual */}
+                       <div className={`relative w-full aspect-[1.586/1] rounded-xl p-5 text-white shadow-md ${getCardGradient(statement.cardName)} flex flex-col justify-between overflow-hidden`}>
+                        
+                        {/* Decorative Curves overlay */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full transform translate-x-1/3 -translate-y-1/2 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full transform -translate-x-1/3 translate-y-1/2 pointer-events-none"></div>
+
+                        {/* Card Header */}
+                        <div className="flex justify-between items-start z-10">
+                          <div>
+                            <h3 className="font-bold text-lg tracking-wide truncate max-w-[140px]" title={statement.cardName}>
+                              {statement.cardName}
+                            </h3>
+                            <div className="flex gap-1 mt-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                              <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                              <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                              <div className="w-1.5 h-1.5 rounded-full bg-white opacity-80"></div>
+                              <span className="text-sm font-mono opacity-80 ml-1">****</span>
+                            </div>
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+
+                        {/* Card Footer - Amount and Date */}
+                        <div className="flex flex-col gap-1 z-10">
+                          <div className="flex justify-between items-end">
+                             <div className="flex flex-col">
+                                <span className="text-[10px] uppercase opacity-80 tracking-wider">Due Date</span>
+                                <span className="font-mono text-sm font-medium">{new Date(statement.dueDate).toLocaleDateString()}</span>
+                             </div>
+                             <div className="flex flex-col items-end">
+                                <span className="text-[10px] uppercase opacity-80 tracking-wider">Total</span>
+                                <span className="font-bold text-xl">{formatCurrency(statement.total)}</span>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

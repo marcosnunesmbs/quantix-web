@@ -22,8 +22,8 @@ const BottomNavigation: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pb-safe md:hidden shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center justify-between px-6 py-2 pb-4">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pb-safe md:hidden shadow-xl">
+      <div className="flex items-center justify-between px-6 pb-2">
         
         {/* Left Side */}
         <div className="flex items-center gap-8">
@@ -52,7 +52,7 @@ const BottomNavigation: React.FC = () => {
         </div>
 
         {/* Center Floating Button */}
-        <div className="relative -top-6">
+        <div className="relative -top-5">
           <button
             onClick={openModal}
             className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
