@@ -8,14 +8,6 @@ const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const { openModal } = useTransactionModal();
 
-  const navItems = [
-    { icon: Home, path: '/dashboard', label: 'Home' },
-    { icon: ArrowLeftRight, path: '/transactions', label: 'Transactions' },
-    // Center item is skipped in map to handle manually
-    { icon: CreditCard, path: '/credit-cards', label: 'Cards' },
-    { icon: BarChart, path: '/reports', label: 'Reports' },
-  ];
-
   const isActive = (path: string) => {
     if (path === '/dashboard' && location.pathname === '/') return true;
     return location.pathname === path;

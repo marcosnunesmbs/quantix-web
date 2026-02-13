@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
-import { Transaction, Category, Account } from '../types/apiTypes';
+import { Transaction } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import CurrencyInput from './CurrencyInput';
+
+interface TransactionEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (id: string, data: any) => Promise<void>;
+  transaction: Transaction | null;
+}
 
 const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   isOpen,

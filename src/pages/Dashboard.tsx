@@ -1,34 +1,8 @@
 import { useState } from 'react';
-import { AreaChart, Area, BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Plus, ArrowUpRight, TrendingUp, Calendar, CreditCard as CardIcon, DollarSign, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard as CardIcon } from 'lucide-react';
 import SummaryCard from '../components/SummaryCard';
 import MonthSelector from '../components/MonthSelector';
 import { useSummary } from '../hooks/useSummary';
-
-// Mock Data for charts (until we integrate with real API)
-const barData = [
-  { name: 'JAN', value: 2000 },
-  { name: 'FEB', value: 4500 },
-  { name: 'MAR', value: 3000 },
-  { name: 'APR', value: 5500 },
-  { name: 'MAY', value: 4000 },
-  { name: 'JUN', value: 4800 },
-];
-
-const lineData = [
-  { value: 1000 },
-  { value: 2000 },
-  { value: 1500 },
-  { value: 2800 },
-  { value: 2200 },
-  { value: 3500 },
-];
-
-const transactions = [
-    { id: 1, name: 'Dribbble Design', date: '16 Jun 2025', time: '10:30 PM', status: 'Successful', amount: '89.345.23', logo: 'https://cdn.worldvectorlogo.com/logos/dribbble-icon-1.svg', type: 'subscription' },
-    { id: 2, name: 'Google Pay', date: '15 Jun 2025', time: '11:45 PM', status: 'Successful', amount: '12.345.89', logo: 'https://cdn.worldvectorlogo.com/logos/google-pay-1.svg', type: 'income' },
-    { id: 3, name: 'Amazon Shopping', date: '14 Jun 2025', time: '10:15 PM', status: 'Successful', amount: '32.123.67', logo: 'https://cdn.worldvectorlogo.com/logos/amazon-icon-1.svg', type: 'shopping' },
-];
 
 const Dashboard = () => {
   // Default to current month
