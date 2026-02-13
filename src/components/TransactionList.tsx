@@ -160,7 +160,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                 {onEdit && (
+                 {onEdit && !transaction.paid && (
                   <button
                     onClick={() => onEdit(transaction)}
                     className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -263,7 +263,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {onEdit && (
+                    {onEdit && !transaction.paid && (
                       <button
                         onClick={() => onEdit(transaction)}
                         className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

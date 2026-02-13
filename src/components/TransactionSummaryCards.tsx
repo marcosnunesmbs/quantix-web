@@ -84,7 +84,7 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({ trans
           <div className="flex items-center justify-between text-sm mt-1">
             <div className="flex items-center text-amber-600 dark:text-amber-400">
               <Clock className="h-4 w-4 mr-1" />
-              <span>Previstas</span>
+              <span>Pendentes</span>
             </div>
             <span className="font-medium">{formatCurrency(pendingIncome)}</span>
           </div>
@@ -119,7 +119,7 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({ trans
           <div className="flex items-center justify-between text-sm mt-1">
             <div className="flex items-center text-amber-600 dark:text-amber-400">
               <Clock className="h-4 w-4 mr-1" />
-              <span>Previstas</span>
+              <span>Pendentes</span>
             </div>
             <span className="font-medium">{formatCurrency(pendingExpenses)}</span>
           </div>
@@ -168,14 +168,14 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({ trans
               {formatCurrency(balanceProjected)}
             </span>
           </div>
-          <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+          {/* <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between text-sm font-semibold">
               <span className="text-gray-800 dark:text-gray-200">Diferença</span>
               <span className={`${balanceProjected - balancePaid >= 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
                 {balanceProjected - balancePaid >= 0 ? '+' : ''}{formatCurrency(balanceProjected - balancePaid)}
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

@@ -2,20 +2,23 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
+import TransactionEditModal from '../components/TransactionEditModal';
 import TransactionSummaryCards from '../components/TransactionSummaryCards';
 import MonthSelector from '../components/MonthSelector';
 import { useTransactions } from '../hooks/useTransactions';
-import { CreateTransactionRequest } from '../types/apiTypes';
+import { CreateTransactionRequest, Transaction } from '../types/apiTypes';
 
 const TransactionsPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
   const {
     transactions,
     loading,
     error,
     createNewTransaction,
+    updateTransaction,
     payTransaction,
     unpayTransaction,
     removeTransaction,
@@ -64,6 +67,19 @@ const TransactionsPage: React.FC = () => {
     }
   };
 
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const handleUpdate = async (id: string, data: any) => {
+    try {
+      await updateTransaction({ id, data });
+      setEditingTransaction(null);
+    } catch (err) {
+      console.error('Error updating transaction:', err);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -99,6 +115,7 @@ const TransactionsPage: React.FC = () => {
             onPay={handlePay}
             onUnpay={handleUnpay}
             onDelete={handleDelete}
+            onEdit={handleEdit}
             isPaying={isPaying}
             isUnpaying={isUnpaying}
           />
@@ -111,6 +128,13 @@ const TransactionsPage: React.FC = () => {
           onCancel={handleFormCancel} 
         />
       )}
+
+      <TransactionEditModal
+        isOpen={!!editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        onSave={handleUpdate}
+        transaction={editingTransaction}
+      />
     </div>
   );
 };

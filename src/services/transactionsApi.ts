@@ -55,4 +55,14 @@ export const deleteTransaction = async (id: string): Promise<void> => {
   }
 };
 
+export const updateTransaction = async (id: string, transactionData: Partial<CreateTransactionRequest>): Promise<Transaction> => {
+  try {
+    const response = await api.patch(`/transactions/${id}`, transactionData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+    throw error;
+  }
+};
+
 // Additional transaction-related API functions can be added here as needed
