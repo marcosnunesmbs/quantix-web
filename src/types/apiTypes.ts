@@ -4,6 +4,7 @@ export interface Category {
   id: string;
   name: string;
   type: 'INCOME' | 'EXPENSE';
+  color?: string;
   createdAt: string; // date-time format
 }
 
@@ -125,6 +126,12 @@ export interface CreateAccountRequest {
 export interface CreateCategoryRequest {
   name: string;
   type: 'INCOME' | 'EXPENSE';
+  color?: string;
+}
+
+export interface UpdateCategoryRequest {
+  name?: string;
+  color?: string;
 }
 
 export interface CreateCreditCardRequest {

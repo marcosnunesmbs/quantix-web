@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { getCategories, createCategory, deleteCategory } from '../services/categoriesApi';
+import { getCategories, createCategory, updateCategory, deleteCategory } from '../services/categoriesApi';
 import { queryKeys } from '../lib/queryClient';
 
 export const useCategories = () => {
@@ -22,6 +22,17 @@ export const useCategories = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: updateCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+      toast.success('Categoria atualizada com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar categoria.');
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: deleteCategory,
     onSuccess: () => {
@@ -38,8 +49,10 @@ export const useCategories = () => {
     loading: isLoading,
     error: error?.message || null,
     createNewCategory: createMutation.mutateAsync,
+    updateExistingCategory: updateMutation.mutateAsync,
     removeCategory: deleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 };

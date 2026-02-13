@@ -618,10 +618,6 @@ paths:
                 name:
                   type: string
                   example: "Groceries"
-                type:
-                  type: string
-                  enum: [INCOME, EXPENSE]
-                  example: "EXPENSE"
                 color:
                   type: string
                   nullable: true

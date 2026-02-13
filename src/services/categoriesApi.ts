@@ -1,9 +1,10 @@
 import api from './api';
-import { Category } from '../types/apiTypes';
+import { Category, UpdateCategoryRequest } from '../types/apiTypes';
 
 export interface CreateCategoryRequest {
   name: string;
   type: 'INCOME' | 'EXPENSE';
+  color?: string;
 }
 
 export const getCategories = async (): Promise<Category[]> => {
@@ -27,6 +28,16 @@ export const createCategory = async (categoryData: CreateCategoryRequest): Promi
   }
 };
 
+export const updateCategory = async ({ id, data }: { id: string; data: UpdateCategoryRequest }): Promise<Category> => {
+  try {
+    const response = await api.patch(`/categories/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating category:', error);
+    throw error;
+  }
+};
+
 export const deleteCategory = async (id: string): Promise<void> => {
   try {
     await api.delete(`/categories/${id}`);
@@ -35,5 +46,3 @@ export const deleteCategory = async (id: string): Promise<void> => {
     throw error;
   }
 };
-
-// Additional category-related API functions can be added here as needed

@@ -3,41 +3,45 @@ import { Plus } from 'lucide-react';
 import CategoryForm from '../components/CategoryForm';
 import CategoryList from '../components/CategoryList';
 import { useCategories } from '../hooks/useCategories';
-import { CreateCategoryRequest } from '../services/categoriesApi';
+import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types/apiTypes';
 
 const CategoriesPage: React.FC = () => {
-  const [showForm, setShowForm] = useState(false);
-  
-  const { 
-    categories, 
-    loading, 
-    error, 
-    createNewCategory, 
-    removeCategory 
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  const {
+    categories,
+    loading,
+    error,
+    createNewCategory,
+    updateExistingCategory,
+    removeCategory
   } = useCategories();
 
-  const handleFormSubmit = async (categoryData: CreateCategoryRequest) => {
+  const handleCreateSubmit = async (categoryData: CreateCategoryRequest) => {
     try {
       await createNewCategory(categoryData);
-      setShowForm(false);
+      setShowCreateForm(false);
     } catch (err) {
       console.error('Error creating category:', err);
-      // In a real app, you might want to show an error message to the user
     }
   };
 
-  const handleFormCancel = () => {
-    setShowForm(false);
+  const handleEditSubmit = async (data: UpdateCategoryRequest) => {
+    if (!editingCategory) return;
+    try {
+      await updateExistingCategory({ id: editingCategory.id, data });
+      setEditingCategory(null);
+    } catch (err) {
+      console.error('Error updating category:', err);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
-      try {
-        await removeCategory(id);
-      } catch (err) {
-        console.error('Error deleting category:', err);
-        // In a real app, you might want to show an error message to the user
-      }
+    try {
+      await removeCategory(id);
+    } catch (err) {
+      console.error('Error deleting category:', err);
     }
   };
 
@@ -45,34 +49,43 @@ const CategoriesPage: React.FC = () => {
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Categories</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your transaction categories</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Categorias</h1>
+          <p className="text-gray-600 dark:text-gray-400">Gerencie suas categorias de transações</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={() => setShowCreateForm(true)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} />
-          Add Category
+          Adicionar Categoria
         </button>
       </div>
 
-      {loading && <div className="text-center py-8">Loading categories...</div>}
-      {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
-      
+      {loading && <div className="text-center py-8">Carregando categorias...</div>}
+      {error && <div className="text-center py-8 text-red-500">Erro: {error}</div>}
+
       {!loading && !error && (
-        <div>
-          <CategoryList 
-            categories={categories} 
-            onDelete={handleDelete}
-          />
-        </div>
+        <CategoryList
+          categories={categories}
+          onEdit={(category) => setEditingCategory(category)}
+          onDelete={handleDelete}
+        />
       )}
 
-      {showForm && (
-        <CategoryForm 
-          onSubmit={handleFormSubmit} 
-          onCancel={handleFormCancel} 
+      {showCreateForm && (
+        <CategoryForm
+          mode="create"
+          onSubmit={handleCreateSubmit}
+          onCancel={() => setShowCreateForm(false)}
+        />
+      )}
+
+      {editingCategory && (
+        <CategoryForm
+          mode="edit"
+          category={editingCategory}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setEditingCategory(null)}
         />
       )}
     </div>

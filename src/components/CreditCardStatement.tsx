@@ -61,13 +61,16 @@ const CreditCardStatement: React.FC<CreditCardStatementProps> = ({ statement }) 
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Date
+                    Data
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Description
+                    Descrição
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Amount
+                    Categoria
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Valor
                   </th>
                 </tr>
               </thead>
@@ -81,6 +84,18 @@ const CreditCardStatement: React.FC<CreditCardStatementProps> = ({ statement }) 
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">{transaction.name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {transaction.category ? (
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                          style={{ backgroundColor: transaction.category.color ?? '#ef4444' }}
+                        >
+                          {transaction.category.name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-red-600 dark:text-red-400">

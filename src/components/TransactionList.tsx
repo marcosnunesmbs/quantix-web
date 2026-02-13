@@ -224,10 +224,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
             {/* Bottom Row: Category & Status */}
             <div className="flex justify-between items-center mt-2">
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                 {transaction.category?.name || 'Uncategorized'}
-              </span>
-              
+              {transaction.category ? (
+                <span
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                  style={{ backgroundColor: transaction.category.color ?? (transaction.category.type === 'INCOME' ? '#22c55e' : '#ef4444') }}
+                >
+                  {transaction.category.name}
+                </span>
+              ) : (
+                <span className="text-xs text-gray-400 dark:text-gray-500">Sem categoria</span>
+              )}
+
                {/* Status Button */}
                {transaction.paid ? (
                   <button
@@ -327,10 +334,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
                 {/* Bottom Row: Category & Status */}
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {transaction.category?.name || 'Uncategorized'}
-                  </span>
-                  
+                  {transaction.category ? (
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                      style={{ backgroundColor: transaction.category.color ?? (transaction.category.type === 'INCOME' ? '#22c55e' : '#ef4444') }}
+                    >
+                      {transaction.category.name}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-gray-400 dark:text-gray-500">Sem categoria</span>
+                  )}
+
                   {/* Status Button */}
                   <button
                     onClick={() => onUnpay && handleUnpayClick(transaction)}
