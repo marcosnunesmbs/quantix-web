@@ -14,6 +14,7 @@ Quantix Finance é um dashboard financeiro moderno construído com React, TypeSc
 - **Design Responsivo**: Otimizado para diferentes tamanhos de tela
 - **Temas Escuros/Claros**: Personalização de aparência conforme preferência do usuário
 - **Implantação Containerizada**: Fácil implantação usando Docker e Docker Compose
+- **Segurança Aprimorada**: Execução como usuário não-root para reduzir superfície de ataque
 
 ## Como Usar Esta Imagem
 
