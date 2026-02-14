@@ -8,6 +8,11 @@ import { ThemeProvider } from './context/ThemeContext.tsx'
 import { TransactionModalProvider } from './context/TransactionModalContext.tsx'
 import { queryClient } from './lib/queryClient.ts'
 
+// Register PWA service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
