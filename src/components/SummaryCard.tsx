@@ -17,13 +17,13 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
   trend 
 }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 transition-all duration-300 hover:shadow-md">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6 transition-all duration-300 hover:shadow-md">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</p>
-          <p className="text-2xl font-bold mt-1 dark:text-white">{value}</p>
+        <div className="min-w-0 mr-2">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">{title}</p>
+          <p className="text-lg sm:text-2xl font-bold mt-1 dark:text-white truncate">{value}</p>
         </div>
-        <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+        <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex-shrink-0">
           {icon || <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />}
         </div>
       </div>

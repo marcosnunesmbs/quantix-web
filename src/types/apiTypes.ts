@@ -101,6 +101,13 @@ export interface CreditCardExpense {
   dueDate?: string | null;
 }
 
+export interface AccountSummary {
+  accountId: string;
+  accountName: string;
+  accountType: 'BANK_ACCOUNT' | 'WALLET' | 'SAVINGS_ACCOUNT' | 'INVESTMENT_ACCOUNT' | 'OTHER';
+  balance: number;
+}
+
 export interface Summary {
   period: {
     month?: string;
@@ -110,9 +117,11 @@ export interface Summary {
   income: number;
   expenses: number;
   balance: number;
+  totalBalance?: number;
   creditCardExpenses: CreditCardExpense[];
   expensesByCategory: CategoryBreakdown[];
   incomeByCategory: CategoryBreakdown[];
+  accounts?: AccountSummary[];
 }
 
 export interface CreateTransactionRequest {

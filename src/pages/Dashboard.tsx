@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, CreditCard as CardIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CreditCard as CardIcon, Landmark, Wallet, PiggyBank, Layers } from 'lucide-react';
 import SummaryCard from '../components/SummaryCard';
 import MonthSelector from '../components/MonthSelector';
 import DashboardCreditCardInvoices from '../components/DashboardCreditCardInvoices';
@@ -8,6 +8,25 @@ import { useSummary } from '../hooks/useSummary';
 import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
+import { AccountSummary } from '../types/apiTypes';
+
+const getAccountIcon = (type: AccountSummary['accountType']) => {
+  switch (type) {
+    case 'BANK_ACCOUNT':       return <Landmark className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+    case 'WALLET':             return <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
+    case 'SAVINGS_ACCOUNT':    return <PiggyBank className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
+    case 'INVESTMENT_ACCOUNT': return <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+    default:                   return <Layers className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+  }
+};
+
+const accountTypeKey: Record<AccountSummary['accountType'], string> = {
+  BANK_ACCOUNT: 'bank_account',
+  WALLET: 'wallet',
+  SAVINGS_ACCOUNT: 'savings_account',
+  INVESTMENT_ACCOUNT: 'investment_account',
+  OTHER: 'other',
+};
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -62,32 +81,68 @@ const Dashboard = () => {
 
       {!loading && !error && summary && (
         <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <SummaryCard
-              title={t('income')}
-              value={formatCurrency(summary.income)}
-              trend="positive"
-              icon={<TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />}
-            />
-            <SummaryCard
-              title={t('expenses')}
-              value={formatCurrency(summary.expenses)}
-              trend="negative"
-              icon={<TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />}
-            />
-            <SummaryCard
-              title={t('net_balance')}
-              value={formatCurrency(summary.balance)}
-              trend={summary.balance >= 0 ? 'positive' : 'negative'}
-              icon={<DollarSign className="h-6 w-6 text-blue-600 dark:text-blue-400" />}
-            />
-            <SummaryCard
-              title={t('credit_card_due')}
-              value={formatCurrency(totalCreditCard)}
-              trend="negative"
-              icon={<CardIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />}
-            />
+          {/* Top Section: Balance Card (left) + 2x2 Summary Cards (right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left: Total Balance + Account List */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                {t('total_balance')}
+              </p>
+              <p className="text-4xl font-bold text-gray-900 dark:text-white mt-1 mb-6">
+                {formatCurrency(summary.totalBalance ?? 0)}
+              </p>
+              <div className="border-t border-gray-100 dark:border-gray-700 mb-4" />
+              <div className="space-y-3">
+                {(summary.accounts ?? []).map((account) => (
+                  <div key={account.accountId} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                        {getAccountIcon(account.accountType)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {account.accountName}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {t(accountTypeKey[account.accountType])}
+                        </p>
+                      </div>
+                    </div>
+                    <p className={`text-sm font-semibold ${account.balance >= 0 ? 'text-gray-900 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
+                      {formatCurrency(account.balance)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: 2x2 Summary Cards */}
+            <div className="grid grid-cols-2 gap-4 content-start">
+              <SummaryCard
+                title={t('income')}
+                value={formatCurrency(summary.income)}
+                trend="positive"
+                icon={<TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />}
+              />
+              <SummaryCard
+                title={t('expenses')}
+                value={formatCurrency(summary.expenses)}
+                trend="negative"
+                icon={<TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />}
+              />
+              <SummaryCard
+                title={t('net_balance')}
+                value={formatCurrency(summary.balance)}
+                trend={summary.balance >= 0 ? 'positive' : 'negative'}
+                icon={<DollarSign className="h-6 w-6 text-blue-600 dark:text-blue-400" />}
+              />
+              <SummaryCard
+                title={t('credit_card_due')}
+                value={formatCurrency(totalCreditCard)}
+                trend="negative"
+                icon={<CardIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />}
+              />
+            </div>
           </div>
 
           {/* Credit Card Invoices */}

@@ -374,13 +374,23 @@ components:
         income:
           type: number
           format: float
-          description: Total income for the period
+          description: Total income for the period (paid + pending)
           example: 10000.00
         expenses:
           type: number
           format: float
-          description: Total expenses for the period
+          description: Total expenses for the period (paid + pending)
           example: 4000.00
+        pendingIncome:
+          type: number
+          format: float
+          description: Sum of income transactions not yet marked as received
+          example: 1000.00
+        pendingExpenses:
+          type: number
+          format: float
+          description: Sum of expense transactions not yet marked as paid
+          example: 500.00
         balance:
           type: number
           format: float
@@ -411,6 +421,11 @@ components:
                 nullable: true
                 description: Statement due date (only present when queried by month)
                 example: "2026-03-22"
+              isPaid:
+                type: boolean
+                nullable: true
+                description: Whether the statement is fully paid (only present when queried by month)
+                example: false
         expensesByCategory:
           type: array
           description: Expense totals grouped by category, sorted by total descending
@@ -421,6 +436,40 @@ components:
           description: Income totals grouped by category, sorted by total descending
           items:
             $ref: '#/components/schemas/CategoryBreakdown'
+        accounts:
+          type: array
+          description: >
+            All accounts with their current balance (initialBalance + paid income - paid expenses).
+            Not filtered by period.
+          items:
+            $ref: '#/components/schemas/AccountSummary'
+        totalBalance:
+          type: number
+          format: float
+          description: Sum of all account balances. Not filtered by period.
+          example: 8500.00
+
+    AccountSummary:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: Account ID
+          example: "acc-123"
+        accountName:
+          type: string
+          description: Account name
+          example: "Nubank"
+        accountType:
+          type: string
+          enum: [BANK_ACCOUNT, WALLET, SAVINGS_ACCOUNT, INVESTMENT_ACCOUNT, OTHER]
+          description: Account type
+          example: "BANK_ACCOUNT"
+        balance:
+          type: number
+          format: float
+          description: Current balance (initialBalance + paid income - paid expenses)
+          example: 2500.00
 
     CreateTransactionRequest:
       type: object
