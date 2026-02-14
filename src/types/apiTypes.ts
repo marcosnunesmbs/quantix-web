@@ -99,6 +99,7 @@ export interface CreditCardExpense {
   cardName: string;
   total: number;
   dueDate?: string | null;
+  isPaid?: boolean | null;
 }
 
 export interface AccountSummary {
@@ -116,6 +117,8 @@ export interface Summary {
   };
   income: number;
   expenses: number;
+  pendingIncome?: number;
+  pendingExpenses?: number;
   balance: number;
   totalBalance?: number;
   creditCardExpenses: CreditCardExpense[];

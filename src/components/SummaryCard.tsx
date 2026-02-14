@@ -7,14 +7,16 @@ interface SummaryCardProps {
   change?: string;
   icon?: React.ReactNode;
   trend?: 'positive' | 'negative';
+  pendingValue?: string;
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ 
-  title, 
-  value, 
-  change, 
-  icon, 
-  trend 
+const SummaryCard: React.FC<SummaryCardProps> = ({
+  title,
+  value,
+  change,
+  icon,
+  trend,
+  pendingValue,
 }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sm:p-6 transition-all duration-300 hover:shadow-md">
@@ -22,6 +24,9 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
         <div className="min-w-0 mr-2">
           <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">{title}</p>
           <p className="text-lg sm:text-2xl font-bold mt-1 dark:text-white truncate">{value}</p>
+          {pendingValue && (
+            <p className="text-xs text-amber-500 dark:text-amber-400 mt-0.5 truncate">{pendingValue}</p>
+          )}
         </div>
         <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex-shrink-0">
           {icon || <Wallet className="h-6 w-6 text-blue-600 dark:text-blue-400" />}

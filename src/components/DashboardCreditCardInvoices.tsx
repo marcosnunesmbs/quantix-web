@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText } from 'lucide-react';
+import { FileText, CheckCircle2 } from 'lucide-react';
 import { CreditCardExpense } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import { useTranslation } from 'react-i18next';
@@ -69,10 +69,17 @@ const DashboardCreditCardInvoices: React.FC<Props> = ({ expenses }) => {
               <h3 className="font-bold text-lg tracking-wide truncate max-w-[160px]" title={expense.cardName}>
                 {expense.cardName}
               </h3>
-              <div className="flex -space-x-3">
-                <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white/10" />
-                <div className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm border border-white/10" />
-              </div>
+              {expense.isPaid ? (
+                <div className="flex items-center gap-1 bg-emerald-500/30 backdrop-blur-sm border border-emerald-400/40 text-white text-xs font-medium px-2 py-1 rounded-full">
+                  <CheckCircle2 size={12} />
+                  {t('paid')}
+                </div>
+              ) : (
+                <div className="flex -space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm border border-white/10" />
+                  <div className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm border border-white/10" />
+                </div>
+              )}
             </div>
 
             {/* Card Footer */}

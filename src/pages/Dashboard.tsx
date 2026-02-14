@@ -117,18 +117,20 @@ const Dashboard = () => {
             </div>
 
             {/* Right: 2x2 Summary Cards */}
-            <div className="grid grid-cols-2 gap-4 content-start">
+            <div className="grid grid-cols-2 gap-4 content-center">
               <SummaryCard
                 title={t('income')}
                 value={formatCurrency(summary.income)}
                 trend="positive"
                 icon={<TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />}
+                pendingValue={summary.pendingIncome ? `${formatCurrency(summary.pendingIncome)} ${t('pending')}` : undefined}
               />
               <SummaryCard
                 title={t('expenses')}
                 value={formatCurrency(summary.expenses)}
                 trend="negative"
                 icon={<TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />}
+                pendingValue={summary.pendingExpenses ? `${formatCurrency(summary.pendingExpenses)} ${t('pending')}` : undefined}
               />
               <SummaryCard
                 title={t('net_balance')}
