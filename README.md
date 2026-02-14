@@ -1,87 +1,91 @@
 # Quantix Finance Dashboard
 
-A modern financial dashboard application built with React, TypeScript, and Tailwind CSS.
+Quantix Finance é um dashboard financeiro moderno construído com React, TypeScript e Tailwind CSS. A aplicação ajuda usuários a gerenciar suas finanças pessoais com uma interface intuitiva e responsiva.
 
-## Features
-- **Dashboard**: Visual overview of finances with charts and cards.
-- **Transactions**: Detailed list of transaction history.
-- **Internationalization (i18n)**: Support for multiple languages with user preference persistence.
-- **Responsive Design**: Optimized for different screen sizes.
-- **Docker Support**: Containerized deployment for easy setup and scaling.
+## Destaque: Integração com API do Quantix
 
-## Getting Started
+> **Importante**: Esta interface web consome a API do Quantix, uma API REST construída com NestJS. A API backend está disponível em: https://github.com/marcosnunesmbs/quantix
 
-1.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
+## Problema
 
-2.  **Start Development Server**
-    ```bash
-    npm run dev
-    ```
+Gerenciar finanças pessoais de forma eficiente é um desafio para muitas pessoas. Ferramentas existentes frequentemente são complexas ou não oferecem uma visão clara e acessível das finanças pessoais.
 
-3.  **Build for Production**
-    ```bash
-    npm run build
-    ```
+## Características
 
-## Running with Docker
+- **Dashboard Interativo**: Visão consolidada de finanças com gráficos e cards informativos
+- **Gestão de Transações**: Registro detalhado de histórico de transações
+- **Internacionalização (i18n)**: Suporte a múltiplos idiomas com persistência de preferências
+- **Design Responsivo**: Otimizado para diferentes tamanhos de tela
+- **Suporte a Docker**: Deploy containerizado para fácil configuração e escalabilidade
+- **Temas Escuros/Claros**: Personalização de aparência conforme preferência do usuário
 
-The application can be easily deployed using Docker. Follow these steps:
+## Stack Tecnológica
 
-1.  **Build and run with Docker Compose**
-    ```bash
-    docker-compose up --build
-    ```
-    The application will be available at `http://localhost`
-
-2.  **Or build the image manually**
-    ```bash
-    docker build -t quantix-finance .
-    ```
-
-3.  **Run the container**
-    ```bash
-    docker run -p 80:80 quantix-finance
-    ```
-
-## Internationalization (i18n)
-
-The application supports multiple languages with the following features:
-- **Supported Languages**: Portuguese (Brazil) and English (United States)
-- **Language Selection**: Users can change the interface language in the Settings page
-- **Persistence**: Language preference is saved in localStorage as part of the `quantix_settings` object
-- **Automatic Detection**: The application detects the user's preferred language from browser settings or saved preferences
-- **Fallback**: If an unsupported language is detected, the application falls back to the default language (Portuguese)
-
-### Adding New Languages
-
-To add support for a new language:
-1. Create a new JSON file in `src/locales/[language-code]/translation.json` with the translations
-2. Add the new language code to the `availableLanguages` array in `src/context/I18nContext.tsx`
-3. Add the language option to the select element in `src/pages/Settings.tsx` if needed
-
-## Docker Configuration
-
-The application includes a multi-stage Dockerfile that:
-- Builds the application using Node.js
-- Serves the built static files using nginx for optimal performance
-- Includes security best practices like using non-root user
-- Handles SPA routing correctly
-- Includes proper caching headers for static assets
-
-The nginx configuration (`nginx.conf`) is optimized for serving React applications with:
-- SPA routing support
-- Static asset caching
-- Security headers
-
-## Tech Stack
 - React 18
 - TypeScript
 - Tailwind CSS
-- Recharts (for charts)
-- Lucide React (for icons)
-- React Router DOM
-- i18next (for internationalization)
-- react-i18next (for React integration)
+- Vite (bundler)
+- Recharts (visualização de dados)
+- Lucide React (ícones)
+- React Router DOM (roteamento)
+- i18next (internacionalização)
+- React Query (gerenciamento de estado assíncrono)
+- Axios (cliente HTTP)
+
+## Instalação
+
+1. **Instalar Dependências**
+   ```bash
+   npm install
+   ```
+
+## Configuração de Variáveis de Ambiente
+
+Este projeto não requer variáveis de ambiente específicas para execução local, mas pode ser necessário configurar endpoints da API no futuro.
+
+## Execução do Projeto
+
+### Desenvolvimento
+```bash
+npm run dev
+```
+A aplicação estará disponível em `http://localhost:5173`
+
+### Produção
+```bash
+npm run build
+npm run preview
+```
+
+### Com Docker
+```bash
+# Build e execução com Docker Compose
+docker-compose up --build
+```
+A aplicação estará disponível em `http://localhost`
+
+## Exemplos de Uso Básico
+
+- Registrar novas transações financeiras
+- Visualizar relatórios de despesas e receitas
+- Gerenciar contas bancárias e cartões de crédito
+- Alterar idioma e moeda nas configurações
+
+## Estrutura de Projeto (Visão Geral)
+
+```
+src/
+├── components/     # Componentes reutilizáveis
+├── pages/          # Componentes de página
+├── layouts/        # Layouts da aplicação
+├── hooks/          # Hooks customizados
+├── services/       # Integração com APIs
+├── types/          # Tipos TypeScript
+└── utils/          # Funções utilitárias
+```
+
+## Documentação Adicional
+
+- [Arquitetura](./ARCHITECTURE.md) - Detalhes sobre a estrutura e componentes
+- [Produto](./PRODUCT.md) - Visão do produto e casos de uso
+- [Contribuição](./CONTRIBUTING.md) - Diretrizes para contribuir com o projeto
