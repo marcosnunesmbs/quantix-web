@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  quantix-web:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # Uncomment the following lines if you want to mount the source code as a volume for development
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
