@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import i18n from '../i18n';
+import { getSettings } from '../services/settingsApi';
 
 interface I18nContextType {
   currentLanguage: string;
@@ -21,7 +22,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [currentLanguage, setCurrentLanguage] = useState<string>(() => {
     // Verificar se o localStorage está disponível
     const isLocalStorageAvailable = checkLocalStorageAvailability();
-    
+
     if (isLocalStorageAvailable) {
       // Ler do objeto de configurações existente
       const settingsStr = localStorage.getItem('quantix_settings');
@@ -34,7 +35,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
           } else if (settings.language) {
             // Idioma não suportado, fazer fallback para o padrão e atualizar as configurações
             console.warn(`Idioma não suportado detectado: ${settings.language}. Fazendo fallback para o idioma padrão.`);
-            
+
             // Atualizar as configurações para remover o idioma não suportado
             const updatedSettings = {
               ...settings,
@@ -42,16 +43,23 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
               currency: settings.currency || 'BRL', // Manter a moeda existente ou usar BRL como padrão
               updatedAt: new Date().toISOString()
             };
-            
+
             localStorage.setItem('quantix_settings', JSON.stringify(updatedSettings));
             return 'pt-BR';
           }
         } catch (e) {
           console.error('Erro ao ler configurações:', e);
         }
+      } else {
+        // O objeto quantix_settings não existe, verificar se o usuário está logado
+        const apiKey = localStorage.getItem('QUANTIX_API_KEY');
+        if (apiKey) {
+          // O usuário está logado, buscar as configurações da API
+          getSettingsFromApi();
+        }
       }
     }
-    
+
     return i18n.language || 'pt-BR'; // idioma padrão
   });
   
@@ -67,6 +75,39 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
   }
+
+  // Função para buscar configurações da API
+  const getSettingsFromApi = async () => {
+    try {
+      const apiSettings = await getSettings();
+      
+      // Criar objeto quantix_settings com as configurações da API
+      const newSettings = {
+        ...apiSettings,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Salvar no localStorage
+      localStorage.setItem('quantix_settings', JSON.stringify(newSettings));
+
+      // Atualizar o estado do idioma
+      if (apiSettings.language && availableLanguages.includes(apiSettings.language)) {
+        setCurrentLanguage(apiSettings.language);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar configurações da API:', error);
+      // Se houver erro ao buscar as configurações da API, criar com valores padrão
+      const defaultSettings = {
+        userName: 'Usuário',
+        language: 'pt-BR',
+        currency: 'BRL',
+        updatedAt: new Date().toISOString()
+      };
+      
+      localStorage.setItem('quantix_settings', JSON.stringify(defaultSettings));
+      setCurrentLanguage('pt-BR');
+    }
+  };
 
   useEffect(() => {
     // Atualizar idioma do i18n
