@@ -87,16 +87,32 @@ export interface PaymentStatementRequest {
   paymentAccountId: string; // ID of the account to debit for the payment
 }
 
+export interface CategoryBreakdown {
+  categoryId: string | null;
+  categoryName: string | null;
+  color: string | null;
+  total: number;
+}
+
+export interface CreditCardExpense {
+  cardId: string;
+  cardName: string;
+  total: number;
+  dueDate?: string | null;
+}
+
 export interface Summary {
-  month: string; // YYYY-MM format
+  period: {
+    month?: string;
+    startDate?: string;
+    endDate?: string;
+  };
   income: number;
   expenses: number;
-  creditCardStatements: Array<{
-    cardName: string;
-    dueDate: string; // date format
-    total: number;
-  }>;
   balance: number;
+  creditCardExpenses: CreditCardExpense[];
+  expensesByCategory: CategoryBreakdown[];
+  incomeByCategory: CategoryBreakdown[];
 }
 
 export interface CreateTransactionRequest {

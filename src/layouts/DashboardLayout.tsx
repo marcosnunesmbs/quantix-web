@@ -25,7 +25,7 @@ const Layout = () => {
                 onClose={() => setIsSidebarOpen(false)} 
             />
             
-            <div className="flex-1 md:ml-20 transition-all duration-300">
+            <div className="flex-1 md:ml-20 transition-all duration-300 overflow-x-hidden">
                 <Header onMenuClick={() => setIsSidebarOpen(true)} />
                 <main className="pt-24 px-4 md:px-8 pb-28 md:pb-8 max-w-7xl mx-auto">
                     <Outlet />

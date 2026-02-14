@@ -117,7 +117,6 @@
   "loading_credit_cards": "Loading credit cards...",
   "loading_settings": "Loading settings...",
   "manage_preferences": "Manage your preferences",
-  "profile": "Profile",
   "localization": "Localization",
   "english": "English",
   "credit_card_statement": "Credit Card Statement",
@@ -162,6 +161,9 @@
   "unexpected_error_occurred": "An unexpected error occurred",
   "reload_page": "Reload Page",
   "delete_account": "Delete Account",
-  "confirm_delete_account_message": "Are you sure you want to delete the account \"{{accountName}}\"? This action cannot be undone."
-
+  "confirm_delete_account_message": "Are you sure you want to delete the account \"{{accountName}}\"? This action cannot be undone.",
+  "credit_card_invoices": "Monthly Invoices",
+  "expenses_by_category": "Expenses by Category",
+  "no_invoices_this_month": "No invoices this month",
+  "uncategorized": "Uncategorized"
 }

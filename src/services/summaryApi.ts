@@ -8,8 +8,8 @@ export const getMonthlySummary = async (month: string): Promise<Summary> => {
         month
       }
     });
-    // Handle both direct object response and wrapped response
-    return response.data.month ? response.data : response.data.data;
+    // Handle both direct object and wrapped { data: ... } response formats
+    return 'period' in response.data ? response.data : response.data.data;
   } catch (error) {
     console.error('Error fetching monthly summary:', error);
     throw error;

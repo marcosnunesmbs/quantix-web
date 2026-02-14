@@ -117,7 +117,6 @@
   "loading_credit_cards": "Carregando cartões de crédito...",
   "loading_settings": "Carregando configurações...",
   "manage_preferences": "Gerencie suas preferências",
-  "profile": "Perfil",
   "localization": "Localização",
   "english": "Inglês",
   "credit_card_statement": "Extrato do Cartão de Crédito",
@@ -162,5 +161,9 @@
   "unexpected_error_occurred": "Ocorreu um erro inesperado",
   "reload_page": "Recarregar Página",
   "delete_account": "Excluir Conta",
-  "confirm_delete_account_message": "Tem certeza que deseja excluir a conta \"{{accountName}}\"? Esta ação não pode ser desfeita."
+  "confirm_delete_account_message": "Tem certeza que deseja excluir a conta \"{{accountName}}\"? Esta ação não pode ser desfeita.",
+  "credit_card_invoices": "Faturas do Mês",
+  "expenses_by_category": "Despesas por Categoria",
+  "no_invoices_this_month": "Nenhuma fatura neste mês",
+  "uncategorized": "Sem Categoria"
 }

@@ -75,7 +75,7 @@ const ReportsPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 min-w-0 overflow-hidden">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('income_vs_expenses')}</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -103,7 +103,7 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 min-w-0 overflow-hidden">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('financial_distribution')}</h3>
               <div className="h-80 flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
@@ -131,11 +131,11 @@ const ReportsPage: React.FC = () => {
             </div>
           </div>
 
-          {summary.creditCardStatements && summary.creditCardStatements.length > 0 && (
+          {summary.creditCardExpenses && summary.creditCardExpenses.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('credit_card_statements')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {summary.creditCardStatements.map((statement, index) => {
+                {summary.creditCardExpenses.map((statement, index) => {
                   const getCardGradient = (name: string) => {
                     const n = name.toLowerCase();
                     if (n.includes('nubank')) return 'bg-gradient-to-br from-[#820AD1] to-[#400566]';
@@ -176,7 +176,7 @@ const ReportsPage: React.FC = () => {
                           <div className="flex justify-between items-end">
                              <div className="flex flex-col">
                                 <span className="text-[10px] uppercase opacity-80 tracking-wider">Due Date</span>
-                                <span className="font-mono text-sm font-medium">{new Date(statement.dueDate).toLocaleDateString()}</span>
+                                <span className="font-mono text-sm font-medium">{statement.dueDate ? new Date(statement.dueDate).toLocaleDateString() : '—'}</span>
                              </div>
                              <div className="flex flex-col items-end">
                                 <span className="text-[10px] uppercase opacity-80 tracking-wider">Total</span>
