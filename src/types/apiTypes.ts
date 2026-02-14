@@ -184,6 +184,38 @@ export interface UpdateSettingsRequest {
   currency?: 'BRL' | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF';
 }
 
+// Import / Export
+export interface ExportPayload {
+  version: string;
+  exportedAt: string;
+  data: {
+    settings: Settings | null;
+    categories: Category[];
+    accounts: Account[];
+    creditCards: CreditCard[];
+    recurrenceRules: RecurrenceRule[];
+    transactions: Transaction[];
+  };
+}
+
+export interface ImportRequest {
+  mode: 'reset' | 'increment';
+  version: string;
+  exportedAt: string;
+  data: {
+    settings?: Settings | null;
+    categories: Category[];
+    accounts: Account[];
+    creditCards: CreditCard[];
+    recurrenceRules: RecurrenceRule[];
+    transactions: Transaction[];
+  };
+}
+
+export interface ImportResponse {
+  message: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
 }

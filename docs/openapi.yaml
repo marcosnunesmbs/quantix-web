@@ -1476,6 +1476,132 @@ paths:
         '404':
           description: Account not found
 
+  /export:
+    get:
+      summary: Export all user data
+      description: Returns a complete backup of all user data including settings, categories, accounts, credit cards, recurrence rules, and transactions.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Export payload with all data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "1.0"
+                  exportedAt:
+                    type: string
+                    format: date-time
+                    example: "2026-02-14T21:00:00.000Z"
+                  data:
+                    type: object
+                    properties:
+                      settings:
+                        nullable: true
+                        $ref: '#/components/schemas/Settings'
+                      categories:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Category'
+                      accounts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Account'
+                      creditCards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CreditCard'
+                      recurrenceRules:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RecurrenceRule'
+                      transactions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Transaction'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /import:
+    post:
+      summary: Import user data
+      description: |
+        Imports a previously exported backup. Supports two modes:
+        - **reset**: Clears all existing data and replaces it with the imported data.
+        - **increment**: Adds new records from the import, ignoring records whose IDs already exist.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mode
+                - version
+                - exportedAt
+                - data
+              properties:
+                mode:
+                  type: string
+                  enum: [reset, increment]
+                  description: Import mode
+                  example: "reset"
+                version:
+                  type: string
+                  description: Export format version. Must be "1.0".
+                  example: "1.0"
+                exportedAt:
+                  type: string
+                  format: date-time
+                  example: "2026-02-14T21:00:00.000Z"
+                data:
+                  type: object
+                  properties:
+                    settings:
+                      nullable: true
+                      $ref: '#/components/schemas/Settings'
+                    categories:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Category'
+                    accounts:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Account'
+                    creditCards:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CreditCard'
+                    recurrenceRules:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/RecurrenceRule'
+                    transactions:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Transaction'
+      responses:
+        '200':
+          description: Import completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Import completed successfully (mode: reset)"
+        '400':
+          description: Invalid input or unsupported version
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /settings:
     post:
       summary: Create global settings (only if not exists)

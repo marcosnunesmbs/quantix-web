@@ -18,7 +18,7 @@ const Layout = () => {
     }, [syncFromApi]);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex transition-colors duration-300">
+        <div className="min-h-screen bg-[ghostwhite] dark:bg-gray-950 flex transition-colors duration-300">
             {/* Sidebar with mobile toggle state */}
             <Sidebar 
                 isOpen={isSidebarOpen} 
