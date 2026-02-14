@@ -29,9 +29,10 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 
-# Create a non-root user
-RUN addgroup -g 1001 -S nginx && \
-    adduser -S nginx -u 1001
+# Create a non-root user if it doesn't exist
+# This handles the case where nginx group/user might already exist in the base image
+RUN if ! getent group nginx >/dev/null; then addgroup -g 1001 -S nginx; fi && \
+    if ! getent passwd nginx >/dev/null; then adduser -S nginx -u 1001 -G nginx; fi
 
 # Change ownership of the html directory
 RUN chown -R nginx:nginx /usr/share/nginx/html
