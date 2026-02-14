@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTransactionModal } from '../context/TransactionModalContext';
+import { useI18n } from '../context/I18nContext';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import BottomNavigation from '../components/BottomNavigation';
@@ -10,6 +11,11 @@ import { Outlet } from 'react-router-dom';
 const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { openModal } = useTransactionModal();
+    const { syncFromApi } = useI18n();
+
+    useEffect(() => {
+        syncFromApi();
+    }, [syncFromApi]);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex transition-colors duration-300">

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useI18n } from '../context/I18nContext';
 
 const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { syncFromApi } = useI18n();
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -31,6 +33,7 @@ const Login = () => {
 
       // Se a requisição for bem-sucedida, salva a senha como API key
       localStorage.setItem('QUANTIX_API_KEY', password);
+      await syncFromApi();
       navigate('/');
     } catch (err) {
       setError('Invalid password. Please try again.');
