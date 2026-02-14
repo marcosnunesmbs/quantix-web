@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.quantix.example.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '__VITE_API_BASE_URL__';
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
