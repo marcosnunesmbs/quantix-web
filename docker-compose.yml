@@ -7,6 +7,7 @@ services:
       - "80:80"
     environment:
       - NODE_ENV=production
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     restart: unless-stopped
     # Uncomment the following lines if you want to mount the source code as a volume for development
     # volumes:
