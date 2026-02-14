@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Save, User, Globe } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { UpdateSettingsRequest, Settings } from '../types/apiTypes';
-import LanguageSelector from '../components/LanguageSelector';
 
 const SettingsPage: React.FC = () => {
   const { settings, loading, updateSettings, isUpdating, createSettings } = useSettings();

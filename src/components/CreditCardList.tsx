@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash2, FileText } from 'lucide-react';
 import { CreditCard } from '../types/apiTypes';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from 'react-i18next';
 
 interface CreditCardListProps {
   creditCards: CreditCard[];
@@ -12,7 +14,7 @@ interface CreditCardListProps {
 
 const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, onDelete }) => {
   const navigate = useNavigate();
-
+  const { t } = useTranslation();
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; cardId: string | null; cardName: string }>({
     isOpen: false,
     cardId: null,
@@ -43,9 +45,10 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
   };
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };
@@ -63,7 +66,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
   if (!creditCards || creditCards.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center text-gray-500 dark:text-gray-400">
-        No credit cards found
+        {t('no_credit_cards_found')}
       </div>
     );
   }
@@ -105,11 +108,11 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
               <div className="flex justify-between items-end z-10">
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xs opacity-75 font-medium uppercase tracking-wider">Limit</span>
+                    <span className="text-xs opacity-75 font-medium uppercase tracking-wider">{t('limit')}</span>
                     <span className="text-lg font-bold tracking-tight">{formatCurrency(card.limitAmount)}</span>
                   </div>
                   <div className="text-[11px] opacity-90 font-medium">
-                    Close: {card.closingDay} • Due: {card.dueDay}
+                    {t('close')}: {card.closingDay} • {t('due')}: {card.dueDay}
                   </div>
                 </div>
 
@@ -128,7 +131,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
                 className="p-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
               >
                 <FileText size={16} />
-                Faturas
+                {t('view_statement')}
               </button>
                {onEdit && (
                 <button
@@ -136,7 +139,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
                   className="p-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Pencil size={16} />
-                  Edit
+                  {t('edit')}
                 </button>
               )}
               {onDelete && (
@@ -145,7 +148,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
                   className="p-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Trash2 size={16} />
-                  Delete
+                  {t('delete')}
                 </button>
               )}
             </div>
@@ -155,9 +158,9 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
 
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
-        title="Excluir Cartão de Crédito"
-        message={`Tem certeza que deseja excluir o cartão "${deleteModal.cardName}"? Esta ação não pode ser desfeita.`}
-        confirmLabel="Excluir"
+        title={t('delete_credit_card')}
+        message={t('delete_credit_card_message', { cardName: deleteModal.cardName })}
+        confirmLabel={t('delete')}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

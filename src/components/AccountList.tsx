@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pencil, Trash2, Wallet } from 'lucide-react';
 import { Account } from '../types/apiTypes';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
 
 interface AccountListProps {
@@ -35,9 +36,10 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
     setDeleteModal({ isOpen: false, accountId: null, accountName: '' });
   };
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };

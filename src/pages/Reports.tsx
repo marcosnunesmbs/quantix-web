@@ -3,17 +3,21 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Calendar } from 'lucide-react';
 import MonthSelector from '../components/MonthSelector';
 import { useSummary } from '../hooks/useSummary';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
+import { useTranslation } from 'react-i18next';
 
 const ReportsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM format
   
   const { summary, loading, error } = useSummary(selectedMonth);
 
   // Format currency helper
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };
@@ -32,8 +36,8 @@ const ReportsPage: React.FC = () => {
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Reports</h1>
-          <p className="text-gray-600 dark:text-gray-400">View your financial trends and insights</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('financial_reports')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('view_financial_trends')}</p>
         </div>
         <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-4 py-2 rounded-full border border-gray-100 dark:border-gray-800 shadow-sm text-sm font-medium text-gray-600 dark:text-gray-300">
           <Calendar size={16} />
@@ -44,26 +48,26 @@ const ReportsPage: React.FC = () => {
         </div>
       </div>
 
-      {loading && <div className="text-center py-8">Loading financial report...</div>}
-      {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
+      {loading && <div className="text-center py-8">{t('loading_financial_report')}</div>}
+      {error && <div className="text-center py-8 text-red-500">{t('error_loading_financial_report', { errorMessage: error })}</div>}
       
       {!loading && !error && summary && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Total Income</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('total_income')}</h3>
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(summary.income)}
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Total Expenses</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('total_expenses')}</h3>
               <p className="text-3xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(summary.expenses)}
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Net Balance</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('net_balance')}</h3>
               <p className={`text-3xl font-bold ${summary.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {formatCurrency(summary.balance)}
               </p>
@@ -72,7 +76,7 @@ const ReportsPage: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Income vs Expenses</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('income_vs_expenses')}</h3>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -100,7 +104,7 @@ const ReportsPage: React.FC = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Distribution</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('financial_distribution')}</h3>
               <div className="h-80 flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -129,7 +133,7 @@ const ReportsPage: React.FC = () => {
 
           {summary.creditCardStatements && summary.creditCardStatements.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Credit Card Statements</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('credit_card_statements')}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {summary.creditCardStatements.map((statement, index) => {
                   const getCardGradient = (name: string) => {

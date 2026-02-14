@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 
 interface ReportChartProps {
   data: Array<{ name: string; value: number }>;
@@ -16,9 +17,10 @@ const ReportChart: React.FC<ReportChartProps> = ({
 }) => {
   // Format currency helper
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };

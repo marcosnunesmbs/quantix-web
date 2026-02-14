@@ -1,6 +1,7 @@
 import { LayoutGrid, PieChart, Wallet, LogOut, ArrowLeftRight, CreditCard, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { t } from 'i18next';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -17,13 +18,13 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   };
 
   const navItems = [
-    { icon: LayoutGrid, path: '/', label: 'Dashboard' },
-    { icon: Wallet, path: '/accounts', label: 'Accounts' },
-    { icon: ArrowLeftRight, path: '/transactions', label: 'Transactions' },
-    { icon: CreditCard, path: '/credit-cards', label: 'Credit Cards' },
-    { icon: PieChart, path: '/reports', label: 'Reports' },
-    { icon: LayoutGrid, path: '/categories', label: 'Categories' },
-    { icon: Settings, path: '/settings', label: 'Settings' },
+    { icon: LayoutGrid, path: '/', label: t('dashboard') },
+    { icon: Wallet, path: '/accounts', label: t('accounts') },
+    { icon: ArrowLeftRight, path: '/transactions', label: t('transactions') },
+    { icon: CreditCard, path: '/credit-cards', label: t('credit_cards') },
+    { icon: PieChart, path: '/reports', label: t('reports') },
+    { icon: LayoutGrid, path: '/categories', label: t('categories') },
+    { icon: Settings, path: '/settings', label: t('settings') },
   ];
 
   return (

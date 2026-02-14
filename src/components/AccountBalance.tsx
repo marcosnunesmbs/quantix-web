@@ -1,5 +1,6 @@
 import React from 'react';
 import { DollarSign } from 'lucide-react';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 
 interface AccountBalanceProps {
   accountName: string;
@@ -13,9 +14,10 @@ const AccountBalance: React.FC<AccountBalanceProps> = ({
   type 
 }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };

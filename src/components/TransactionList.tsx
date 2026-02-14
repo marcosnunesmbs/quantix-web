@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat } from 'lucide-react'; // Added icons
 import { Transaction } from '../types/apiTypes';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
 
 interface TransactionListProps {
@@ -122,9 +123,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
     setCreditCardInfoModal({ isOpen: false, creditCardName: '' });
   };
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };

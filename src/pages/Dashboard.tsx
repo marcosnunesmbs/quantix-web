@@ -5,6 +5,7 @@ import MonthSelector from '../components/MonthSelector';
 import { useSummary } from '../hooks/useSummary';
 import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -17,9 +18,10 @@ const Dashboard = () => {
 
   // Format currency helper
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat(settings?.language || 'pt-BR', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: settings?.currency || 'BRL',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };

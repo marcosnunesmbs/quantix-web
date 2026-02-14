@@ -1,5 +1,6 @@
 import React from 'react';
 import { Statement } from '../types/apiTypes';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 
 interface CreditCardStatementProps {
   statement: Statement;
@@ -7,9 +8,10 @@ interface CreditCardStatementProps {
 
 const CreditCardStatement: React.FC<CreditCardStatementProps> = ({ statement }) => {
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
       minimumFractionDigits: 2
     }).format(amount);
   };

@@ -2,6 +2,7 @@ import { Search, Menu } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { ThemeToggle } from './ThemeToggle';
+import { t } from 'i18next';
 
 interface HeaderProps {
     onMenuClick: () => void;
@@ -10,11 +11,11 @@ interface HeaderProps {
 const Header = ({ onMenuClick }: HeaderProps) => {
     const location = useLocation();
     const links = [
-        { name: 'Dashboard', path: '/' },
-        { name: 'Wallet', path: '/accounts' },
-        { name: 'Transactions', path: '/transactions' },
-        { name: 'Cards', path: '/credit-cards' },
-        { name: 'Reports', path: '/reports' },
+        { name: t('dashboard'), path: '/' },
+        { name: t('accounts'), path: '/accounts' },
+        { name: t('transactions'), path: '/transactions' },
+        { name: t('credit_cards'), path: '/credit-cards' },
+        { name: t('reports'), path: '/reports' },
     ];
 
     return (
