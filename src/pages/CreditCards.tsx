@@ -6,8 +6,10 @@ import CreditCardList from '../components/CreditCardList';
 import { useCreditCards } from '../hooks/useCreditCards';
 import { CreateCreditCardRequest } from '../services/creditCardsApi';
 import { getTransactions } from '../services/transactionsApi';
+import { useTranslation } from 'react-i18next';
 
 const CreditCardsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [editingCard, setEditingCard] = useState<any>(null);
   
@@ -90,19 +92,19 @@ const CreditCardsPage: React.FC = () => {
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Credit Cards</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your credit cards</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('credit_cards')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('manage_credit_cards')}</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} />
-          Add Credit Card
+          {t('add_credit_card')}
         </button>
       </div>
 
-      {loading && <div className="text-center py-8">Loading credit cards...</div>}
+      {loading && <div className="text-center py-8">{t('loading_credit_cards')}</div>}
       {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
       
       {!loading && !error && (

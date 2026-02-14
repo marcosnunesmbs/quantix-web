@@ -3,6 +3,7 @@ import { Pencil, Trash2, Wallet } from 'lucide-react';
 import { Account } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from 'react-i18next';
 
 interface AccountListProps {
   accounts: Account[];
@@ -11,6 +12,7 @@ interface AccountListProps {
 }
 
 const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; accountId: string | null; accountName: string }>({
     isOpen: false,
     accountId: null,
@@ -47,7 +49,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
   if (!accounts || accounts.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center text-gray-500 dark:text-gray-400">
-        No accounts found
+        {t('no_accounts_found')}
       </div>
     );
   }
@@ -72,7 +74,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
             </div>
             
             <div className="mb-4">
-              <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">Current Balance</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-1">{t('current_balance')}</span>
               <span className="text-2xl font-bold text-gray-900 dark:text-white block">
                 {formatCurrency(account.currentBalance)}
               </span>
@@ -85,7 +87,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
                   className="p-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Pencil size={16} />
-                  Edit
+                  {t('edit')}
                 </button>
               )}
               {onDelete && (
@@ -94,7 +96,7 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
                   className="p-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Trash2 size={16} />
-                  Delete
+                  {t('delete')}
                 </button>
               )}
             </div>
@@ -104,9 +106,9 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
 
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
-        title="Excluir Conta"
-        message={`Tem certeza que deseja excluir a conta "${deleteModal.accountName}"? Esta ação não pode ser desfeita.`}
-        confirmLabel="Excluir"
+        title={t('delete_account')}
+        message={t('confirm_delete_account_message', { accountName: deleteModal.accountName })}
+        confirmLabel={t('delete')}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

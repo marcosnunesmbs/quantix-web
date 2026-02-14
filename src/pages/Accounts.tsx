@@ -5,8 +5,10 @@ import AccountList from '../components/AccountList';
 import { useAccounts } from '../hooks/useAccounts';
 import { getAccountBalance } from '../services/accountsApi';
 import { CreateAccountRequest } from '../services/accountsApi';
+import { useTranslation } from 'react-i18next';
 
 const AccountsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Partial<CreateAccountRequest> & { id?: string } | undefined>();
   
@@ -105,19 +107,19 @@ const AccountsPage: React.FC = () => {
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Accounts</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your financial accounts</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounts')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('manage_financial_accounts')}</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus size={16} />
-          Add Account
+          {t('add_account')}
         </button>
       </div>
 
-      {loading && <div className="text-center py-8">Loading accounts...</div>}
+      {loading && <div className="text-center py-8">{t('loading_accounts')}</div>}
       {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
       
       {!loading && !error && (

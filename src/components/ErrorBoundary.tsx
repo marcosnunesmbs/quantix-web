@@ -27,7 +27,7 @@ class ErrorBoundary extends React.Component<
       if (this.props.fallback) {
         return this.props.fallback;
       }
-      
+
       return (
         <div className="flex flex-col items-center justify-center p-8">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
