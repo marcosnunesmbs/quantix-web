@@ -7,6 +7,12 @@ interface I18nContextType {
   availableLanguages: string[];
 }
 
+interface QuantixSettings {
+  language?: string;
+  currency?: string;
+  updatedAt?: string;
+}
+
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
@@ -33,6 +39,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
             const updatedSettings = {
               ...settings,
               language: 'pt-BR',
+              currency: settings.currency || 'BRL', // Manter a moeda existente ou usar BRL como padrão
               updatedAt: new Date().toISOString()
             };
             
@@ -68,11 +75,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     // Verificar se o localStorage está disponível antes de tentar usá-lo
     if (checkLocalStorageAvailability()) {
       // Atualizar o objeto de configurações existente
-      let settings = {};
+      let settings: QuantixSettings = {};
       try {
         const settingsStr = localStorage.getItem('quantix_settings');
         if (settingsStr) {
-          settings = JSON.parse(settingsStr);
+          settings = JSON.parse(settingsStr) as QuantixSettings;
         }
       } catch (e) {
         console.error('Erro ao ler configurações existentes:', e);
@@ -82,6 +89,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       const updatedSettings = {
         ...settings,
         language: currentLanguage,
+        currency: settings.currency || 'BRL', // Manter a moeda existente ou usar BRL como padrão
         updatedAt: new Date().toISOString()
       };
 
