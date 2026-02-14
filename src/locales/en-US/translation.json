@@ -91,6 +91,9 @@
   "available_limit": "Available Limit",
   "select_month": "Select Month",
   "select_year": "Select Year",
+  "select_account": "Select Account",
+  "error_loading_statement": "Error loading statement: {{errorMessage}}",
+  "no_credit_cards_found": "No credit cards found",
   "credit_card_statements": "Credit Card Statements",
    "income_vs_expenses": "Income vs Expenses",
   "financial_distribution": "Financial Distribution",
@@ -106,6 +109,7 @@
   "pending": "Pending",
   "total_projected": "Total Projected",
   "current": "Current",
-  "projected": "Projected"
+  "projected": "Projected",
+  "manage_your_financial_transactions": "Manage your financial transactions easily and efficiently"
 
 }

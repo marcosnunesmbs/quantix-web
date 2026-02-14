@@ -91,7 +91,9 @@
   "available_limit": "Limite Disponível",
   "select_account": "Selecione a Conta",
   "select_month": "Selecione o Mês",
+  "select_year": "Selecione o Ano",
   "error_loading_statement": "Erro ao carregar fatura: {{errorMessage}}",
+  "no_credit_cards_found": "Nenhum cartão de crédito encontrado",
   "credit_card_statements": "Faturas do Cartão",
   "income_vs_expenses": "Receitas vs Despesas",
   "financial_distribution": "Distribuição Financeira",
@@ -102,11 +104,11 @@
   "view_financial_trends": "Visualize as tendências financeiras ao longo do tempo",
   "analyze_spending": "Analise seus hábitos de gastos e identifique áreas para economizar",
   "track_income": "Acompanhe suas fontes de renda e veja como elas contribuem para seu patrimônio líquido",
-  "no_credit_cards_found": "Nenhum cartão de crédito encontrado",
   "balance": "Balanço",
   "paid": "Pagas",
   "pending": "Pendentes",
   "total_projected": "Total Previsto",
   "current": "Atual",
-  "projected": "Previsto"
+  "projected": "Previsto",
+  "manage_your_financial_transactions": "Gerencie suas transações financeiras de forma fácil e eficiente"
 }
