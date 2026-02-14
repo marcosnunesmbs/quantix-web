@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             isOpen ? "translate-x-0" : "-translate-x-full"
         )}>
           <div className="mb-8 flex flex-col items-center gap-4">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
                  {/* Logo placeholder */}
                  <div className="w-4 h-4 bg-white rounded-sm rotate-45"></div>
             </div>
@@ -68,7 +68,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   className={cn(
                     "group relative w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200",
                     isActive 
-                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 dark:shadow-emerald-900/50" 
+                      ? "bg-primary-600 text-white shadow-lg shadow-primary-200 dark:shadow-primary-900/50"
                       : "text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
                   )}
                 >

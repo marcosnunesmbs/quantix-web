@@ -163,7 +163,7 @@ const CreditCardStatements: React.FC = () => {
               type="month"
               value={selectedMonth}
               onChange={handleMonthChange}
-              className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
         </div>
@@ -218,9 +218,9 @@ const CreditCardStatements: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                 <Calendar
-                  className="text-emerald-600 dark:text-emerald-400"
+                  className="text-primary-600 dark:text-primary-400"
                   size={24}
                 />
               </div>
@@ -238,7 +238,7 @@ const CreditCardStatements: React.FC = () => {
           {/* Pay Statement Button / Paid Badge */}
           <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
             {isStatementPaid ? (
-              <div className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold rounded-lg">
+              <div className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-semibold rounded-lg">
                 <CheckCircle size={20} />
                 {t('credit_card_statement_paid')}
               </div>
@@ -250,7 +250,7 @@ const CreditCardStatements: React.FC = () => {
                   !statement.transactions ||
                   statement.transactions.length === 0
                 }
-                className="w-full md:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full md:w-auto px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <CheckCircle size={20} />
                 {payStatementMutation.isPending
@@ -350,7 +350,7 @@ const CreditCardStatements: React.FC = () => {
           <select
             value={selectedAccountId}
             onChange={(e) => setSelectedAccountId(e.target.value)}
-            className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           >
             {accounts?.map((account) => (
               <option key={account.id} value={account.id}>

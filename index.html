@@ -7,6 +7,18 @@
     <title>Quantix Finance</title>
   </head>
   <body>
+    <!-- Apply theme + accent colour before React mounts to prevent flash -->
+    <script>
+      (function () {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+        var valid = ['emerald','blue','orange','cyan','red','purple','pink','green'];
+        var c = localStorage.getItem('accentColor');
+        document.documentElement.setAttribute('data-color', valid.includes(c) ? c : 'emerald');
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

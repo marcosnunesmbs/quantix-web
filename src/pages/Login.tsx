@@ -46,7 +46,7 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md p-8 rounded-3xl shadow-xl border border-gray-100">
         <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-emerald-600 mb-2">Quantix</h1>
+            <h1 className="text-3xl font-bold text-primary-600 mb-2">Quantix</h1>
             <p className="text-gray-500">Welcome! Please enter your password.</p>
         </div>
 
@@ -57,7 +57,7 @@ const Login = () => {
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                     placeholder="Enter your password"
                     required
                     disabled={isLoading}
@@ -73,7 +73,7 @@ const Login = () => {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-primary-600 text-white py-3 rounded-xl font-bold hover:bg-primary-700 transition-colors shadow-lg shadow-primary-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isLoading ? 'Verifying...' : 'Sign In'}
             </button>

@@ -24,7 +24,7 @@ const BottomNavigation: React.FC = () => {
             className={cn(
               "p-2 rounded-xl transition-colors",
               isActive('/dashboard') 
-                ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10" 
+                ? "text-primary-500 bg-primary-50 dark:bg-primary-500/10" 
                 : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             )}
           >
@@ -35,7 +35,7 @@ const BottomNavigation: React.FC = () => {
             className={cn(
               "p-2 rounded-xl transition-colors",
               isActive('/transactions') 
-                ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10" 
+                ? "text-primary-500 bg-primary-50 dark:bg-primary-500/10" 
                 : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             )}
           >
@@ -47,7 +47,7 @@ const BottomNavigation: React.FC = () => {
         <div className="relative -top-5">
           <button
             onClick={openModal}
-            className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+            className="w-14 h-14 rounded-full bg-primary-500 hover:bg-primary-600 text-white shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
           >
             <Plus size={28} strokeWidth={2.5} />
           </button>
@@ -60,7 +60,7 @@ const BottomNavigation: React.FC = () => {
             className={cn(
               "p-2 rounded-xl transition-colors",
               isActive('/credit-cards') 
-                ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10" 
+                ? "text-primary-500 bg-primary-50 dark:bg-primary-500/10" 
                 : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             )}
           >
@@ -71,7 +71,7 @@ const BottomNavigation: React.FC = () => {
             className={cn(
               "p-2 rounded-xl transition-colors",
               isActive('/reports') 
-                ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10" 
+                ? "text-primary-500 bg-primary-50 dark:bg-primary-500/10" 
                 : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             )}
           >

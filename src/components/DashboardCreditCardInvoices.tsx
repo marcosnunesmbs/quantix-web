@@ -70,7 +70,7 @@ const DashboardCreditCardInvoices: React.FC<Props> = ({ expenses }) => {
                 {expense.cardName}
               </h3>
               {expense.isPaid ? (
-                <div className="flex items-center gap-1 bg-emerald-500/30 backdrop-blur-sm border border-emerald-400/40 text-white text-xs font-medium px-2 py-1 rounded-full">
+                <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-medium px-2 py-1 rounded-full">
                   <CheckCircle2 size={12} />
                   {t('paid')}
                 </div>
