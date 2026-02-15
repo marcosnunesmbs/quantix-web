@@ -1,33 +1,37 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Quantix Finance - Dashboard de gestão financeira pessoal" />
-    <meta name="theme-color" content="#10b981" />
-    <meta name="mobile-web-app-capable" content="true" />
-    <meta name="apple-mobile-web-app-capable" content="true" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Quantix" />
-    <link rel="apple-touch-icon" href="/logo.png" />
-    <link rel="manifest" href="/manifest.json" />
-    <title>Quantix Finance</title>
-  </head>
-  <body>
-    <!-- Apply theme + accent colour before React mounts to prevent flash -->
-    <script>
-      (function () {
-        var t = localStorage.getItem('theme');
-        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        }
-        var valid = ['emerald','blue','orange','cyan','red','purple','pink','green'];
-        var c = localStorage.getItem('accentColor');
-        document.documentElement.setAttribute('data-color', valid.includes(c) ? c : 'emerald');
-      })();
-    </script>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/maskable_icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Quantix Finance - Dashboard de gestão financeira pessoal" />
+  <meta name="mobile-web-app-capable" content="true" />
+  <meta name="apple-mobile-web-app-capable" content="true" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Quantix" />
+  <link rel="apple-touch-icon" href="/maskable_icon.png" />
+  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <link rel="manifest" href="/manifest.json" />
+  <title>Quantix Finance</title>
+</head>
+
+<body>
+  <!-- Apply theme + accent colour before React mounts to prevent flash -->
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+      var valid = ['emerald', 'blue', 'orange', 'cyan', 'red', 'purple', 'pink', 'green'];
+      var c = localStorage.getItem('accentColor');
+      document.documentElement.setAttribute('data-color', valid.includes(c) ? c : 'emerald');
+    })();
+  </script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

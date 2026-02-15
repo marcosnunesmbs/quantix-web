@@ -52,7 +52,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+        <div className="hidden md:block">
           <h1 className="text-3xl font-medium text-gray-900 dark:text-white">
             {t('welcome_back')},{' '}
             <span className="text-gray-500 dark:text-gray-400">

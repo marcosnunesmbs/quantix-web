@@ -48,16 +48,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                  <div className="w-4 h-4 bg-white rounded-sm rotate-45"></div>
             </div>
             
-            {/* Close button for mobile inside sidebar */}
-            {/* <button 
-                onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 md:hidden"
-            >
-                <X size={20} />
-            </button> */}
           </div>
     
-          <nav className="flex-1 flex flex-col gap-6 w-full px-2">
+          <nav className="flex-1 flex flex-col gap-6 w-full px-2 items-center mt-2">
             {navItems.map((item, index) => {
                const isActive = location.pathname === item.path || (item.path === '/' && location.pathname === '/dashboard');
                return (
@@ -75,7 +68,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                   <item.icon size={20} strokeWidth={2} />
                   
                   {/* Tooltip */}
-                  <span className="absolute left-14 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none shadow-md">
+                  <span className="hidden md:block absolute left-14 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none shadow-md">
                     {item.label}
                   </span>
                 </Link>
