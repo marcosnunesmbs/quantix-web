@@ -109,7 +109,10 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-baseline gap-2">
                     <span className="text-xs opacity-75 font-medium uppercase tracking-wider">{t('limit')}</span>
-                    <span className="text-lg font-bold tracking-tight">{formatCurrency(card.limitAmount)}</span>
+                    <span className="text-lg font-bold tracking-tight">
+                      {card.availableLimit != null ? formatCurrency(card.availableLimit) : formatCurrency(card.limitAmount)}
+                      <span className="text-sm font-normal opacity-70">/{formatCurrency(card.limitAmount)}</span>
+                    </span>
                   </div>
                   <div className="text-[11px] opacity-90 font-medium">
                     {t('close')}: {card.closingDay} • {t('due')}: {card.dueDay}

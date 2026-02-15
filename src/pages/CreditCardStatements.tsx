@@ -213,6 +213,11 @@ const CreditCardStatements: React.FC = () => {
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(statement.availableLimit || 0)}
+                  {currentCard && (
+                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                      /{formatCurrency(currentCard.limitAmount)}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>

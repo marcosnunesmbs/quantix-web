@@ -36,6 +36,7 @@ export interface CreditCard {
   name: string;
   brand?: string;
   limitAmount: number;
+  availableLimit?: number;
   closingDay: number; // 1-31
   dueDay: number; // 1-31
   createdAt: string; // date-time format
