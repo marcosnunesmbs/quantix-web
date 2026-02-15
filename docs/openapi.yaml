@@ -177,6 +177,11 @@ components:
           maximum: 31
           description: Day of the month when the bill is due
           example: 22
+        availableLimit:
+          type: number
+          format: float
+          description: Available credit limit (limitAmount minus all pending unpaid expenses)
+          example: 3200.00
         createdAt:
           type: string
           format: date-time
@@ -526,6 +531,10 @@ components:
               $ref: '#/components/schemas/RecurrenceRule/properties/interval'
             endDate:
               $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
+        isPaid:
+          type: boolean
+          description: Whether the transaction is already paid at creation time (defaults to false)
+          example: false
 
     UpdateTransactionRequest:
       type: object
@@ -1184,9 +1193,10 @@ paths:
     patch:
       summary: Update a transaction
       description: |
-        Update a transaction. 
+        Update a transaction.
         **Note:** Transactions that have already been paid cannot be edited.
         For credit card transactions, you can use targetDueMonth to automatically calculate the date based on the credit card's due day.
+        When using PENDING or ALL mode on installment transactions, only `name`, `categoryId`, and `amount` are propagated to the other installments. All other fields are ignored for the bulk update.
       parameters:
         - name: id
           in: path
@@ -1202,12 +1212,12 @@ paths:
             enum: [SINGLE, PENDING, ALL]
             default: SINGLE
           description: |
-            Update mode for recurring transactions:
+            Update mode for recurring or installment transactions:
             - **SINGLE**: Update only this specific transaction (default)
-            - **PENDING**: Update this transaction and all future unpaid transactions with the same recurrence rule
-            - **ALL**: Update this transaction and ALL transactions (paid or unpaid) with the same recurrence rule
-            
-            If the transaction is not part of a recurrence series, this parameter is ignored.
+            - **PENDING**: Update this transaction and all future unpaid transactions in the same recurrence series or installment group
+            - **ALL**: For recurrences, update all transactions (paid or unpaid). For installments, behaves the same as PENDING (only unpaid installments from this one onward are updated)
+
+            If the transaction is not part of a recurrence series or installment group, this parameter is ignored.
           example: SINGLE
       requestBody:
         required: true
@@ -1246,12 +1256,12 @@ paths:
             enum: [SINGLE, PENDING, ALL]
             default: SINGLE
           description: |
-            Deletion mode for recurring transactions:
+            Deletion mode for recurring or installment transactions:
             - **SINGLE**: Delete only this specific transaction (default)
-            - **PENDING**: Delete this transaction and all future unpaid transactions with the same recurrence rule
-            - **ALL**: Delete this transaction and ALL transactions (paid or unpaid) with the same recurrence rule
-            
-            If the transaction is not part of a recurrence series, this parameter is ignored.
+            - **PENDING**: Delete this transaction and all future unpaid transactions in the same recurrence series or installment group
+            - **ALL**: For recurrences, delete all transactions (paid or unpaid). For installments, behaves the same as PENDING (only unpaid installments from this one onward are deleted)
+
+            If the transaction is not part of a recurrence series or installment group, this parameter is ignored.
           example: SINGLE
       responses:
         '200':

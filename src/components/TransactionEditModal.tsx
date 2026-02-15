@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Repeat } from 'lucide-react';
+import { X, Save, Repeat, CreditCard } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
@@ -32,8 +32,9 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   const [recurrenceMode, setRecurrenceMode] = useState<'SINGLE' | 'PENDING' | 'ALL'>('SINGLE');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Determine if it's a recurring transaction
+  // Determine transaction type
   const isRecurring = !!transaction?.recurrenceRuleId;
+  const isInstallment = !!transaction?.installmentGroupId;
 
   useEffect(() => {
     if (transaction) {
@@ -86,7 +87,8 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
         updateData.accountId = accountId || null;
       }
 
-      await onSave(transaction.id, updateData, isRecurring ? recurrenceMode : undefined);
+      const needsMode = isRecurring || isInstallment;
+      await onSave(transaction.id, updateData, needsMode ? recurrenceMode : undefined);
       onClose();
     } catch (error) {
       console.error('Failed to update transaction', error);
@@ -150,40 +152,6 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
               />
             </div>
 
-            {/* Date or Target Month */}
-            {isCreditCardTransaction ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Mês de vencimento da fatura
-                </label>
-                <select
-                  value={targetDueMonth}
-                  onChange={(e) => setTargetDueMonth(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                >
-                  {getAvailableMonths().map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">A compra será movida para esta fatura</p>
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Data
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-            )}
-
             {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -203,43 +171,125 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
               </select>
             </div>
 
-            {/* Payment Method & Account - Only if NOT Credit Card */}
-            {!isCreditCardTransaction && (
+            {/* Fields only for non-installment transactions */}
+            {!isInstallment && (
               <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Método de Pagamento
-                  </label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="CASH">Dinheiro</option>
-                    <option value="PIX">Pix</option>
-                    <option value="DEBIT">Débito</option>
-                    <option value="CREDIT">Crédito</option>
-                  </select>
-                </div>
+                {/* Date or Target Month */}
+                {isCreditCardTransaction ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Mês de vencimento da fatura
+                    </label>
+                    <select
+                      value={targetDueMonth}
+                      onChange={(e) => setTargetDueMonth(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                    >
+                      {getAvailableMonths().map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">A compra será movida para esta fatura</p>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Data
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Conta
-                  </label>
-                  <select
-                    value={accountId}
-                    onChange={(e) => setAccountId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="">Selecione uma conta</option>
-                    {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {/* Payment Method & Account - Only if NOT Credit Card */}
+                {!isCreditCardTransaction && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Método de Pagamento
+                      </label>
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="CASH">Dinheiro</option>
+                        <option value="PIX">Pix</option>
+                        <option value="DEBIT">Débito</option>
+                        <option value="CREDIT">Crédito</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Conta
+                      </label>
+                      <select
+                        value={accountId}
+                        onChange={(e) => setAccountId(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="">Selecione uma conta</option>
+                        {accounts.map((acc) => (
+                          <option key={acc.id} value={acc.id}>
+                            {acc.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
+                )}
               </>
+            )}
+
+            {/* Installment Mode Selector */}
+            {isInstallment && (
+              <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800">
+                <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-300">
+                  <CreditCard size={16} />
+                  <span className="text-sm font-medium">
+                    Esta é uma compra parcelada
+                    {transaction?.installmentNumber && transaction?.installmentTotal
+                      ? ` (${transaction.installmentNumber}/${transaction.installmentTotal})`
+                      : ''}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="installmentMode"
+                      value="SINGLE"
+                      checked={recurrenceMode === 'SINGLE'}
+                      onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                      className="text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Alterar apenas esta parcela
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="installmentMode"
+                      value="PENDING"
+                      checked={recurrenceMode === 'PENDING'}
+                      onChange={(e) => setRecurrenceMode(e.target.value as any)}
+                      className="text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Esta e as próximas (pendentes)
+                    </span>
+                  </label>
+                </div>
+              </div>
             )}
 
             {/* Recurrence Mode Selector */}

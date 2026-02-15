@@ -117,7 +117,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   const handleConfirmDelete = () => {
     if (deleteModal.transaction && onDelete) {
-      if (deleteModal.transaction.recurrenceRuleId) {
+      if (deleteModal.transaction.recurrenceRuleId || deleteModal.transaction.installmentGroupId) {
         onDelete(deleteModal.transaction.id, recurrenceMode);
       } else {
         onDelete(deleteModal.transaction.id);
@@ -367,7 +367,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                   <Pencil size={13} />
                 </button>
               )}
-              {onDelete && (
+              {!group.paid && onDelete && (
                 <button
                   onClick={() => handleDeleteClick(tx)}
                   className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -456,6 +456,32 @@ const TransactionList: React.FC<TransactionListProps> = ({
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteModal({ isOpen: false, transaction: null })}
       >
+        {deleteModal.transaction?.installmentGroupId && (
+          <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800 text-left">
+            <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-300">
+              <CreditCard size={16} />
+              <span className="text-sm font-medium">Esta é uma compra parcelada</span>
+            </div>
+            <div className="space-y-2">
+              {([
+                ['SINGLE', 'Excluir apenas esta parcela'],
+                ['PENDING', 'Esta e as próximas (pendentes)'],
+              ] as const).map(([value, label]) => (
+                <label key={value} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deleteInstallmentMode"
+                    value={value}
+                    checked={recurrenceMode === value}
+                    onChange={(e) => setRecurrenceMode(e.target.value as typeof value)}
+                    className="text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
         {deleteModal.transaction?.recurrenceRuleId && (
           <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 text-left">
             <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-300">
