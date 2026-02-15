@@ -22,6 +22,31 @@ interface CreditCardGroup {
   transactions: Transaction[];
   totalAmount: number;
   paid: boolean;
+  dueDate: Date | null;
+}
+
+function computeStatementDueDate(txDateStr: string, closingDay: number, dueDay: number): Date {
+  const datePart = txDateStr.split('T')[0];
+  const [year, month, day] = datePart.split('-').map(Number);
+
+  // Determine the closing month (1-based)
+  let closingYear = year;
+  let closingMonth = month;
+  if (day > closingDay) {
+    // Transaction is after the closing day — belongs to next month's statement
+    closingMonth += 1;
+    if (closingMonth > 12) { closingMonth = 1; closingYear += 1; }
+  }
+
+  // Due date: if dueDay < closingDay it falls in the month after closing, otherwise same month
+  let dueYear = closingYear;
+  let dueMonth = closingMonth;
+  if (dueDay < closingDay) {
+    dueMonth += 1;
+    if (dueMonth > 12) { dueMonth = 1; dueYear += 1; }
+  }
+
+  return new Date(dueYear, dueMonth - 1, dueDay);
 }
 
 function buildCreditCardGroups(transactions: Transaction[]): CreditCardGroup[] {
@@ -33,12 +58,15 @@ function buildCreditCardGroups(transactions: Transaction[]): CreditCardGroup[] {
       g.transactions.push(tx);
       g.totalAmount += tx.amount;
     } else {
+      const card = tx.creditCard;
+      const dueDate = computeStatementDueDate(tx.date, card.closingDay, card.dueDay);
       map.set(tx.creditCardId, {
         cardId: tx.creditCardId,
-        cardName: tx.creditCard.name,
+        cardName: card.name,
         transactions: [tx],
         totalAmount: tx.amount,
         paid: tx.paid,
+        dueDate,
       });
     }
   }
@@ -285,6 +313,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
               {group.transactions.length}{' '}
               {group.transactions.length === 1 ? 'transação' : 'transações'}
             </span>
+            {group.dueDate && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Vence {group.dueDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            )}
           </div>
         </div>
         <span className="text-base font-bold text-red-600 dark:text-red-400">
