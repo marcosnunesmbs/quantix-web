@@ -165,7 +165,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
   };
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString(undefined, {
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

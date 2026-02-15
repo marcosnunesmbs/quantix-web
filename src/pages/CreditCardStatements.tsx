@@ -106,7 +106,8 @@ const CreditCardStatements: React.FC = () => {
   };
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('pt-BR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',

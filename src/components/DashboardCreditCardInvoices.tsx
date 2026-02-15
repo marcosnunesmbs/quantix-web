@@ -34,7 +34,8 @@ const DashboardCreditCardInvoices: React.FC<Props> = ({ expenses }) => {
 
   const formatDate = (dateStr: string): string => {
     const { locale } = getLocaleAndCurrency();
-    return new Date(dateStr).toLocaleDateString(locale, {
+    const [year, month, day] = dateStr.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString(locale, {
       day: '2-digit',
       month: 'short',
     });

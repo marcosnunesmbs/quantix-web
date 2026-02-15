@@ -40,7 +40,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
     if (transaction) {
       setName(transaction.name);
       setAmount(transaction.amount);
-      setDate(transaction.date ? new Date(transaction.date).toISOString().split('T')[0] : '');
+      setDate(transaction.date ? transaction.date.split('T')[0] : '');
       setCategoryId(transaction.categoryId || '');
       setPaymentMethod(transaction.paymentMethod || 'CASH');
       setAccountId(transaction.accountId || '');

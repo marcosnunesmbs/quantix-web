@@ -176,7 +176,7 @@ const ReportsPage: React.FC = () => {
                           <div className="flex justify-between items-end">
                              <div className="flex flex-col">
                                 <span className="text-[10px] uppercase opacity-80 tracking-wider">Due Date</span>
-                                <span className="font-mono text-sm font-medium">{statement.dueDate ? new Date(statement.dueDate).toLocaleDateString() : '—'}</span>
+                                <span className="font-mono text-sm font-medium">{statement.dueDate ? (() => { const [y, m, d] = statement.dueDate!.split('T')[0].split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString(); })() : '—'}</span>
                              </div>
                              <div className="flex flex-col items-end">
                                 <span className="text-[10px] uppercase opacity-80 tracking-wider">Total</span>
