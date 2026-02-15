@@ -1090,6 +1090,13 @@ paths:
             pattern: "^\\d{4}-\\d{2}$"
           description: Filter transactions by month (YYYY-MM format)
           example: "2026-03"
+        - name: accountId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter transactions by account ID
+          example: "acc_123456789"
       responses:
         '200':
           description: List of transactions
