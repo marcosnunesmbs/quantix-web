@@ -165,5 +165,6 @@
   "credit_card_invoices": "Monthly Invoices",
   "expenses_by_category": "Expenses by Category",
   "no_invoices_this_month": "No invoices this month",
-  "uncategorized": "Uncategorized"
+  "uncategorized": "Uncategorized",
+  "add_transactions_to_view_financial_summaries": "Add transactions to view financial summaries"
 }
