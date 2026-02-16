@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Repeat, CreditCard, Plus } from 'lucide-react';
+import { X, Repeat, CreditCard, Plus, ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType, CreateCategoryRequest } from '../types/apiTypes';
 import CurrencyInput from './CurrencyInput';
 import { useCategories } from '../hooks/useCategories';
@@ -9,6 +9,15 @@ import { useStatementStatus } from '../hooks/useCreditCardStatements';
 import CategoryForm from './CategoryForm';
 
 type TransactionFormType = 'RECEITA' | 'DESPESA' | 'CARTAO';
+
+interface TransactionTypeOption {
+  value: TransactionFormType;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+  description: string;
+}
 
 interface TransactionFormData {
   type: TransactionFormType;
@@ -72,6 +81,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
   const { accounts, loading: accountsLoading } = useAccounts();
   const { creditCards, loading: creditCardsLoading } = useCreditCards();
 
+  // Modal state - show type selector or form
+  const [showTypeSelector, setShowTypeSelector] = useState(true);
+
   // Track if user manually changed paid status
   const [paidManuallyChanged, setPaidManuallyChanged] = useState(false);
 
@@ -80,6 +92,34 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
 
   // Category form modal state
   const [showCategoryForm, setShowCategoryForm] = useState(false);
+
+  // Type options
+  const typeOptions: TransactionTypeOption[] = [
+    {
+      value: 'RECEITA',
+      label: 'Entrada',
+      icon: <ArrowDownLeft className="w-6 h-6" />,
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30',
+      description: 'Dinheiro que você recebe'
+    },
+    {
+      value: 'DESPESA',
+      label: 'Saída',
+      icon: <ArrowUpRight className="w-6 h-6" />,
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30',
+      description: 'Gastos e despesas'
+    },
+    {
+      value: 'CARTAO',
+      label: 'Cartão',
+      icon: <CreditCard className="w-6 h-6" />,
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30',
+      description: 'Compras no cartão de crédito'
+    }
+  ];
 
   const getInitialFormData = (): TransactionFormData => {
     const targetDueMonths = generateTargetDueMonths();
@@ -148,8 +188,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
     return allMethods;
   }, []);
 
-  // Handle type change - reset incompatible fields
-  const handleTypeChange = (newType: TransactionFormType) => {
+  // Handle type selection from selector
+  const handleSelectType = (newType: TransactionFormType) => {
     setFormData(prev => {
       const updates: Partial<TransactionFormData> = { type: newType };
 
@@ -182,16 +222,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
 
       return { ...prev, ...updates };
     });
+    setShowTypeSelector(false);
   };
 
   // Handle field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-
-    if (name === 'type') {
-      handleTypeChange(value as TransactionFormType);
-      return;
-    }
 
     setFormData(prev => {
       let updates: Partial<TransactionFormData> = {};
@@ -389,476 +425,515 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Nova Transação</h2>
-            <button
-              onClick={onCancel}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <X size={20} />
-            </button>
+  // Render type selector view
+  if (showTypeSelector) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-md h-screen sm:h-auto overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+          {/* Header */}
+          <div className="relative h-32 sm:h-32 bg-gradient-to-br from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 flex flex-col justify-between">
+            <div className="absolute inset-0 opacity-10 bg-grid-pattern" />
+            <div className="relative flex flex-col justify-between h-full p-6">
+              <button
+                onClick={onCancel}
+                className="self-end p-2 rounded-full hover:bg-white/20 transition-colors"
+              >
+                <X size={20} className="text-white" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1">Nova Transação</h1>
+                <p className="text-primary-100 text-sm">Selecione o tipo de transação</p>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Type Selector - Main Controller */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Tipo de Transação *
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white transition-colors"
-                required
+          {/* Type Selection Cards */}
+          <div className="p-6 space-y-3">
+            {typeOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleSelectType(option.value)}
+                className={`w-full p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between group ${option.bgColor}`}
               >
-                <option value="RECEITA">🟢 Receita</option>
-                <option value="DESPESA">🔴 Despesa</option>
-                <option value="CARTAO">🟣 Cartão de Crédito</option>
-              </select>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Descrição *
-              </label>
-              <input
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Ex: Supermercado, Salário..."
-                required
-              />
-            </div>
-
-            {/* Amount */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Valor (R$) *
-              </label>
-              <CurrencyInput
-                value={formData.amount}
-                onChange={(value) => setFormData(prev => ({ ...prev, amount: value }))}
-                placeholder="0,00"
-                required
-              />
-            </div>
-
-            {/* Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {formData.type === 'CARTAO' ? 'Data da compra *' : 'Data *'}
-              </label>
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                required
-              />
-            </div>
-
-            {/* Category - Filtered by type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Categoria *
-              </label>
-              {categoriesLoading ? (
-                <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-500">
-                  Carregando categorias...
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-lg bg-white dark:bg-gray-700 ${option.color}`}>
+                    {option.icon}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm">{option.label}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{option.description}</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex gap-2">
-                  <select
-                    name="categoryId"
-                    value={formData.categoryId}
-                    onChange={handleChange}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  >
-                    <option value="">Selecione uma categoria</option>
-                    {filteredCategories.map((category: Category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => setShowCategoryForm(true)}
-                    className="px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-md transition-colors"
-                    title="Adicionar nova categoria"
-                  >
-                    <Plus size={20} />
-                  </button>
-                </div>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.type === 'RECEITA' ? 'Apenas categorias de receita' : 'Apenas categorias de despesa'}
+                <ChevronRight className={`w-5 h-5 ${option.color} group-hover:translate-x-1 transition-transform`} />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render form view
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-md h-screen sm:h-auto sm:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+        {/* Header - Fixed */}
+        <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 p-6 flex-shrink-0">
+          <div className="absolute inset-0 opacity-10 bg-grid-pattern" />
+          <div className="relative flex justify-between items-start">
+            <div>
+              <button
+                onClick={() => setShowTypeSelector(true)}
+                className="text-primary-200 hover:text-white text-sm font-medium flex items-center gap-1 mb-2 transition-colors"
+              >
+                ← Voltar
+              </button>
+              <h2 className="text-2xl font-bold text-white">
+                {typeOptions.find(o => o.value === formData.type)?.label}
+              </h2>
+              <p className="text-primary-100 text-sm mt-1">
+                {typeOptions.find(o => o.value === formData.type)?.description}
               </p>
             </div>
+            <button
+              onClick={onCancel}
+              className="p-2 rounded-full hover:bg-white/20 transition-colors"
+            >
+              <X size={20} className="text-white" />
+            </button>
+          </div>
+        </div>
 
-            {/* Payment Method - Hidden for CARTAO */}
-            {formData.type !== 'CARTAO' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Método de Pagamento
-                </label>
+        {/* Form Content - Scrollable */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 p-6">
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Descrição *
+            </label>
+            <input
+              type="text"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
+              placeholder="Ex: Supermercado, Salário..."
+              required
+            />
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Valor (R$) *
+            </label>
+            <CurrencyInput
+              value={formData.amount}
+              onChange={(value) => setFormData(prev => ({ ...prev, amount: value }))}
+              placeholder="0,00"
+              required
+            />
+          </div>
+
+          {/* Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {formData.type === 'CARTAO' ? 'Data da compra *' : 'Data *'}
+            </label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
+              required
+            />
+          </div>
+
+          {/* Category - Filtered by type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Categoria *
+            </label>
+            {categoriesLoading ? (
+              <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-500">
+                Carregando categorias...
+              </div>
+            ) : (
+              <div className="flex gap-2">
                 <select
-                  name="paymentMethod"
-                  value={formData.paymentMethod || ''}
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
+                  required
                 >
-                  <option value="">Selecione...</option>
-                  {availablePaymentMethods.map(method => (
-                    <option key={method.value} value={method.value}>
-                      {method.label}
+                  <option value="">Selecione uma categoria</option>
+                  {filteredCategories.map((category: Category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
                     </option>
                   ))}
                 </select>
+                <button
+                  type="button"
+                  onClick={() => setShowCategoryForm(true)}
+                  className="px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg transition-colors font-medium"
+                  title="Adicionar nova categoria"
+                >
+                  <Plus size={20} />
+                </button>
               </div>
             )}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {formData.type === 'RECEITA' ? '💚 Apenas categorias de receita' : '💔 Apenas categorias de despesa'}
+            </p>
+          </div>
 
-            {/* CARTAO specific fields */}
-            {formData.type === 'CARTAO' && (
-              <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
-                  <CreditCard size={18} />
-                  <span className="font-medium text-sm">Compra no Cartão</span>
-                </div>
+          {/* Payment Method - Hidden for CARTAO */}
+          {formData.type !== 'CARTAO' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Método de Pagamento
+              </label>
+              <select
+                name="paymentMethod"
+                value={formData.paymentMethod || ''}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
+              >
+                <option value="">Selecione...</option>
+                {availablePaymentMethods.map(method => (
+                  <option key={method.value} value={method.value}>
+                    {method.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-                {/* Credit Card Selector */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Cartão de Crédito *
-                  </label>
-                  {creditCardsLoading ? (
-                    <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
-                      Carregando...
-                    </div>
-                  ) : (
-                    <select
-                      name="creditCardId"
-                      value={formData.creditCardId || ''}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
-                      required
-                    >
-                      <option value="">Selecione um cartão</option>
-                      {creditCards.map((card: CreditCardType) => (
-                        <option key={card.id} value={card.id}>
-                          {card.name} ({card.brand || 'Sem marca'})
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                {/* Installment Toggle */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isInstallment"
-                    id="isInstallment"
-                    checked={formData.isInstallment}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="isInstallment" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Parcelar compra?
-                  </label>
-                </div>
-
-                {/* Installment Count */}
-                {formData.isInstallment && (
-                  <div className="animate-fadeIn">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Número de Parcelas *
-                    </label>
-                    <input
-                      type="number"
-                      name="installments"
-                      value={formData.installments || ''}
-                      onChange={handleChange}
-                      min="2"
-                      step="1"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Ex: 3"
-                      required={formData.isInstallment}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Mínimo 2 parcelas</p>
-                  </div>
-                )}
-
-                {/* Target Due Month */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Mês de vencimento da fatura *
-                  </label>
-                  <select
-                    name="targetDueMonth"
-                    value={formData.targetDueMonth || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white"
-                    required
-                  >
-                    {availableTargetDueMonths.map(month => (
-                      <option key={month.value} value={month.value}>
-                        {month.label}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">A compra será incluída nesta fatura</p>
-                </div>
-
-                {/* Payment Method Badge */}
-                <div className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2 py-1 rounded">
-                  Método: CRÉDITO (automático)
-                </div>
-              </div>
-            )}
-
-            {/* Account Selector - Hidden for CARTAO */}
-            {formData.type !== 'CARTAO' && (
+          {/* CARTAO specific fields */}
+          {formData.type === 'CARTAO' && (
+            <div className="space-y-4 p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-900/20 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+              {/* Credit Card Selector */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Conta *
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Cartão de Crédito *
                 </label>
-                {accountsLoading ? (
-                  <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700">
+                {creditCardsLoading ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700">
                     Carregando...
                   </div>
                 ) : (
                   <select
-                    name="accountId"
-                    value={formData.accountId || ''}
+                    name="creditCardId"
+                    value={formData.creditCardId || ''}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white transition-all"
                     required
                   >
-                    <option value="">Selecione uma conta</option>
-                    {accounts.map((account: Account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name}
+                    <option value="">Selecione um cartão</option>
+                    {creditCards.map((card: CreditCardType) => (
+                      <option key={card.id} value={card.id}>
+                        {card.name} ({card.brand || 'Sem marca'})
                       </option>
                     ))}
                   </select>
                 )}
               </div>
-            )}
 
-            {/* Paid Checkbox - Hidden for CARTAO */}
-            {formData.type !== 'CARTAO' && (
-              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              {/* Installment Toggle */}
+              <div className="flex items-center gap-3 p-3 bg-white/50 dark:bg-gray-700/30 rounded-lg">
                 <input
                   type="checkbox"
-                  name="paid"
-                  id="paid"
-                  checked={formData.paid}
+                  name="isInstallment"
+                  id="isInstallment"
+                  checked={formData.isInstallment}
                   onChange={handleChange}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded cursor-pointer"
                 />
-                <label htmlFor="paid" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                  Já está pago?
-                  <span className="text-xs text-gray-500 block">
-                    {isToday(formData.date) ? '(auto: hoje)' : '(auto: data futura)'}
-                  </span>
+                <label htmlFor="isInstallment" className="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
+                  Parcelar compra?
                 </label>
               </div>
-            )}
 
-            {/* Recurrence - For DESPESA and RECEITA */}
-            {(formData.type === 'DESPESA' || formData.type === 'RECEITA') && (
-              <div className={`space-y-3 p-4 rounded-lg border ${formData.type === 'RECEITA' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isRecurring"
-                    id="isRecurring"
-                    checked={formData.isRecurring}
-                    onChange={handleChange}
-                    className={`h-4 w-4 border-gray-300 rounded ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
-                  />
-                  <label htmlFor="isRecurring" className="ml-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                    <Repeat size={16} />
-                    <span>{formData.type === 'RECEITA' ? 'Receita recorrente?' : 'Despesa recorrente?'}</span>
+              {/* Installment Count */}
+              {formData.isInstallment && (
+                <div className="animate-fadeIn">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Número de Parcelas *
                   </label>
+                  <input
+                    type="number"
+                    name="installments"
+                    value={formData.installments || ''}
+                    onChange={handleChange}
+                    min="2"
+                    step="1"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white transition-all"
+                    placeholder="Ex: 3"
+                    required={formData.isInstallment}
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Mínimo 2 parcelas</p>
                 </div>
+              )}
 
-                {formData.isRecurring && (
-                  <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Frequência *
-                      </label>
-                      <select
-                        name="frequency"
-                        value={formData.recurrence?.frequency || 'MONTHLY'}
-                        onChange={handleChange}
-                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
-                        required={formData.isRecurring}
-                      >
-                        <option value="MONTHLY">Mensal</option>
-                        <option value="WEEKLY">Semanal</option>
-                        <option value="YEARLY">Anual</option>
-                      </select>
-                    </div>
+              {/* Target Due Month */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Mês de vencimento da fatura *
+                </label>
+                <select
+                  name="targetDueMonth"
+                  value={formData.targetDueMonth || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white transition-all"
+                  required
+                >
+                  {availableTargetDueMonths.map(month => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">A compra será incluída nesta fatura</p>
+              </div>
+            </div>
+          )}
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Intervalo (a cada X)
-                      </label>
-                      <input
-                        type="number"
-                        name="interval"
-                        value={formData.recurrence?.interval || 1}
-                        onChange={handleChange}
-                        min="1"
-                        step="1"
-                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Ex: 2 = a cada 2 {formData.recurrence?.frequency === 'MONTHLY' ? 'meses' : formData.recurrence?.frequency === 'WEEKLY' ? 'semanas' : 'anos'}
-                      </p>
-                    </div>
+          {/* Account Selector - Hidden for CARTAO */}
+          {formData.type !== 'CARTAO' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Conta *
+              </label>
+              {accountsLoading ? (
+                <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700">
+                  Carregando...
+                </div>
+              ) : (
+                <select
+                  name="accountId"
+                  value={formData.accountId || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
+                  required
+                >
+                  <option value="">Selecione uma conta</option>
+                  {accounts.map((account: Account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
 
-                    <div className={`border-t pt-3 flex items-center ${formData.type === 'RECEITA' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
-                      <input
-                        type="checkbox"
-                        name="hasRecurrenceEnd"
-                        id="hasRecurrenceEnd"
-                        checked={formData.hasRecurrenceEnd || false}
-                        onChange={handleChange}
-                        className={`h-4 w-4 border-gray-300 rounded ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
-                      />
-                      <label htmlFor="hasRecurrenceEnd" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                        Determinar prazo (opcional)
-                      </label>
-                    </div>
+          {/* Paid Checkbox - Hidden for CARTAO */}
+          {formData.type !== 'CARTAO' && (
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700/40 dark:to-gray-700/60 rounded-lg border border-gray-200 dark:border-gray-700">
+              <input
+                type="checkbox"
+                name="paid"
+                id="paid"
+                checked={formData.paid}
+                onChange={handleChange}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+              />
+              <label htmlFor="paid" className="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
+                Já está pago?
+                <span className="text-xs text-gray-500 dark:text-gray-400 block font-normal">
+                  {isToday(formData.date) ? '✓ Data de hoje' : '○ Data futura'}
+                </span>
+              </label>
+            </div>
+          )}
 
-                    {formData.hasRecurrenceEnd && (
-                      <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Tipo de encerramento *
-                          </label>
-                          <div className="space-y-2">
-                            <div className="flex items-center">
-                              <input
-                                type="radio"
-                                name="recurrenceEndType"
-                                id="endTypeDate"
-                                value="date"
-                                checked={formData.recurrenceEndType === 'date'}
-                                onChange={handleChange}
-                                className={`h-4 w-4 border-gray-300 ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
-                              />
-                              <label htmlFor="endTypeDate" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                Data final
-                              </label>
-                            </div>
-                            <div className="flex items-center">
-                              <input
-                                type="radio"
-                                name="recurrenceEndType"
-                                id="endTypeCount"
-                                value="count"
-                                checked={formData.recurrenceEndType === 'count'}
-                                onChange={handleChange}
-                                className={`h-4 w-4 border-gray-300 ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
-                              />
-                              <label htmlFor="endTypeCount" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                Quantidade de repetições
-                              </label>
-                            </div>
+          {/* Recurrence - For DESPESA and RECEITA */}
+          {(formData.type === 'DESPESA' || formData.type === 'RECEITA') && (
+            <div className={`space-y-3 p-4 rounded-xl border-2 ${formData.type === 'RECEITA' ? 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  name="isRecurring"
+                  id="isRecurring"
+                  checked={formData.isRecurring}
+                  onChange={handleChange}
+                  className={`h-4 w-4 border-gray-300 rounded cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
+                />
+                <label htmlFor="isRecurring" className="flex-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
+                  <Repeat size={16} />
+                  <span>{formData.type === 'RECEITA' ? 'Receita recorrente?' : 'Despesa recorrente?'}</span>
+                </label>
+              </div>
+
+              {formData.isRecurring && (
+                <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-emerald-200 dark:border-emerald-800' : 'border-amber-200 dark:border-amber-800'}`}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Frequência *
+                    </label>
+                    <select
+                      name="frequency"
+                      value={formData.recurrence?.frequency || 'MONTHLY'}
+                      onChange={handleChange}
+                      className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
+                      required={formData.isRecurring}
+                    >
+                      <option value="MONTHLY">Mensal</option>
+                      <option value="WEEKLY">Semanal</option>
+                      <option value="YEARLY">Anual</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Intervalo (a cada X)
+                    </label>
+                    <input
+                      type="number"
+                      name="interval"
+                      value={formData.recurrence?.interval || 1}
+                      onChange={handleChange}
+                      min="1"
+                      step="1"
+                      className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Ex: 2 = a cada 2 {formData.recurrence?.frequency === 'MONTHLY' ? 'meses' : formData.recurrence?.frequency === 'WEEKLY' ? 'semanas' : 'anos'}
+                    </p>
+                  </div>
+
+                  <div className={`border-t pt-3 flex items-center gap-3 ${formData.type === 'RECEITA' ? 'border-emerald-200 dark:border-emerald-800' : 'border-amber-200 dark:border-amber-800'}`}>
+                    <input
+                      type="checkbox"
+                      name="hasRecurrenceEnd"
+                      id="hasRecurrenceEnd"
+                      checked={formData.hasRecurrenceEnd || false}
+                      onChange={handleChange}
+                      className={`h-4 w-4 border-gray-300 rounded cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
+                    />
+                    <label htmlFor="hasRecurrenceEnd" className="flex-1 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
+                      Determinar prazo (opcional)
+                    </label>
+                  </div>
+
+                  {formData.hasRecurrenceEnd && (
+                    <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-emerald-200 dark:border-emerald-800' : 'border-amber-200 dark:border-amber-800'}`}>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Tipo de encerramento *
+                        </label>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name="recurrenceEndType"
+                              id="endTypeDate"
+                              value="date"
+                              checked={formData.recurrenceEndType === 'date'}
+                              onChange={handleChange}
+                              className={`h-4 w-4 border-gray-300 cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
+                            />
+                            <label htmlFor="endTypeDate" className="flex-1 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                              Data final
+                            </label>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name="recurrenceEndType"
+                              id="endTypeCount"
+                              value="count"
+                              checked={formData.recurrenceEndType === 'count'}
+                              onChange={handleChange}
+                              className={`h-4 w-4 border-gray-300 cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
+                            />
+                            <label htmlFor="endTypeCount" className="flex-1 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                              Quantidade de repetições
+                            </label>
                           </div>
                         </div>
-
-                        {formData.recurrenceEndType === 'date' && (
-                          <div className="animate-fadeIn">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Data de término *
-                            </label>
-                            <input
-                              type="date"
-                              name="recurrenceEndDate"
-                              value={formData.recurrence?.endDate || ''}
-                              onChange={handleChange}
-                              min={formData.date}
-                              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
-                            />
-                            <p className="text-xs text-gray-500 mt-1">A transação será criada até esta data</p>
-                          </div>
-                        )}
-
-                        {formData.recurrenceEndType === 'count' && (
-                          <div className="animate-fadeIn">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                              Número de repetições *
-                            </label>
-                            <input
-                              type="number"
-                              name="recurrenceOccurrences"
-                              value={formData.recurrence?.occurrences || ''}
-                              onChange={handleChange}
-                              min="1"
-                              step="1"
-                              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
-                              placeholder="Ex: 12"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Total de vezes que a transação será criada (mínimo 1)</p>
-                          </div>
-                        )}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Validation Messages */}
-            {submitAttempted && validationErrors.length > 0 && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-1">Corrija os seguintes erros:</p>
-                <ul className="text-xs text-red-600 dark:text-red-400 list-disc list-inside">
-                  {validationErrors.map((error, idx) => (
-                    <li key={idx}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                      {formData.recurrenceEndType === 'date' && (
+                        <div className="animate-fadeIn">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Data de término *
+                          </label>
+                          <input
+                            type="date"
+                            name="recurrenceEndDate"
+                            value={formData.recurrence?.endDate || ''}
+                            onChange={handleChange}
+                            min={formData.date}
+                            className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
+                          />
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">A transação será criada até esta data</p>
+                        </div>
+                      )}
 
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${
-                  canSubmit
-                    ? 'bg-primary-600 hover:bg-primary-700'
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
-              >
-                Salvar Transação
-              </button>
+                      {formData.recurrenceEndType === 'count' && (
+                        <div className="animate-fadeIn">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Número de repetições *
+                          </label>
+                          <input
+                            type="number"
+                            name="recurrenceOccurrences"
+                            value={formData.recurrence?.occurrences || ''}
+                            onChange={handleChange}
+                            min="1"
+                            step="1"
+                            className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
+                            placeholder="Ex: 12"
+                          />
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total de vezes que a transação será criada (mínimo 1)</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </form>
+          )}
+
+          {/* Validation Messages */}
+          {submitAttempted && validationErrors.length > 0 && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl">
+              <p className="text-sm font-bold text-red-700 dark:text-red-300 mb-2">⚠️ Corrija os seguintes erros:</p>
+              <ul className="text-xs text-red-600 dark:text-red-400 list-disc list-inside space-y-1">
+                {validationErrors.map((error, idx) => (
+                  <li key={idx}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+        </form>
+
+        {/* Footer - Fixed with Action Buttons */}
+        <div className="flex-shrink-0 grid grid-cols-2 gap-0 border-t border-gray-200 dark:border-gray-700">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-all first:rounded-bl-2xl"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+            className={`px-4 py-3 text-sm font-bold text-white transition-all last:rounded-br-2xl ${
+              canSubmit
+                ? 'bg-primary-600 hover:bg-primary-700 shadow-lg hover:shadow-xl'
+                : 'bg-gray-400 cursor-not-allowed opacity-50'
+            }`}
+          >
+            {submitAttempted && validationErrors.length > 0 ? '✓ Corrigir' : 'Salvar'}
+          </button>
         </div>
       </div>
 
