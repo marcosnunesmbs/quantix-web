@@ -329,11 +329,63 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {/* Transaction rows */}
       <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
         {group.transactions.map((tx) => (
-          <div key={tx.id} className="flex items-center gap-2 px-4 py-2.5">
-            {/* Category pill */}
+          <div key={tx.id} className="px-4 py-2.5 flex flex-col gap-1.5">
+            {/* Top row: category (desktop) + name + amount/actions */}
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Category pill — desktop only */}
+              {tx.category ? (
+                <span
+                  className="shrink-0 hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white"
+                  style={{
+                    backgroundColor: tx.category.color ?? '#ef4444',
+                  }}
+                >
+                  {tx.category.name}
+                </span>
+              ) : (
+                <span className="shrink-0 hidden md:inline text-xs text-gray-400 dark:text-gray-500 italic">—</span>
+              )}
+
+              {/* Name */}
+              <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate" title={tx.name}>
+                {tx.name}
+                {tx.installmentTotal && tx.installmentTotal > 1 ? (
+                  <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
+                    {tx.installmentNumber}/{tx.installmentTotal}
+                  </span>
+                ) : null}
+              </span>
+
+              {/* Amount + actions */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-sm font-semibold text-red-600 dark:text-red-400">
+                  -{formatCurrency(tx.amount)}
+                </span>
+                {!group.paid && onEdit && (
+                  <button
+                    onClick={() => onEdit(tx)}
+                    className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    title="Editar"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                )}
+                {!group.paid && onDelete && (
+                  <button
+                    onClick={() => handleDeleteClick(tx)}
+                    className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    title="Excluir"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Category pill — mobile only, below name + amount */}
             {tx.category ? (
               <span
-                className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white"
+                className="md:hidden inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white w-fit"
                 style={{
                   backgroundColor: tx.category.color ?? '#ef4444',
                 }}
@@ -341,43 +393,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 {tx.category.name}
               </span>
             ) : (
-              <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500 italic">—</span>
+              <span className="md:hidden text-xs text-gray-400 dark:text-gray-500 italic">—</span>
             )}
-
-            {/* Name */}
-            <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate" title={tx.name}>
-              {tx.name}
-              {tx.installmentTotal && tx.installmentTotal > 1 ? (
-                <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
-                  {tx.installmentNumber}/{tx.installmentTotal}
-                </span>
-              ) : null}
-            </span>
-
-            {/* Amount + actions */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                -{formatCurrency(tx.amount)}
-              </span>
-              {!group.paid && onEdit && (
-                <button
-                  onClick={() => onEdit(tx)}
-                  className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  title="Editar"
-                >
-                  <Pencil size={13} />
-                </button>
-              )}
-              {!group.paid && onDelete && (
-                <button
-                  onClick={() => handleDeleteClick(tx)}
-                  className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                  title="Excluir"
-                >
-                  <Trash2 size={13} />
-                </button>
-              )}
-            </div>
           </div>
         ))}
       </div>
