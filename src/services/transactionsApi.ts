@@ -1,13 +1,26 @@
 import api from './api';
 import { Transaction, CreateTransactionRequest } from '../types/apiTypes';
 
-export const getTransactions = async (month?: string, creditCardId?: string, startDate?: string, endDate?: string): Promise<Transaction[]> => {
+export const getTransactions = async (
+  month?: string,
+  creditCardId?: string,
+  startDate?: string,
+  endDate?: string,
+  paid?: boolean,
+  type?: 'INCOME' | 'EXPENSE',
+  categoryId?: string,
+  accountId?: string
+): Promise<Transaction[]> => {
   try {
     const params: any = {};
     if (month) params.month = month;
     if (creditCardId) params.creditCardId = creditCardId;
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
+    if (paid !== undefined) params.paid = paid;
+    if (type) params.type = type;
+    if (categoryId) params.categoryId = categoryId;
+    if (accountId) params.accountId = accountId;
 
     const response = await api.get(`/transactions`, {
       params

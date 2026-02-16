@@ -1133,6 +1133,51 @@ paths:
             type: string
           description: Filter transactions by account ID
           example: "acc_123456789"
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter transactions by category ID
+          example: "cat_123456789"
+        - name: creditCardId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter transactions by credit card ID
+          example: "cc_123456789"
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [INCOME, EXPENSE]
+          description: Filter transactions by type
+          example: "EXPENSE"
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter transactions starting from this date (inclusive)
+          example: "2026-01-01"
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter transactions up to this date (inclusive)
+          example: "2026-01-31"
+        - name: paid
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by payment status (true = paid, false = unpaid)
+          example: false
       responses:
         '200':
           description: List of transactions

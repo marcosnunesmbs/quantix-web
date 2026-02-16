@@ -101,7 +101,7 @@ const DashboardCreditCardInvoices: React.FC<Props> = ({ expenses }) => {
           <div className="flex justify-end mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
             <button
               onClick={() => navigate(`/credit-cards/${expense.cardId}/statements`)}
-              className="p-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
+              className="p-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
             >
               <FileText size={16} />
               {t('view_statement')}

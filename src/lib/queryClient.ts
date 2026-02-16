@@ -15,7 +15,7 @@ export const queryKeys = {
   accounts: ['accounts'] as const,
   account: (id: string) => ['accounts', id] as const,
   accountTransactions: (id: string) => ['accounts', id, 'transactions'] as const,
-  transactions: (month?: string, startDate?: string, endDate?: string) => ['transactions', month, startDate, endDate] as const,
+  transactions: (month?: string, creditCardId?: string, startDate?: string, endDate?: string, paid?: boolean, type?: string, categoryId?: string, accountId?: string) => ['transactions', month, creditCardId, startDate, endDate, paid, type, categoryId, accountId] as const,
   creditCards: ['creditCards'] as const,
   creditCard: (id: string) => ['creditCards', id] as const,
   creditCardStatement: (id: string, month: string) => ['creditCards', id, 'statement', month] as const,

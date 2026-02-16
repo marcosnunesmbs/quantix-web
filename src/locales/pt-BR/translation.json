@@ -167,5 +167,7 @@
   "no_invoices_this_month": "Nenhuma fatura neste mês",
   "uncategorized": "Sem Categoria",
   "add_transactions_to_view_financial_summaries": "Adicione transações para visualizar resumos financeiros",
-  "loading_transactions": "Carregando transações..."
+  "loading_transactions": "Carregando transações...",
+  "movements": "Movimentações",
+  "expense": "Saída"
 }

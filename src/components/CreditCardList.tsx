@@ -131,7 +131,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
             <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
               <button
                 onClick={() => handleViewStatements(card.id)}
-                className="p-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
+                className="p-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
               >
                 <FileText size={16} />
                 {t('view_statement')}
@@ -139,7 +139,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
                {onEdit && (
                 <button
                   onClick={() => onEdit(card)}
-                  className="p-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-lg transition-colors flex items-center gap-2"
+                  className="p-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Pencil size={16} />
                   {t('edit')}
@@ -148,7 +148,7 @@ const CreditCardList: React.FC<CreditCardListProps> = ({ creditCards, onEdit, on
               {onDelete && (
                 <button
                   onClick={() => handleDeleteClick(card)}
-                  className="p-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors flex items-center gap-2"
+                  className="p-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Trash2 size={16} />
                   {t('delete')}

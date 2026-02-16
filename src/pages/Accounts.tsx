@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import AccountForm from '../components/AccountForm';
 import AccountList from '../components/AccountList';
 import { useAccounts } from '../hooks/useAccounts';
+import { useTransactions } from '../hooks/useTransactions';
 import { CreateAccountRequest } from '../services/accountsApi';
+import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import { useTranslation } from 'react-i18next';
 
 const AccountsPage: React.FC = () => {
   const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Partial<CreateAccountRequest> & { id?: string } | undefined>();
+  const [movementsModalOpen, setMovementsModalOpen] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+  const [movementsMonth, setMovementsMonth] = useState<string>('');
+  const [movementsStartDate, setMovementsStartDate] = useState<string>('');
+  const [movementsEndDate, setMovementsEndDate] = useState<string>('');
 
   const {
     accounts,
@@ -19,6 +26,32 @@ const AccountsPage: React.FC = () => {
     updateExistingAccount,
     removeAccount
   } = useAccounts();
+
+  // Fetch paid transactions for the selected account
+  // If month is selected, use it; otherwise use date range
+  const monthParam = movementsStartDate || movementsEndDate ? undefined : movementsMonth;
+  const startDateParam = movementsMonth ? undefined : movementsStartDate;
+  const endDateParam = movementsMonth ? undefined : movementsEndDate;
+
+  const { transactions: accountTransactions } = useTransactions(
+    monthParam,
+    undefined,
+    startDateParam,
+    endDateParam,
+    true, // paid only
+    undefined,
+    undefined,
+    selectedAccountId || undefined
+  );
+
+  const selectedAccount = accounts.find(acc => acc.id === selectedAccountId);
+
+  // Sort transactions by date (ascending - oldest first)
+  const sortedAccountTransactions = [...accountTransactions].sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return dateA - dateB;
+  });
 
   const handleFormSubmit = async (accountData: CreateAccountRequest) => {
     try {
@@ -58,6 +91,69 @@ const AccountsPage: React.FC = () => {
     }
   };
 
+  const handleViewMovements = (accountId: string) => {
+    setSelectedAccountId(accountId);
+    // Pre-select current month
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    setMovementsMonth(currentMonth);
+    setMovementsModalOpen(true);
+  };
+
+  const handleCloseMovementsModal = () => {
+    setMovementsModalOpen(false);
+    setSelectedAccountId('');
+    setMovementsMonth('');
+    setMovementsStartDate('');
+    setMovementsEndDate('');
+  };
+
+  const formatCurrency = (amount: number): string => {
+    const { locale, currency } = getLocaleAndCurrency();
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string): string => {
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const handlePreviousMonth = () => {
+    if (!movementsMonth) return;
+    const [year, month] = movementsMonth.split('-').map(Number);
+    let newMonth = month - 1;
+    let newYear = year;
+
+    if (newMonth < 1) {
+      newMonth = 12;
+      newYear -= 1;
+    }
+
+    setMovementsMonth(`${newYear}-${String(newMonth).padStart(2, '0')}`);
+  };
+
+  const handleNextMonth = () => {
+    if (!movementsMonth) return;
+    const [year, month] = movementsMonth.split('-').map(Number);
+    let newMonth = month + 1;
+    let newYear = year;
+
+    if (newMonth > 12) {
+      newMonth = 1;
+      newYear += 1;
+    }
+
+    setMovementsMonth(`${newYear}-${String(newMonth).padStart(2, '0')}`);
+  };
+
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -83,16 +179,154 @@ const AccountsPage: React.FC = () => {
             accounts={accounts}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onViewMovements={handleViewMovements}
           />
         </div>
       )}
 
       {showForm && (
-        <AccountForm 
-          onSubmit={handleFormSubmit} 
+        <AccountForm
+          onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
           initialData={editingAccount}
         />
+      )}
+
+      {/* Movements Modal */}
+      {movementsModalOpen && selectedAccount && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[80vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {t('movements')} - {selectedAccount.name}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {sortedAccountTransactions.length} {sortedAccountTransactions.length === 1 ? 'movimentação' : 'movimentações'}
+                </p>
+              </div>
+              <button
+                onClick={handleCloseMovementsModal}
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Filters */}
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 space-y-4">
+              {/* Month Filter */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Mês (prioritário)
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handlePreviousMonth}
+                    disabled={movementsStartDate || movementsEndDate ? true : false}
+                    className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Mês anterior"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <input
+                    type="month"
+                    value={movementsMonth}
+                    onChange={(e) => setMovementsMonth(e.target.value)}
+                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    style={{ colorScheme: 'light dark' }}
+                    disabled={movementsStartDate || movementsEndDate ? true : false}
+                  />
+                  <button
+                    onClick={handleNextMonth}
+                    disabled={movementsStartDate || movementsEndDate ? true : false}
+                    className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Próximo mês"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Date Range Filters */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Data início
+                  </label>
+                  <input
+                    type="date"
+                    value={movementsStartDate}
+                    onChange={(e) => setMovementsStartDate(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    style={{ colorScheme: 'light dark' }}
+                    disabled={movementsMonth ? true : false}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Data fim
+                  </label>
+                  <input
+                    type="date"
+                    value={movementsEndDate}
+                    onChange={(e) => setMovementsEndDate(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    style={{ colorScheme: 'light dark' }}
+                    disabled={movementsMonth ? true : false}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+              {sortedAccountTransactions.length === 0 ? (
+                <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                  {t('no_transactions_found_for_period')}
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {sortedAccountTransactions.map((tx) => (
+                    <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="font-medium text-gray-900 dark:text-white">{tx.name}</span>
+                          {tx.category && (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                              style={{
+                                backgroundColor: tx.category.color ?? '#ef4444',
+                              }}
+                            >
+                              {tx.category.name}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatDate(tx.date)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-semibold ${
+                          tx.type === 'INCOME'
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {tx.type === 'INCOME' ? t('income') || 'Entrada' : t('expense') || 'Saída'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

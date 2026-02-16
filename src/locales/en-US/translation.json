@@ -167,5 +167,7 @@
   "no_invoices_this_month": "No invoices this month",
   "uncategorized": "Uncategorized",
   "add_transactions_to_view_financial_summaries": "Add transactions to view financial summaries",
-  "loading_transactions": "Loading transactions..."
+  "loading_transactions": "Loading transactions...",
+  "movements": "Movements",
+  "expense": "Withdrawal"
 }

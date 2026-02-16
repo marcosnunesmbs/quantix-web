@@ -4,12 +4,21 @@ import { getTransactions, createTransaction, payTransaction, unpayTransaction, d
 import { queryKeys } from '../lib/queryClient';
 import { CreateTransactionRequest } from '../types/apiTypes';
 
-export const useTransactions = (month?: string, startDate?: string, endDate?: string) => {
+export const useTransactions = (
+  month?: string,
+  creditCardId?: string,
+  startDate?: string,
+  endDate?: string,
+  paid?: boolean,
+  type?: 'INCOME' | 'EXPENSE',
+  categoryId?: string,
+  accountId?: string
+) => {
   const queryClient = useQueryClient();
 
   const { data: transactions = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.transactions(month, startDate, endDate),
-    queryFn: () => getTransactions(month, undefined, startDate, endDate),
+    queryKey: queryKeys.transactions(month, creditCardId, startDate, endDate, paid, type, categoryId, accountId),
+    queryFn: () => getTransactions(month, creditCardId, startDate, endDate, paid, type, categoryId, accountId),
   });
 
   const createMutation = useMutation({

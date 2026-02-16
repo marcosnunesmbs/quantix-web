@@ -32,11 +32,13 @@ const TransactionsPage: React.FC = () => {
   const { creditCards } = useCreditCards();
   const { categories } = useCategories();
 
-  // Data hooks - with date range filters
+  // Data hooks - with all filters passed to backend
   // If date range is provided, ignore selectedMonth
   const monthParam = filters.startDate || filters.endDate ? undefined : selectedMonth;
+  const typeFilter = filters.type !== 'ALL' ? filters.type : undefined;
+
   const {
-    transactions,
+    transactions: backendTransactions,
     loading,
     error,
     updateTransaction,
@@ -45,18 +47,19 @@ const TransactionsPage: React.FC = () => {
     removeTransaction,
     isPaying,
     isUnpaying,
-  } = useTransactions(monthParam, filters.startDate, filters.endDate);
+  } = useTransactions(
+    monthParam,
+    filters.creditCardId,
+    filters.startDate,
+    filters.endDate,
+    undefined, // paid (not used in main filter)
+    typeFilter,
+    filters.categoryId || undefined,
+    filters.accountId || undefined
+  );
 
-  // Apply client-side filters (type, category, account, creditCard)
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((tx) => {
-      if (filters.type !== 'ALL' && tx.type !== filters.type) return false;
-      if (filters.categoryId && tx.categoryId !== filters.categoryId) return false;
-      if (filters.accountId && tx.accountId !== filters.accountId) return false;
-      if (filters.creditCardId && tx.creditCardId !== filters.creditCardId) return false;
-      return true;
-    });
-  }, [transactions, filters]);
+  // No client-side filtering needed - all filters are applied on backend
+  const filteredTransactions = backendTransactions;
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 

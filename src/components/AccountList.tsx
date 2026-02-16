@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, Trash2, Wallet } from 'lucide-react';
+import { Pencil, Trash2, Wallet, Eye } from 'lucide-react';
 import { Account } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
@@ -9,9 +9,10 @@ interface AccountListProps {
   accounts: Account[];
   onEdit?: (account: Account) => void;
   onDelete?: (id: string) => void;
+  onViewMovements?: (accountId: string) => void;
 }
 
-const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete }) => {
+const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete, onViewMovements }) => {
   const { t } = useTranslation();
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; accountId: string | null; accountName: string }>({
     isOpen: false,
@@ -81,6 +82,15 @@ const AccountList: React.FC<AccountListProps> = ({ accounts, onEdit, onDelete })
             </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+              {onViewMovements && (
+                <button
+                  onClick={() => onViewMovements(account.id)}
+                  className="p-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Eye size={16} />
+                  {t('movements') || 'Ver movimentações'}
+                </button>
+              )}
               {onEdit && (
                 <button
                   onClick={() => onEdit(account)}
