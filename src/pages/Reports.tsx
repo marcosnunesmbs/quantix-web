@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, Filter } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import MonthSelector from '../components/MonthSelector';
 import { useSummary } from '../hooks/useSummary';
 import { useTransactions } from '../hooks/useTransactions';
@@ -13,11 +13,6 @@ type ReportTab = 'resumo' | 'tendencias' | 'categorias' | 'contas' | 'cartoes';
 const ReportsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ReportTab>('resumo');
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
-  const [showFilters, setShowFilters] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const [accountFilter, setAccountFilter] = useState<string>('');
-  const [cardFilter, setCardFilter] = useState<string>('');
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('');
 
   const { summary, loading, error } = useSummary(selectedMonth);
   const { transactions } = useTransactions(selectedMonth);
@@ -77,21 +72,12 @@ const ReportsPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Relatórios Financeiros</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Análise completa do seu fluxo de caixa</p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
-              >
-                <Filter size={18} />
-                Filtros
-              </button>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-                <Calendar size={18} />
-                <MonthSelector
-                  selectedMonth={selectedMonth}
-                  onMonthChange={setSelectedMonth}
-                />
-              </div>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+              <Calendar size={18} />
+              <MonthSelector
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+              />
             </div>
           </div>
 
@@ -115,69 +101,6 @@ const ReportsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters Panel */}
-      {showFilters && (
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            >
-              <option value="">Todas as categorias</option>
-              {summary?.expensesByCategory.map((cat, i) => (
-                <option key={i} value={cat.categoryId || ''}>{cat.categoryName || 'Sem categoria'}</option>
-              ))}
-            </select>
-
-            <select
-              value={accountFilter}
-              onChange={(e) => setAccountFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            >
-              <option value="">Todas as contas</option>
-              {accounts?.map(acc => (
-                <option key={acc.id} value={acc.id}>{acc.name}</option>
-              ))}
-            </select>
-
-            <select
-              value={cardFilter}
-              onChange={(e) => setCardFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            >
-              <option value="">Todos os cartões</option>
-              {creditCards?.map(card => (
-                <option key={card.id} value={card.id}>{card.name}</option>
-              ))}
-            </select>
-
-            <select
-              value={paymentMethodFilter}
-              onChange={(e) => setPaymentMethodFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
-            >
-              <option value="">Todos os métodos</option>
-              <option value="CASH">Dinheiro</option>
-              <option value="PIX">Pix</option>
-              <option value="DEBIT">Débito</option>
-              <option value="CREDIT">Crédito</option>
-            </select>
-
-            <button
-              onClick={() => {
-                setCategoryFilter('');
-                setAccountFilter('');
-                setCardFilter('');
-                setPaymentMethodFilter('');
-              }}
-              className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            >
-              Limpar filtros
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
