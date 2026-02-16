@@ -134,6 +134,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           onChange={(e) => onChange({ ...filters, startDate: e.target.value })}
           placeholder="Data início"
           className={selectClass}
+          style={{ colorScheme: 'light dark' }}
         />
 
         <input
@@ -142,6 +143,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
           onChange={(e) => onChange({ ...filters, endDate: e.target.value })}
           placeholder="Data fim"
           className={selectClass}
+          style={{ colorScheme: 'light dark' }}
         />
 
         {active && (
@@ -258,6 +260,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
                   value={filters.startDate}
                   onChange={(e) => onChange({ ...filters, startDate: e.target.value })}
                   className={`${selectClass} w-full py-2`}
+                  style={{ colorScheme: 'light dark' }}
                 />
               </div>
 
@@ -270,6 +273,7 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
                   value={filters.endDate}
                   onChange={(e) => onChange({ ...filters, endDate: e.target.value })}
                   className={`${selectClass} w-full py-2`}
+                  style={{ colorScheme: 'light dark' }}
                 />
               </div>
 

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  Calendar,
   CreditCard as CreditCardIcon,
   DollarSign,
   Wallet,
   CheckCircle,
+  Calendar,
 } from 'lucide-react';
 import {
   useCreditCardStatement,
@@ -19,6 +19,7 @@ import { Transaction } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ConfirmationModal from '../components/ConfirmationModal';
+import MonthSelector from '../components/MonthSelector';
 import { useTranslation } from 'react-i18next';
 
 const CreditCardStatements: React.FC = () => {
@@ -73,8 +74,8 @@ const CreditCardStatements: React.FC = () => {
     }
   }, [accounts, selectedAccountId]);
 
-  const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedMonth(e.target.value);
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month);
   };
 
   const handlePayStatement = () => {
@@ -155,18 +156,10 @@ const CreditCardStatements: React.FC = () => {
       {/* Month Selector */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
         <div className="flex items-center gap-4">
-          <Calendar className="text-gray-400" size={20} />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('select_month')}
-            </label>
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={handleMonthChange}
-              className="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            />
-          </div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 shrink-0">
+            {t('select_month')}
+          </label>
+          <MonthSelector selectedMonth={selectedMonth} onMonthChange={handleMonthChange} />
         </div>
       </div>
 
