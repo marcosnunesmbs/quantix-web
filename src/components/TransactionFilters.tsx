@@ -7,6 +7,8 @@ export interface TransactionFiltersState {
   categoryId: string;
   accountId: string;
   creditCardId: string;
+  startDate: string;
+  endDate: string;
 }
 
 export const defaultFilters: TransactionFiltersState = {
@@ -14,13 +16,17 @@ export const defaultFilters: TransactionFiltersState = {
   categoryId: '',
   accountId: '',
   creditCardId: '',
+  startDate: '',
+  endDate: '',
 };
 
 export const hasActiveFilters = (filters: TransactionFiltersState): boolean =>
   filters.type !== 'ALL' ||
   filters.categoryId !== '' ||
   filters.accountId !== '' ||
-  filters.creditCardId !== '';
+  filters.creditCardId !== '' ||
+  filters.startDate !== '' ||
+  filters.endDate !== '';
 
 interface TransactionFiltersProps {
   filters: TransactionFiltersState;
@@ -121,6 +127,22 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             <option key={cc.id} value={cc.id}>{cc.name}</option>
           ))}
         </select>
+
+        <input
+          type="date"
+          value={filters.startDate}
+          onChange={(e) => onChange({ ...filters, startDate: e.target.value })}
+          placeholder="Data início"
+          className={selectClass}
+        />
+
+        <input
+          type="date"
+          value={filters.endDate}
+          onChange={(e) => onChange({ ...filters, endDate: e.target.value })}
+          placeholder="Data fim"
+          className={selectClass}
+        />
 
         {active && (
           <button
@@ -225,6 +247,30 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({
                     <option key={cc.id} value={cc.id}>{cc.name}</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+                  Data Início
+                </label>
+                <input
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => onChange({ ...filters, startDate: e.target.value })}
+                  className={`${selectClass} w-full py-2`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
+                  Data Fim
+                </label>
+                <input
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => onChange({ ...filters, endDate: e.target.value })}
+                  className={`${selectClass} w-full py-2`}
+                />
               </div>
 
               {active && (

@@ -28,7 +28,13 @@ const TransactionsPage: React.FC = () => {
   const [filters, setFilters] = useState<TransactionFiltersState>(defaultFilters);
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(false);
 
-  // Data hooks
+  const { accounts } = useAccounts();
+  const { creditCards } = useCreditCards();
+  const { categories } = useCategories();
+
+  // Data hooks - with date range filters
+  // If date range is provided, ignore selectedMonth
+  const monthParam = filters.startDate || filters.endDate ? undefined : selectedMonth;
   const {
     transactions,
     loading,
@@ -39,13 +45,9 @@ const TransactionsPage: React.FC = () => {
     removeTransaction,
     isPaying,
     isUnpaying,
-  } = useTransactions(selectedMonth);
+  } = useTransactions(monthParam, filters.startDate, filters.endDate);
 
-  const { accounts } = useAccounts();
-  const { creditCards } = useCreditCards();
-  const { categories } = useCategories();
-
-  // Apply filters
+  // Apply client-side filters (type, category, account, creditCard)
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
       if (filters.type !== 'ALL' && tx.type !== filters.type) return false;

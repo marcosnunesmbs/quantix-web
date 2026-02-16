@@ -4,12 +4,12 @@ import { getTransactions, createTransaction, payTransaction, unpayTransaction, d
 import { queryKeys } from '../lib/queryClient';
 import { CreateTransactionRequest } from '../types/apiTypes';
 
-export const useTransactions = (month?: string) => {
+export const useTransactions = (month?: string, startDate?: string, endDate?: string) => {
   const queryClient = useQueryClient();
 
   const { data: transactions = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.transactions(month),
-    queryFn: () => getTransactions(month),
+    queryKey: queryKeys.transactions(month, startDate, endDate),
+    queryFn: () => getTransactions(month, undefined, startDate, endDate),
   });
 
   const createMutation = useMutation({
