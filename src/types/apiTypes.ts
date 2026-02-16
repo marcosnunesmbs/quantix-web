@@ -26,6 +26,7 @@ export interface Transaction {
   accountId?: string;
   account?: Account;
   paid: boolean;
+  purchaseDate?: string; // date format - for credit card transactions
   createdAt: string; // date-time format
 }
 
@@ -140,6 +141,7 @@ export interface CreateTransactionRequest {
   installments?: number;
   targetDueMonth?: string; // YYYY-MM format
   accountId?: string;
+  purchaseDate?: string; // date format - for credit card transactions
   recurrence?: {
     frequency: 'MONTHLY' | 'WEEKLY' | 'YEARLY';
     interval?: number;

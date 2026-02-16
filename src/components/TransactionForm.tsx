@@ -365,6 +365,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       creditCardId: formData.creditCardId,
       installments: formData.isInstallment ? formData.installments : undefined,
       targetDueMonth: formData.type === 'CARTAO' ? formData.targetDueMonth : undefined,
+      purchaseDate: formData.type === 'CARTAO' ? formData.date : undefined,
       recurrence: recurrenceData,
     };
 
@@ -453,7 +454,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
             {/* Date */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Data *
+                {formData.type === 'CARTAO' ? 'Data da compra *' : 'Data *'}
               </label>
               <input
                 type="date"

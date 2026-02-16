@@ -84,6 +84,12 @@ components:
           format: date
           description: Date of the transaction
           example: "2026-01-30"
+        purchaseDate:
+          type: string
+          format: date
+          description: Actual purchase date (credit card only, optional)
+          example: "2026-02-10"
+          nullable: true
         categoryId:
           type: string
           description: ID of the associated category
@@ -542,6 +548,11 @@ components:
           type: boolean
           description: Whether the transaction is already paid at creation time (defaults to false)
           example: false
+        purchaseDate:
+          type: string
+          format: date
+          description: Actual purchase date (credit card only, optional)
+          example: "2026-02-10"
 
     UpdateTransactionRequest:
       type: object
@@ -1076,6 +1087,11 @@ paths:
                   pattern: "^\\d{4}-\\d{2}$"
                   description: Target month for due date in YYYY-MM format (optional)
                   example: "2026-03"
+                purchaseDate:
+                  type: string
+                  format: date
+                  description: Actual purchase date (credit card only, optional)
+                  example: "2026-02-10"
                 recurrence:
                   type: object
                   properties:
