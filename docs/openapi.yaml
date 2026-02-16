@@ -211,8 +211,13 @@ components:
         endDate:
           type: string
           format: date
-          description: Date when the recurrence should end
+          description: Date when the recurrence should end (mutually exclusive with occurrences)
           example: "2026-12-31"
+        occurrences:
+          type: integer
+          minimum: 2
+          description: Number of occurrences (mutually exclusive with endDate). When set, transaction names will be formatted as "Name (N/total)"
+          example: 12
         createdAt:
           type: string
           format: date-time
@@ -531,6 +536,8 @@ components:
               $ref: '#/components/schemas/RecurrenceRule/properties/interval'
             endDate:
               $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
+            occurrences:
+              $ref: '#/components/schemas/RecurrenceRule/properties/occurrences'
         isPaid:
           type: boolean
           description: Whether the transaction is already paid at creation time (defaults to false)
@@ -580,6 +587,8 @@ components:
               $ref: '#/components/schemas/RecurrenceRule/properties/interval'
             endDate:
               $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
+            occurrences:
+              $ref: '#/components/schemas/RecurrenceRule/properties/occurrences'
 
     Settings:
       type: object
@@ -1076,6 +1085,8 @@ paths:
                       $ref: '#/components/schemas/RecurrenceRule/properties/interval'
                     endDate:
                       $ref: '#/components/schemas/RecurrenceRule/properties/endDate'
+                    occurrences:
+                      $ref: '#/components/schemas/RecurrenceRule/properties/occurrences'
       responses:
         '201':
           description: Transaction created successfully
@@ -1196,7 +1207,13 @@ paths:
         Update a transaction.
         **Note:** Transactions that have already been paid cannot be edited.
         For credit card transactions, you can use targetDueMonth to automatically calculate the date based on the credit card's due day.
-        When using PENDING or ALL mode on installment transactions, only `name`, `categoryId`, and `amount` are propagated to the other installments. All other fields are ignored for the bulk update.
+
+        **Recurring Transactions - Editable Fields by Mode:**
+        - **SINGLE**: Can edit `name`, `categoryId`, `date`, `targetDueMonth`, `amount`
+        - **PENDING/ALL**: Can edit `name`, `categoryId`, `amount`, `paymentMethod`, `accountId`, `creditCardId` (date and type are restricted to prevent desynchronization)
+
+        **Installment Transactions - Editable Fields by Mode:**
+        - **PENDING/ALL**: Only `name`, `categoryId`, and `amount` are propagated to other installments. All other fields are ignored for the bulk update.
       parameters:
         - name: id
           in: path

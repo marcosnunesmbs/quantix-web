@@ -22,10 +22,13 @@ interface TransactionFormData {
   paid: boolean;
   installments?: number;
   isRecurring: boolean;
+  hasRecurrenceEnd?: boolean; // Toggle to determine if recurrence has an end date or count
+  recurrenceEndType?: 'date' | 'count'; // Choose between end date or repetition count
   recurrence?: {
     frequency: 'MONTHLY' | 'WEEKLY' | 'YEARLY';
     interval: number;
     endDate?: string;
+    occurrences?: number;
   };
   isInstallment: boolean;
   targetDueMonth?: string;
@@ -92,6 +95,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       paid: true,
       installments: undefined,
       isRecurring: false,
+      hasRecurrenceEnd: false,
+      recurrenceEndType: 'date',
       recurrence: undefined,
       isInstallment: false,
       targetDueMonth: targetDueMonths[0]?.value,
@@ -199,14 +204,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
         } else if (name === 'isRecurring') {
           updates.isRecurring = checked;
           if (checked) {
+            updates.hasRecurrenceEnd = false;
+            updates.recurrenceEndType = 'date';
             updates.recurrence = {
               frequency: 'MONTHLY',
               interval: 1,
               endDate: undefined,
+              occurrences: undefined,
             };
           } else {
             updates.recurrence = undefined;
+            updates.hasRecurrenceEnd = false;
+            updates.recurrenceEndType = 'date';
           }
+        } else if (name === 'hasRecurrenceEnd') {
+          updates.hasRecurrenceEnd = checked;
+          updates.recurrence = {
+            frequency: prev.recurrence?.frequency || 'MONTHLY',
+            interval: prev.recurrence?.interval || 1,
+            endDate: checked ? undefined : prev.recurrence?.endDate,
+            occurrences: checked ? undefined : prev.recurrence?.occurrences,
+          };
         } else if (name === 'isInstallment') {
           updates.isInstallment = checked;
           updates.installments = checked ? 2 : undefined;
@@ -221,11 +239,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
           ...prev.recurrence,
           interval: parseInt(value) || 1,
         };
+      } else if (name === 'recurrenceEndType') {
+        updates.recurrenceEndType = value as 'date' | 'count';
+        updates.recurrence = {
+          frequency: prev.recurrence?.frequency || 'MONTHLY',
+          interval: prev.recurrence?.interval || 1,
+          endDate: value === 'date' ? undefined : prev.recurrence?.endDate,
+          occurrences: value === 'count' ? 2 : undefined,
+        };
       } else if (name === 'recurrenceEndDate') {
         updates.recurrence = {
           frequency: prev.recurrence?.frequency || 'MONTHLY',
           interval: prev.recurrence?.interval || 1,
           endDate: value || undefined,
+          occurrences: undefined,
+        };
+      } else if (name === 'recurrenceOccurrences') {
+        updates.recurrence = {
+          frequency: prev.recurrence?.frequency || 'MONTHLY',
+          interval: prev.recurrence?.interval || 1,
+          endDate: undefined,
+          occurrences: parseInt(value) || undefined,
         };
       } else if (name === 'frequency') {
         updates.recurrence = {
@@ -275,6 +309,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       if (!formData.recurrence?.interval || formData.recurrence.interval < 1) {
         errors.push('Intervalo deve ser no mínimo 1');
       }
+      if (formData.hasRecurrenceEnd) {
+        if (formData.recurrenceEndType === 'date' && !formData.recurrence?.endDate) {
+          errors.push('Data de término é obrigatória');
+        }
+        if (formData.recurrenceEndType === 'count' && (!formData.recurrence?.occurrences || formData.recurrence.occurrences < 1)) {
+          errors.push('Quantidade de repetições deve ser no mínimo 1');
+        }
+      }
     }
 
     if (formData.amount <= 0) {
@@ -301,6 +343,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
     }
 
     // Transform form data to API format
+    let recurrenceData = undefined;
+    if (formData.isRecurring && formData.recurrence) {
+      recurrenceData = {
+        frequency: formData.recurrence.frequency,
+        interval: formData.recurrence.interval,
+        // Only include endDate or occurrences if hasRecurrenceEnd is true
+        ...(formData.hasRecurrenceEnd && formData.recurrenceEndType === 'date' ? { endDate: formData.recurrence.endDate } : {}),
+        ...(formData.hasRecurrenceEnd && formData.recurrenceEndType === 'count' ? { occurrences: formData.recurrence.occurrences } : {}),
+      };
+    }
+
     const apiData: CreateTransactionRequest = {
       type: formData.type === 'RECEITA' ? 'INCOME' : 'EXPENSE',
       name: formData.description,
@@ -312,7 +365,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
       creditCardId: formData.creditCardId,
       installments: formData.isInstallment ? formData.installments : undefined,
       targetDueMonth: formData.type === 'CARTAO' ? formData.targetDueMonth : undefined,
-      recurrence: formData.isRecurring ? formData.recurrence : undefined,
+      recurrence: recurrenceData,
     };
 
     onSubmit(apiData);
@@ -677,19 +730,95 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                       </p>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Data de término (opcional)
-                      </label>
+                    <div className={`border-t pt-3 flex items-center ${formData.type === 'RECEITA' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
                       <input
-                        type="date"
-                        name="recurrenceEndDate"
-                        value={formData.recurrence?.endDate || ''}
+                        type="checkbox"
+                        name="hasRecurrenceEnd"
+                        id="hasRecurrenceEnd"
+                        checked={formData.hasRecurrenceEnd || false}
                         onChange={handleChange}
-                        min={formData.date}
-                        className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
+                        className={`h-4 w-4 border-gray-300 rounded ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
                       />
+                      <label htmlFor="hasRecurrenceEnd" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                        Determinar prazo (opcional)
+                      </label>
                     </div>
+
+                    {formData.hasRecurrenceEnd && (
+                      <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-green-200 dark:border-green-800' : 'border-amber-200 dark:border-amber-800'}`}>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Tipo de encerramento *
+                          </label>
+                          <div className="space-y-2">
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                name="recurrenceEndType"
+                                id="endTypeDate"
+                                value="date"
+                                checked={formData.recurrenceEndType === 'date'}
+                                onChange={handleChange}
+                                className={`h-4 w-4 border-gray-300 ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
+                              />
+                              <label htmlFor="endTypeDate" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                Data final
+                              </label>
+                            </div>
+                            <div className="flex items-center">
+                              <input
+                                type="radio"
+                                name="recurrenceEndType"
+                                id="endTypeCount"
+                                value="count"
+                                checked={formData.recurrenceEndType === 'count'}
+                                onChange={handleChange}
+                                className={`h-4 w-4 border-gray-300 ${formData.type === 'RECEITA' ? 'text-green-600 focus:ring-green-500' : 'text-amber-600 focus:ring-amber-500'}`}
+                              />
+                              <label htmlFor="endTypeCount" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                Quantidade de repetições
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
+                        {formData.recurrenceEndType === 'date' && (
+                          <div className="animate-fadeIn">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Data de término *
+                            </label>
+                            <input
+                              type="date"
+                              name="recurrenceEndDate"
+                              value={formData.recurrence?.endDate || ''}
+                              onChange={handleChange}
+                              min={formData.date}
+                              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">A transação será criada até esta data</p>
+                          </div>
+                        )}
+
+                        {formData.recurrenceEndType === 'count' && (
+                          <div className="animate-fadeIn">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Número de repetições *
+                            </label>
+                            <input
+                              type="number"
+                              name="recurrenceOccurrences"
+                              value={formData.recurrence?.occurrences || ''}
+                              onChange={handleChange}
+                              min="1"
+                              step="1"
+                              className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none dark:bg-gray-700 dark:text-white ${formData.type === 'RECEITA' ? 'focus:ring-green-500 focus:border-green-500' : 'focus:ring-amber-500 focus:border-amber-500'}`}
+                              placeholder="Ex: 12"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Total de vezes que a transação será criada (mínimo 1)</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

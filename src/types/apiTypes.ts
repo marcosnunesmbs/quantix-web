@@ -47,6 +47,7 @@ export interface RecurrenceRule {
   frequency: 'MONTHLY' | 'WEEKLY' | 'YEARLY';
   interval?: number;
   endDate?: string; // date format
+  occurrences?: number; // total number of occurrences
   createdAt: string; // date-time format
 }
 
@@ -143,6 +144,7 @@ export interface CreateTransactionRequest {
     frequency: 'MONTHLY' | 'WEEKLY' | 'YEARLY';
     interval?: number;
     endDate?: string; // date format
+    occurrences?: number; // total number of occurrences
   };
 }
 
