@@ -5,6 +5,23 @@
 </div>
 
 
+## Índice
+
+- [Descrição](#descrição)
+- [Características](#características)
+- [Stack Tecnológica](#stack-tecnológica)
+- [Pré-requisitos](#pré-requisitos)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Autenticação](#autenticação)
+- [Instalação e Execução](#instalação-e-execução)
+  - [Desenvolvimento](#desenvolvimento)
+  - [Produção (build local)](#produção-build-local)
+  - [Com Docker (imagem do Docker Hub)](#com-docker-imagem-do-docker-hub)
+  - [Com Docker (build local)](#com-docker-build-local)
+- [Integração com Agentes de IA (MCP)](#integração-com-agentes-de-ia-mcp)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Outros Comandos](#outros-comandos)
+
 ## Descrição
 
 Quantix Finance é um dashboard financeiro moderno construído com React, TypeScript e Tailwind CSS. A aplicação ajuda usuários a gerenciar suas finanças pessoais com uma interface intuitiva e responsiva.
