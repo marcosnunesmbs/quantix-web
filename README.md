@@ -125,6 +125,48 @@ VITE_API_BASE_URL=https://api.seudominio.com docker-compose up --build
 
 A aplicação estará disponível em `http://localhost`.
 
+## Integração com Agentes de IA (MCP)
+
+O Quantix possui um servidor MCP (_Model Context Protocol_) publicado no npm, permitindo conectar agentes de IA como Claude, Cursor e outros clientes compatíveis com MCP diretamente à sua instância da API.
+
+### Uso via npx
+
+```bash
+QUANTIX_API_URL=https://sua-instancia.example.com \
+QUANTIX_API_KEY=sua_chave_aqui \
+npx quantix-mcp
+```
+
+### Configuração no Claude Desktop
+
+Adicione ao seu `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "quantix": {
+      "command": "npx",
+      "args": ["quantix-mcp"],
+      "env": {
+        "QUANTIX_API_URL": "https://sua-instancia.example.com",
+        "QUANTIX_API_KEY": "sua_chave_aqui"
+      }
+    }
+  }
+}
+```
+
+### Configuração no Claude Code
+
+```bash
+claude mcp add quantix \
+  -e QUANTIX_API_URL=https://sua-instancia.example.com \
+  -e QUANTIX_API_KEY=sua_chave_aqui \
+  -- npx quantix-mcp
+```
+
+Com o MCP conectado, o agente pode consultar saldos, registrar transações, listar categorias e muito mais diretamente pela conversa.
+
 ## Estrutura do Projeto
 
 ```
