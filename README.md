@@ -82,7 +82,34 @@ npm run build
 npm run preview
 ```
 
-### Com Docker
+### Com Docker (imagem do Docker Hub)
+
+A maneira mais simples de rodar o Quantix Web é usando a imagem pré-compilada disponível no Docker Hub, sem precisar clonar o repositório ou fazer build localmente.
+
+Crie um arquivo `docker-compose.yml` com o seguinte conteúdo:
+
+```yaml
+services:
+  quantix-web:
+    image: marcosnunesmbs/quantix-web:latest
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3000
+    restart: unless-stopped
+```
+
+Substitua o valor de `VITE_API_BASE_URL` pela URL onde sua instância da API do Quantix está rodando. Em seguida, execute:
+
+```bash
+docker compose up -d
+```
+
+A aplicação estará disponível em `http://localhost`.
+
+> **Nota**: a variável `VITE_API_BASE_URL` é injetada em runtime pelo `entrypoint.sh`, portanto você pode alterar a URL da API sem precisar rebuildar a imagem — basta atualizar o `docker-compose.yml` e reiniciar o container.
+
+### Com Docker (build local)
 
 ```bash
 # Usando .env para configurar a API
