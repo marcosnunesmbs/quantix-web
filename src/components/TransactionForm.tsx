@@ -429,7 +429,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
   if (showTypeSelector) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-md h-screen sm:h-auto overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
           {/* Header */}
           <div className="relative h-32 sm:h-32 bg-gradient-to-br from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 flex flex-col justify-between">
             <div className="absolute inset-0 opacity-10 bg-grid-pattern" />
@@ -476,7 +476,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
   // Render form view
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-md h-screen sm:h-auto sm:max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
         {/* Header - Fixed */}
         <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 p-6 flex-shrink-0">
           <div className="absolute inset-0 opacity-10 bg-grid-pattern" />
