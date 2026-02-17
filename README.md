@@ -1,7 +1,7 @@
 # Quantix Finance Dashboard
 
 <div align="center">
-  <img src="./src/public/logo.png" alt="Quantix Logo" width="120" height="120" />
+  <img src="./public/logo.png" alt="Quantix Logo" width="120" height="120" />
 </div>
 
 Quantix Finance é um dashboard financeiro moderno construído com React, TypeScript e Tailwind CSS. A aplicação ajuda usuários a gerenciar suas finanças pessoais com uma interface intuitiva e responsiva.
