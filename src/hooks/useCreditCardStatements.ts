@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { getStatementStatus, payCreditCardStatement } from '../services/creditCardsApi';
+import { getStatementStatus, payCreditCardStatement, reopenCreditCardStatement } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
 import { PaymentStatementRequest } from '../types/apiTypes';
 
@@ -39,6 +39,30 @@ export const usePayCreditCardStatement = () => {
     },
     onError: () => {
       toast.error('Erro ao pagar fatura.');
+    },
+  });
+};
+
+export const useReopenCreditCardStatement = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ cardId, month }: { cardId: string; month: string }) =>
+      reopenCreditCardStatement(cardId, month),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.creditCardStatement(variables.cardId, variables.month),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.creditCardStatementStatus(variables.cardId, variables.month),
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success('Fatura reaberta com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao reabrir fatura.');
     },
   });
 };

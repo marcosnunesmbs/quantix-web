@@ -7,10 +7,12 @@ import {
   Wallet,
   CheckCircle,
   Calendar,
+  LockOpen,
 } from 'lucide-react';
 import {
   useCreditCardStatement,
   usePayCreditCardStatement,
+  useReopenCreditCardStatement,
   useStatementStatus,
 } from '../hooks/useCreditCardStatements';
 import { useAccounts } from '../hooks/useAccounts';
@@ -33,6 +35,7 @@ const CreditCardStatements: React.FC = () => {
   });
 
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
 
   const {
@@ -45,6 +48,7 @@ const CreditCardStatements: React.FC = () => {
   const { isPaid: isStatementPaid, isLoading: isLoadingStatus } =
     useStatementStatus(cardId || '', selectedMonth);
   const payStatementMutation = usePayCreditCardStatement();
+  const reopenStatementMutation = useReopenCreditCardStatement();
 
   const currentCard = creditCards?.find((c) => c.id === cardId);
 
@@ -92,6 +96,19 @@ const CreditCardStatements: React.FC = () => {
       {
         onSuccess: () => {
           setPayModalOpen(false);
+        },
+      }
+    );
+  };
+
+  const handleReopenStatement = () => {
+    if (!cardId) return;
+
+    reopenStatementMutation.mutate(
+      { cardId, month: selectedMonth },
+      {
+        onSuccess: () => {
+          setReopenModalOpen(false);
         },
       }
     );
@@ -235,12 +252,22 @@ const CreditCardStatements: React.FC = () => {
           </div>
 
           {/* Pay Statement Button / Paid Badge */}
-          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-3">
             {isStatementPaid ? (
-              <div className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-semibold rounded-lg">
-                <CheckCircle size={20} />
-                {t('credit_card_statement_paid')}
-              </div>
+              <>
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-semibold rounded-lg">
+                  <CheckCircle size={20} />
+                  {t('credit_card_statement_paid')}
+                </div>
+                <button
+                  onClick={() => setReopenModalOpen(true)}
+                  disabled={reopenStatementMutation.isPending}
+                  className="px-5 py-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <LockOpen size={18} />
+                  {reopenStatementMutation.isPending ? t('processing') : t('reopen_statement')}
+                </button>
+              </>
             ) : (
               <button
                 onClick={() => setPayModalOpen(true)}
@@ -320,6 +347,23 @@ const CreditCardStatements: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Reopen Statement Modal */}
+      <ConfirmationModal
+        isOpen={reopenModalOpen}
+        title={t('reopen_statement')}
+        message={t('reopen_statement_message', {
+          cardName: currentCard?.name,
+          month: selectedMonth,
+        })}
+        confirmLabel={
+          reopenStatementMutation.isPending ? t('processing') : t('confirm_reopen')
+        }
+        cancelLabel={t('cancel')}
+        onConfirm={handleReopenStatement}
+        onCancel={() => setReopenModalOpen(false)}
+        isLoading={reopenStatementMutation.isPending}
+      />
 
       {/* Pay Statement Modal */}
       <ConfirmationModal

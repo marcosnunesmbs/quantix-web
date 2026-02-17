@@ -91,4 +91,14 @@ export const deleteCreditCard = async (id: string): Promise<void> => {
   }
 };
 
+export const reopenCreditCardStatement = async (id: string, month: string): Promise<any> => {
+  try {
+    const response = await api.post(`/credit-cards/${id}/reopen-statement`, { month });
+    return response.data;
+  } catch (error) {
+    console.error('Error reopening credit card statement:', error);
+    throw error;
+  }
+};
+
 // Additional credit card-related API functions can be added here as needed
