@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, ArrowLeftRight, ArrowRight } from 'lucide-react';
-import { Account } from '../types/apiTypes';
+import { Account, Transfer } from '../types/apiTypes';
 import CurrencyInput from './CurrencyInput';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 
@@ -9,16 +9,19 @@ interface TransferModalProps {
   onSubmit: (sourceAccountId: string, destinationAccountId: string, amount: number, date: string) => Promise<void>;
   onClose: () => void;
   isSubmitting?: boolean;
+  /** When provided, the modal opens in edit mode pre-filled with this transfer */
+  editingTransfer?: Transfer;
 }
 
-const TransferModal: React.FC<TransferModalProps> = ({ accounts, onSubmit, onClose, isSubmitting }) => {
+const TransferModal: React.FC<TransferModalProps> = ({ accounts, onSubmit, onClose, isSubmitting, editingTransfer }) => {
   const today = new Date().toISOString().split('T')[0];
+  const isEditing = !!editingTransfer;
 
-  const [sourceAccountId, setSourceAccountId] = useState('');
-  const [destinationAccountId, setDestinationAccountId] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [sourceAccountId, setSourceAccountId] = useState(editingTransfer?.sourceAccountId ?? '');
+  const [destinationAccountId, setDestinationAccountId] = useState(editingTransfer?.destinationAccountId ?? '');
+  const [amount, setAmount] = useState(editingTransfer?.amount ?? 0);
   const { locale, currency } = getLocaleAndCurrency();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(editingTransfer?.date?.split('T')[0] ?? today);
   const [errors, setErrors] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
@@ -65,7 +68,9 @@ const TransferModal: React.FC<TransferModalProps> = ({ accounts, onSubmit, onClo
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
               <ArrowLeftRight size={20} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Transferência</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              {isEditing ? 'Editar Transferência' : 'Transferência'}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -179,11 +184,11 @@ const TransferModal: React.FC<TransferModalProps> = ({ accounts, onSubmit, onClo
               className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
-                <span className="animate-pulse">Transferindo...</span>
+                <span className="animate-pulse">{isEditing ? 'Salvando...' : 'Transferindo...'}</span>
               ) : (
                 <>
                   <ArrowLeftRight size={16} />
-                  Confirmar
+                  {isEditing ? 'Salvar' : 'Confirmar'}
                 </>
               )}
             </button>

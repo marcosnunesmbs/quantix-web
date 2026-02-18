@@ -11,6 +11,25 @@ export const createTransfer = async (data: CreateTransferRequest): Promise<Trans
   }
 };
 
+export const updateTransfer = async (id: string, data: Partial<CreateTransferRequest>): Promise<Transfer> => {
+  try {
+    const response = await api.patch(`/transfers/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating transfer:', error);
+    throw error;
+  }
+};
+
+export const deleteTransfer = async (id: string): Promise<void> => {
+  try {
+    await api.delete(`/transfers/${id}`);
+  } catch (error) {
+    console.error('Error deleting transfer:', error);
+    throw error;
+  }
+};
+
 export const getTransfers = async (
   accountId?: string,
   month?: string,

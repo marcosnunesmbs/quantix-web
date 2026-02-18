@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat } from 'lucide-react';
+import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
@@ -203,6 +203,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
       <div className="flex justify-between items-start mb-2">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2 flex-wrap">
+            {transaction.type === 'INCOME'
+              ? <ArrowDownLeft size={15} className="text-green-500 dark:text-green-400 shrink-0" />
+              : <ArrowUpRight size={15} className="text-red-500 dark:text-red-400 shrink-0" />
+            }
             <span
               className="font-semibold text-gray-900 dark:text-white truncate max-w-[200px]"
               title={transaction.name}

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight, ArrowLeftRight } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from 'lucide-react';
 import AccountForm from '../components/AccountForm';
 import AccountList from '../components/AccountList';
 import TransferModal from '../components/TransferModal';
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
-import { useTransfers, useCreateTransfer } from '../hooks/useTransfers';
+import { useTransfers, useCreateTransfer, useUpdateTransfer, useDeleteTransfer } from '../hooks/useTransfers';
+import { Transfer } from '../types/apiTypes';
 import { CreateAccountRequest } from '../services/accountsApi';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +21,8 @@ const AccountsPage: React.FC = () => {
   const [movementsStartDate, setMovementsStartDate] = useState<string>('');
   const [movementsEndDate, setMovementsEndDate] = useState<string>('');
   const [transferModalOpen, setTransferModalOpen] = useState(false);
+  const [editingTransfer, setEditingTransfer] = useState<Transfer | undefined>();
+  const [deleteConfirmTransferId, setDeleteConfirmTransferId] = useState<string | null>(null);
 
   const {
     accounts,
@@ -31,6 +34,8 @@ const AccountsPage: React.FC = () => {
   } = useAccounts();
 
   const { createTransfer, isCreating: isTransferring } = useCreateTransfer();
+  const { updateTransfer, isUpdating: isUpdatingTransfer } = useUpdateTransfer();
+  const { deleteTransfer, isDeleting: isDeletingTransfer } = useDeleteTransfer();
 
   // Fetch paid transactions for the selected account
   // If month is selected, use it; otherwise use date range
@@ -116,8 +121,24 @@ const AccountsPage: React.FC = () => {
   };
 
   const handleTransferSubmit = async (sourceAccountId: string, destinationAccountId: string, amount: number, date: string) => {
-    await createTransfer({ sourceAccountId, destinationAccountId, amount, date });
-    setTransferModalOpen(false);
+    if (editingTransfer) {
+      await updateTransfer({ id: editingTransfer.id, data: { sourceAccountId, destinationAccountId, amount, date } });
+      setEditingTransfer(undefined);
+    } else {
+      await createTransfer({ sourceAccountId, destinationAccountId, amount, date });
+      setTransferModalOpen(false);
+    }
+  };
+
+  const handleEditTransfer = (transfer: Transfer) => {
+    setMovementsModalOpen(false);
+    setEditingTransfer(transfer);
+  };
+
+  const handleDeleteTransferConfirm = async () => {
+    if (!deleteConfirmTransferId) return;
+    await deleteTransfer(deleteConfirmTransferId);
+    setDeleteConfirmTransferId(null);
   };
 
   const handleCloseMovementsModal = () => {
@@ -230,6 +251,47 @@ const AccountsPage: React.FC = () => {
         />
       )}
 
+      {editingTransfer && (
+        <TransferModal
+          accounts={accounts}
+          onSubmit={handleTransferSubmit}
+          onClose={() => setEditingTransfer(undefined)}
+          isSubmitting={isUpdatingTransfer}
+          editingTransfer={editingTransfer}
+        />
+      )}
+
+      {deleteConfirmTransferId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <Trash2 size={20} className="text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Excluir transferência</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Tem certeza que deseja excluir esta transferência? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setDeleteConfirmTransferId(null)}
+                className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteTransferConfirm}
+                disabled={isDeletingTransfer}
+                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isDeletingTransfer ? <span className="animate-pulse">Excluindo...</span> : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Movements Modal */}
       {movementsModalOpen && selectedAccount && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -337,18 +399,36 @@ const AccountsPage: React.FC = () => {
                         : `Transferência ← ${otherAccount?.name ?? ''}`;
                       return (
                         <div key={`tr-${tr.id}`} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-1">
                               <ArrowLeftRight size={14} className="text-blue-500 dark:text-blue-400 shrink-0" />
-                              <span className="font-medium text-gray-900 dark:text-white">{label}</span>
+                              <span className="font-medium text-gray-900 dark:text-white truncate">{label}</span>
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(tr.date)}</p>
                           </div>
-                          <div className="text-right">
-                            <p className={`font-semibold ${isOutgoing ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                              {isOutgoing ? '-' : '+'}{formatCurrency(tr.amount)}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Transferência</p>
+                          <div className="flex items-center gap-3 ml-3">
+                            <div className="text-right">
+                              <p className={`font-semibold ${isOutgoing ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                {isOutgoing ? '-' : '+'}{formatCurrency(tr.amount)}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Transferência</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleEditTransfer(tr)}
+                                className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                                title="Editar transferência"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmTransferId(tr.id)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                title="Excluir transferência"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -358,6 +438,10 @@ const AccountsPage: React.FC = () => {
                       <div key={`tx-${tx.id}`} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-1">
+                            {tx.type === 'INCOME'
+                              ? <ArrowDownLeft size={14} className="text-green-500 dark:text-green-400 shrink-0" />
+                              : <ArrowUpRight size={14} className="text-red-500 dark:text-red-400 shrink-0" />
+                            }
                             <span className="font-medium text-gray-900 dark:text-white">{tx.name}</span>
                             {tx.category && (
                               <span
