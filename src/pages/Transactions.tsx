@@ -107,7 +107,7 @@ const TransactionsPage: React.FC = () => {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-6">
+    <div className="">
       {/* Page header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>

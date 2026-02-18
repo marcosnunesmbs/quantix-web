@@ -75,6 +75,24 @@ const currentMonth = (() => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 })();
 
+const typeHeaderColors: Record<TransactionFormType, { gradient: string; back: string; sub: string }> = {
+  RECEITA: {
+    gradient: 'from-emerald-600 to-emerald-700 dark:from-emerald-700 dark:to-emerald-800',
+    back: 'text-emerald-200 hover:text-white',
+    sub: 'text-emerald-100',
+  },
+  DESPESA: {
+    gradient: 'from-red-600 to-red-700 dark:from-red-700 dark:to-red-800',
+    back: 'text-red-200 hover:text-white',
+    sub: 'text-red-100',
+  },
+  CARTAO: {
+    gradient: 'from-purple-600 to-purple-700 dark:from-purple-700 dark:to-purple-800',
+    back: 'text-purple-200 hover:text-white',
+    sub: 'text-purple-100',
+  },
+};
+
 const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
   // Data fetching hooks
   const { categories, loading: categoriesLoading, createNewCategory } = useCategories();
@@ -478,20 +496,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
         {/* Header - Fixed */}
-        <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 p-6 flex-shrink-0">
+        <div className={`relative bg-gradient-to-br ${typeHeaderColors[formData.type].gradient} p-6 flex-shrink-0`}>
           <div className="absolute inset-0 opacity-10 bg-grid-pattern" />
           <div className="relative flex justify-between items-start">
             <div>
               <button
                 onClick={() => setShowTypeSelector(true)}
-                className="text-primary-200 hover:text-white text-sm font-medium flex items-center gap-1 mb-2 transition-colors"
+                className={`${typeHeaderColors[formData.type].back} text-sm font-medium flex items-center gap-1 mb-2 transition-colors`}
               >
                 ← Voltar
               </button>
               <h2 className="text-2xl font-bold text-white">
                 {typeOptions.find(o => o.value === formData.type)?.label}
               </h2>
-              <p className="text-primary-100 text-sm mt-1">
+              <p className={`${typeHeaderColors[formData.type].sub} text-sm mt-1`}>
                 {typeOptions.find(o => o.value === formData.type)?.description}
               </p>
             </div>

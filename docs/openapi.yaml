@@ -633,6 +633,48 @@ components:
           description: Timestamp when settings were last updated
           example: "2026-01-30T10:00:00Z"
 
+    Transfer:
+      type: object
+      required:
+        - sourceAccountId
+        - destinationAccountId
+        - amount
+        - date
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the transfer
+          example: "tr_123456789"
+        sourceAccountId:
+          type: string
+          description: ID of the account funds are transferred from
+          example: "acc_111111111"
+        destinationAccountId:
+          type: string
+          description: ID of the account funds are transferred to
+          example: "acc_222222222"
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          description: Amount to transfer
+          example: 100.00
+        date:
+          type: string
+          format: date
+          description: Date of the transfer (YYYY-MM-DD)
+          example: "2026-02-17"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the transfer was created
+          example: "2026-02-17T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the transfer was last updated
+          example: "2026-02-17T10:00:00Z"
+
   responses:
     UnauthorizedError:
       description: API key is missing or invalid
@@ -1825,4 +1867,179 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Settings not found
+
+  /transfers:
+    post:
+      tags:
+        - transfers
+      summary: Create a new transfer between accounts
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sourceAccountId
+                - destinationAccountId
+                - amount
+                - date
+              properties:
+                sourceAccountId:
+                  type: string
+                destinationAccountId:
+                  type: string
+                amount:
+                  type: number
+                  minimum: 0.01
+                date:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Transfer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Account not found
+    get:
+      tags:
+        - transfers
+      summary: List transfers with optional filters
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: accountId
+          in: query
+          required: false
+          description: Filter by account ID (source or destination)
+          schema:
+            type: string
+        - name: month
+          in: query
+          required: false
+          description: Filter by month (YYYY-MM format)
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{2}$'
+            example: "2026-02"
+        - name: startDate
+          in: query
+          required: false
+          description: Filter from date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          description: Filter to date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of transfers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transfer'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /transfers/{id}:
+    get:
+      tags:
+        - transfers
+      summary: Get a transfer by ID
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transfer retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transfer not found
+    patch:
+      tags:
+        - transfers
+      summary: Update a transfer
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceAccountId:
+                  type: string
+                destinationAccountId:
+                  type: string
+                amount:
+                  type: number
+                  minimum: 0.01
+                date:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Transfer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transfer'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transfer not found
+    delete:
+      tags:
+        - transfers
+      summary: Delete a transfer
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Transfer deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Transfer not found
 

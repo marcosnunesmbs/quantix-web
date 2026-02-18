@@ -23,4 +23,5 @@ export const queryKeys = {
   categories: ['categories'] as const,
   summary: (month: string) => ['summary', month] as const,
   settings: ['settings'] as const,
+  transfers: (accountId?: string, month?: string, startDate?: string, endDate?: string) => ['transfers', accountId, month, startDate, endDate] as const,
 };

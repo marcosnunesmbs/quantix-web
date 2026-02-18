@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import AccountForm from '../components/AccountForm';
 import AccountList from '../components/AccountList';
+import TransferModal from '../components/TransferModal';
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
+import { useTransfers, useCreateTransfer } from '../hooks/useTransfers';
 import { CreateAccountRequest } from '../services/accountsApi';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +19,7 @@ const AccountsPage: React.FC = () => {
   const [movementsMonth, setMovementsMonth] = useState<string>('');
   const [movementsStartDate, setMovementsStartDate] = useState<string>('');
   const [movementsEndDate, setMovementsEndDate] = useState<string>('');
+  const [transferModalOpen, setTransferModalOpen] = useState(false);
 
   const {
     accounts,
@@ -26,6 +29,8 @@ const AccountsPage: React.FC = () => {
     updateExistingAccount,
     removeAccount
   } = useAccounts();
+
+  const { createTransfer, isCreating: isTransferring } = useCreateTransfer();
 
   // Fetch paid transactions for the selected account
   // If month is selected, use it; otherwise use date range
@@ -44,14 +49,24 @@ const AccountsPage: React.FC = () => {
     selectedAccountId || undefined
   );
 
+  const { transfers: accountTransfers } = useTransfers(
+    selectedAccountId || undefined,
+    monthParam,
+    startDateParam,
+    endDateParam
+  );
+
   const selectedAccount = accounts.find(acc => acc.id === selectedAccountId);
 
-  // Sort transactions by date (ascending - oldest first)
-  const sortedAccountTransactions = [...accountTransactions].sort((a, b) => {
-    const dateA = new Date(a.date).getTime();
-    const dateB = new Date(b.date).getTime();
-    return dateA - dateB;
-  });
+  // Merge transactions and transfers, sort by date ascending (oldest first)
+  type MovementItem =
+    | { kind: 'transaction'; data: (typeof accountTransactions)[0] }
+    | { kind: 'transfer'; data: (typeof accountTransfers)[0] };
+
+  const sortedMovements: MovementItem[] = [
+    ...accountTransactions.map(tx => ({ kind: 'transaction' as const, data: tx })),
+    ...accountTransfers.map(tr => ({ kind: 'transfer' as const, data: tr })),
+  ].sort((a, b) => new Date(a.data.date).getTime() - new Date(b.data.date).getTime());
 
   const handleFormSubmit = async (accountData: CreateAccountRequest) => {
     try {
@@ -98,6 +113,11 @@ const AccountsPage: React.FC = () => {
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     setMovementsMonth(currentMonth);
     setMovementsModalOpen(true);
+  };
+
+  const handleTransferSubmit = async (sourceAccountId: string, destinationAccountId: string, amount: number, date: string) => {
+    await createTransfer({ sourceAccountId, destinationAccountId, amount, date });
+    setTransferModalOpen(false);
   };
 
   const handleCloseMovementsModal = () => {
@@ -155,19 +175,28 @@ const AccountsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('accounts')}</h1>
           <p className="text-gray-600 dark:text-gray-400">{t('manage_financial_accounts')}</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          {t('add_account')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setTransferModalOpen(true)}
+            className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            <ArrowLeftRight size={16} />
+            Transferência
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            {t('add_account')}
+          </button>
+        </div>
       </div>
 
       {loading && <div className="text-center py-8">{t('loading_accounts')}</div>}
@@ -192,6 +221,15 @@ const AccountsPage: React.FC = () => {
         />
       )}
 
+      {transferModalOpen && (
+        <TransferModal
+          accounts={accounts}
+          onSubmit={handleTransferSubmit}
+          onClose={() => setTransferModalOpen(false)}
+          isSubmitting={isTransferring}
+        />
+      )}
+
       {/* Movements Modal */}
       {movementsModalOpen && selectedAccount && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -203,7 +241,7 @@ const AccountsPage: React.FC = () => {
                   {t('movements')} - {selectedAccount.name}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {sortedAccountTransactions.length} {sortedAccountTransactions.length === 1 ? 'movimentação' : 'movimentações'}
+                  {sortedMovements.length} {sortedMovements.length === 1 ? 'movimentação' : 'movimentações'}
                 </p>
               </div>
               <button
@@ -282,46 +320,67 @@ const AccountsPage: React.FC = () => {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
-              {sortedAccountTransactions.length === 0 ? (
+              {sortedMovements.length === 0 ? (
                 <div className="p-6 text-center text-gray-500 dark:text-gray-400">
                   {t('no_transactions_found_for_period')}
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {sortedAccountTransactions.map((tx) => (
-                    <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="font-medium text-gray-900 dark:text-white">{tx.name}</span>
-                          {tx.category && (
-                            <span
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
-                              style={{
-                                backgroundColor: tx.category.color ?? '#ef4444',
-                              }}
-                            >
-                              {tx.category.name}
-                            </span>
-                          )}
+                  {sortedMovements.map((item) => {
+                    if (item.kind === 'transfer') {
+                      const tr = item.data;
+                      const isOutgoing = tr.sourceAccountId === selectedAccountId;
+                      const otherAccountId = isOutgoing ? tr.destinationAccountId : tr.sourceAccountId;
+                      const otherAccount = accounts.find(a => a.id === otherAccountId);
+                      const label = isOutgoing
+                        ? `Transferência → ${otherAccount?.name ?? ''}`
+                        : `Transferência ← ${otherAccount?.name ?? ''}`;
+                      return (
+                        <div key={`tr-${tr.id}`} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-1">
+                              <ArrowLeftRight size={14} className="text-blue-500 dark:text-blue-400 shrink-0" />
+                              <span className="font-medium text-gray-900 dark:text-white">{label}</span>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(tr.date)}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-semibold ${isOutgoing ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                              {isOutgoing ? '-' : '+'}{formatCurrency(tr.amount)}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Transferência</p>
+                          </div>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatDate(tx.date)}
-                        </p>
+                      );
+                    }
+                    const tx = item.data;
+                    return (
+                      <div key={`tx-${tx.id}`} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <span className="font-medium text-gray-900 dark:text-white">{tx.name}</span>
+                            {tx.category && (
+                              <span
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white"
+                                style={{ backgroundColor: tx.category.color ?? '#ef4444' }}
+                              >
+                                {tx.category.name}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(tx.date)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-semibold ${tx.type === 'INCOME' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {tx.type === 'INCOME' ? t('income') || 'Entrada' : t('expense') || 'Saída'}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`font-semibold ${
-                          tx.type === 'INCOME'
-                            ? 'text-green-600 dark:text-green-400'
-                            : 'text-red-600 dark:text-red-400'
-                        }`}>
-                          {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {tx.type === 'INCOME' ? t('income') || 'Entrada' : t('expense') || 'Saída'}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

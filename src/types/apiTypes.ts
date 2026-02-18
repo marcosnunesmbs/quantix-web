@@ -142,12 +142,30 @@ export interface CreateTransactionRequest {
   targetDueMonth?: string; // YYYY-MM format
   accountId?: string;
   purchaseDate?: string; // date format - for credit card transactions
+  paid?: boolean;
   recurrence?: {
     frequency: 'MONTHLY' | 'WEEKLY' | 'YEARLY';
     interval?: number;
     endDate?: string; // date format
     occurrences?: number; // total number of occurrences
   };
+}
+
+export interface Transfer {
+  id: string;
+  sourceAccountId: string;
+  destinationAccountId: string;
+  amount: number;
+  date: string; // date format YYYY-MM-DD
+  createdAt: string; // date-time
+  updatedAt: string; // date-time
+}
+
+export interface CreateTransferRequest {
+  sourceAccountId: string;
+  destinationAccountId: string;
+  amount: number;
+  date: string; // date format YYYY-MM-DD
 }
 
 export interface CreateAccountRequest {
