@@ -38,3 +38,15 @@ lerna-debug.log*
 
 # OS
 Thumbs.db
+
+# Local AI/spec planning artifacts
+.claude/
+.qwen/
+.specify/
+.vscode/
+specs/
+openspec/
+plans/
+QWEN.md
+GEMINI.md
+.qwenignore
