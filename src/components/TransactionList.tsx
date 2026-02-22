@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat, ArrowDownLeft, ArrowUpRight, ChevronDown } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
@@ -107,6 +107,17 @@ const TransactionList: React.FC<TransactionListProps> = ({
     isOpen: boolean;
     creditCardName: string;
   }>({ isOpen: false, creditCardName: '' });
+
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
+  const toggleCard = (cardId: string) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  };
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
@@ -301,7 +312,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
     </div>
   );
 
-  const renderCreditCardGroup = (group: CreditCardGroup, dimmed = false) => (
+  const renderCreditCardGroup = (group: CreditCardGroup, dimmed = false) => {
+    const isExpanded = expandedCards.has(group.cardId);
+    return (
     <div
       key={group.cardId}
       className={`bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden${dimmed ? ' opacity-60' : ''}`}
@@ -314,10 +327,6 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </div>
           <div>
             <span className="font-bold text-gray-900 dark:text-white text-sm">{group.cardName}</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1.5">
-              {group.transactions.length}{' '}
-              {group.transactions.length === 1 ? 'transação' : 'transações'}
-            </span>
             {group.dueDate && (
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 Vence {group.dueDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -330,7 +339,23 @@ const TransactionList: React.FC<TransactionListProps> = ({
         </span>
       </div>
 
+      {/* Collapse toggle */}
+      <button
+        onClick={() => toggleCard(group.cardId)}
+        className="w-full flex items-center justify-between px-4 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+      >
+        <span>
+          {group.transactions.length}{' '}
+          {group.transactions.length === 1 ? 'transação' : 'transações'}
+        </span>
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+        />
+      </button>
+
       {/* Transaction rows */}
+      {isExpanded && (
       <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
         {group.transactions.map((tx) => (
           <div key={tx.id} className="px-4 py-2.5 flex flex-col gap-1.5">
@@ -402,6 +427,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         ))}
       </div>
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
@@ -425,7 +451,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
         </span>
       </div>
     </div>
-  );
+    );
+  };
 
   // ── Empty state ──────────────────────────────────────────────────────────
 
