@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Repeat, CreditCard, Plus, ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { X, Repeat, CreditCard, Plus, ArrowDownLeft, ArrowUpRight, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType, CreateCategoryRequest } from '../types/apiTypes';
 import CurrencyInput from './CurrencyInput';
 import { useCategories } from '../hooks/useCategories';
@@ -46,6 +46,7 @@ interface TransactionFormData {
 interface TransactionFormProps {
   onSubmit: (transactionData: CreateTransactionRequest) => void;
   onCancel: () => void;
+  onTransferSelect?: () => void;
 }
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -93,7 +94,7 @@ const typeHeaderColors: Record<TransactionFormType, { gradient: string; back: st
   },
 };
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
+const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, onTransferSelect }) => {
   // Data fetching hooks
   const { categories, loading: categoriesLoading, createNewCategory } = useCategories();
   const { accounts, loading: accountsLoading } = useAccounts();
@@ -485,6 +486,21 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                 <ChevronRight className={`w-5 h-5 ${option.color} group-hover:translate-x-1 transition-transform`} />
               </button>
             ))}
+            <button
+              onClick={onTransferSelect}
+              className="w-full p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between group bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400">
+                  <ArrowLeftRight className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Transferência</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Mover saldo entre contas</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </div>
