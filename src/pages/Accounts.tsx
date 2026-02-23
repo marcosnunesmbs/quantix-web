@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X, ChevronLeft, ChevronRight, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from 'lucide-react';
+import { Plus, X, ChevronLeft, ChevronRight, ArrowLeftRight, ArrowDownLeft, ArrowUpRight, Pencil, Trash2, CreditCard } from 'lucide-react';
 import AccountForm from '../components/AccountForm';
 import AccountList from '../components/AccountList';
 import TransferModal from '../components/TransferModal';
@@ -434,6 +434,8 @@ const AccountsPage: React.FC = () => {
                       );
                     }
                     const tx = item.data;
+                    const isCreditCard = !!tx.creditCardId || !!tx.creditCard;
+                    const isAnticipation = !!tx.linkedTransactionId;
                     return (
                       <div key={`tx-${tx.id}`} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                         <div className="flex-1">
@@ -449,6 +451,17 @@ const AccountsPage: React.FC = () => {
                                 style={{ backgroundColor: tx.category.color ?? '#ef4444' }}
                               >
                                 {tx.category.name}
+                              </span>
+                            )}
+                            {isCreditCard && tx.creditCard && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                <CreditCard size={12} />
+                                {tx.creditCard.name}
+                              </span>
+                            )}
+                            {isAnticipation && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                Antecipação
                               </span>
                             )}
                           </div>
