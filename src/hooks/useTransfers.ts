@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { CreateTransferRequest } from '../types/apiTypes';
 import { createTransfer, updateTransfer, deleteTransfer, getTransfers } from '../services/transfersApi';
 import { queryKeys } from '../lib/queryClient';
+import { getApiErrorMessage } from '../lib/utils';
 
 export const useTransfers = (
   accountId?: string,
@@ -34,8 +35,8 @@ export const useCreateTransfer = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Transferência realizada com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao realizar transferência.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao realizar transferência.'));
     },
   });
 
@@ -57,8 +58,8 @@ export const useUpdateTransfer = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Transferência atualizada com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao atualizar transferência.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao atualizar transferência.'));
     },
   });
 
@@ -79,8 +80,8 @@ export const useDeleteTransfer = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Transferência excluída com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao excluir transferência.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao excluir transferência.'));
     },
   });
 

@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { PaymentStatementRequest } from '../types/apiTypes';
 import { getCreditCards, createCreditCard, updateCreditCard, deleteCreditCard, getCreditCardStatement, payCreditCardStatement, CreateCreditCardRequest } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
+import { getApiErrorMessage } from '../lib/utils';
 
 export const useCreditCards = () => {
   const queryClient = useQueryClient();
@@ -18,8 +19,8 @@ export const useCreditCards = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Cartão criado com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao criar cartão.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao criar cartão.'));
     },
   });
 
@@ -30,8 +31,8 @@ export const useCreditCards = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Cartão atualizado com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao atualizar cartão.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao atualizar cartão.'));
     },
   });
 
@@ -41,8 +42,8 @@ export const useCreditCards = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Cartão excluído com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao excluir cartão.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao excluir cartão.'));
     },
   });
 
@@ -57,8 +58,8 @@ export const useCreditCards = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Fatura paga com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao pagar fatura.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao pagar fatura.'));
     },
   });
 

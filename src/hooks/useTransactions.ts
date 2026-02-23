@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { getTransactions, createTransaction, payTransaction, unpayTransaction, deleteTransaction, updateTransaction } from '../services/transactionsApi';
 import { queryKeys } from '../lib/queryClient';
 import { CreateTransactionRequest } from '../types/apiTypes';
+import { getApiErrorMessage } from '../lib/utils';
 
 export const useTransactions = (
   month?: string,
@@ -31,8 +32,8 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Transação criada com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao criar transação.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao criar transação.'));
     },
   });
 
@@ -47,8 +48,8 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Transação atualizada com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao atualizar transação.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao atualizar transação.'));
     },
   });
 
@@ -62,8 +63,8 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Transação marcada como paga!');
     },
-    onError: () => {
-      toast.error('Erro ao marcar transação como paga.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao marcar transação como paga.'));
     },
   });
 
@@ -76,8 +77,8 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       toast.success('Pagamento desfeito com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao desfazer pagamento.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao desfazer pagamento.'));
     },
   });
 
@@ -91,8 +92,8 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       toast.success('Transação excluída com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao excluir transação.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao excluir transação.'));
     },
   });
 

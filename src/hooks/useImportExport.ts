@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { exportData, importData } from '../services/importExportApi';
 import { ImportRequest } from '../types/apiTypes';
 import { queryKeys } from '../lib/queryClient';
+import { getApiErrorMessage } from '../lib/utils';
 
 export const useImportExport = () => {
   const queryClient = useQueryClient();
@@ -22,8 +23,8 @@ export const useImportExport = () => {
       URL.revokeObjectURL(url);
       toast.success('Dados exportados com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao exportar dados.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao exportar dados.'));
     },
   });
 
@@ -39,8 +40,8 @@ export const useImportExport = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Dados importados com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao importar dados.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao importar dados.'));
     },
   });
 

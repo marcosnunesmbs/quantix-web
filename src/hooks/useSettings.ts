@@ -4,6 +4,7 @@ import { getSettings, updateSettings, createSettings } from '../services/setting
 import { queryKeys } from '../lib/queryClient';
 import { Settings } from '../types/apiTypes';
 import { useEffect } from 'react';
+import { getApiErrorMessage } from '../lib/utils';
 
 const STORAGE_KEY = 'quantix_settings';
 
@@ -39,8 +40,8 @@ export const useSettings = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
       toast.success('Configurações salvas com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao salvar configurações.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao salvar configurações.'));
     },
   });
 
@@ -51,8 +52,8 @@ export const useSettings = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
       toast.success('Configurações salvas com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao salvar configurações.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao salvar configurações.'));
     },
   });
 

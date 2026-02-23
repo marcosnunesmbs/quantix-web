@@ -20,7 +20,8 @@ interface CreditCardGroup {
   cardId: string;
   cardName: string;
   transactions: Transaction[];
-  totalAmount: number;
+  totalAmount: number;  // EXPENSE only
+  incomeAmount: number; // INCOME (anticipations) only
   paid: boolean;
   dueDate: Date | null;
 }
@@ -56,7 +57,11 @@ function buildCreditCardGroups(transactions: Transaction[]): CreditCardGroup[] {
     const g = map.get(tx.creditCardId);
     if (g) {
       g.transactions.push(tx);
-      g.totalAmount += tx.amount;
+      if (tx.type === 'INCOME') {
+        g.incomeAmount += tx.amount;
+      } else {
+        g.totalAmount += tx.amount;
+      }
     } else {
       const card = tx.creditCard;
       const dueDate = computeStatementDueDate(tx.date, card.closingDay, card.dueDay);
@@ -64,7 +69,8 @@ function buildCreditCardGroups(transactions: Transaction[]): CreditCardGroup[] {
         cardId: tx.creditCardId,
         cardName: card.name,
         transactions: [tx],
-        totalAmount: tx.amount,
+        totalAmount: tx.type === 'EXPENSE' ? tx.amount : 0,
+        incomeAmount: tx.type === 'INCOME' ? tx.amount : 0,
         paid: tx.paid,
         dueDate,
       });
@@ -292,6 +298,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
         )}
 
         {transaction.paid ? (
+          transaction.linkedTransactionId && transaction.type === 'EXPENSE' ? (
+            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 cursor-default" title="Pago automaticamente via antecipação">
+              Pago
+            </span>
+          ) : (
           <button
             onClick={() => onUnpay && handleUnpayClick(transaction)}
             disabled={isUnpaying}
@@ -299,6 +310,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
           >
             {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Recebido' : 'Pago'}
           </button>
+          )
         ) : (
           <button
             onClick={() => onPay && handlePayClick(transaction)}
@@ -335,7 +347,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
           </div>
         </div>
         <span className="text-base font-bold text-red-600 dark:text-red-400">
-          -{formatCurrency(group.totalAmount)}
+          -{formatCurrency(group.totalAmount - group.incomeAmount)}
         </span>
       </div>
 
@@ -357,12 +369,18 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {/* Transaction rows */}
       {isExpanded && (
       <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
-        {group.transactions.map((tx) => (
+        {group.transactions.map((tx) => {
+          const isAnticipation = tx.type === 'INCOME';
+          return (
           <div key={tx.id} className="px-4 py-2.5 flex flex-col gap-1.5">
-            {/* Top row: category (desktop) + name + amount/actions */}
+            {/* Top row: category/badge (desktop) + name + amount/actions */}
             <div className="flex items-center gap-2 md:gap-3">
-              {/* Category pill — desktop only */}
-              {tx.category ? (
+              {/* Category pill / Antecipação badge — desktop only */}
+              {isAnticipation ? (
+                <span className="shrink-0 hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  Antecipação
+                </span>
+              ) : tx.category ? (
                 <span
                   className="shrink-0 hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white"
                   style={{
@@ -387,32 +405,44 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
               {/* Amount + actions */}
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                  -{formatCurrency(tx.amount)}
-                </span>
-                {!group.paid && onEdit && (
-                  <button
-                    onClick={() => onEdit(tx)}
-                    className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    title="Editar"
-                  >
-                    <Pencil size={13} />
-                  </button>
-                )}
-                {!group.paid && onDelete && (
-                  <button
-                    onClick={() => handleDeleteClick(tx)}
-                    className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                    title="Excluir"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                {isAnticipation ? (
+                  <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                    +{formatCurrency(tx.amount)}
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-sm font-semibold text-red-600 dark:text-red-400">
+                      -{formatCurrency(tx.amount)}
+                    </span>
+                    {!group.paid && onEdit && (
+                      <button
+                        onClick={() => onEdit(tx)}
+                        className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        title="Editar"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                    )}
+                    {!group.paid && onDelete && (
+                      <button
+                        onClick={() => handleDeleteClick(tx)}
+                        className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
 
-            {/* Category pill — mobile only, below name + amount */}
-            {tx.category ? (
+            {/* Category pill / Antecipação badge — mobile only */}
+            {isAnticipation ? (
+              <span className="md:hidden inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 w-fit">
+                Antecipação
+              </span>
+            ) : tx.category ? (
               <span
                 className="md:hidden inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white w-fit"
                 style={{
@@ -425,7 +455,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
               <span className="md:hidden text-xs text-gray-400 dark:text-gray-500 italic">—</span>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
       )}
 

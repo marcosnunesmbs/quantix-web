@@ -27,6 +27,7 @@ export interface Transaction {
   account?: Account;
   paid: boolean;
   purchaseDate?: string; // date format - for credit card transactions
+  linkedTransactionId?: string; // anticipation pair
   createdAt: string; // date-time format
 }
 
@@ -60,6 +61,22 @@ export interface Statement {
   transactions: Transaction[];
   total: number;
   availableLimit: number;
+  incomeTotal?: number; // sum of anticipation INCOME transactions
+  netTotal?: number;   // total - incomeTotal
+}
+
+export interface CreateAnticipationRequest {
+  name: string;
+  amount: number;
+  purchaseDate: string;   // YYYY-MM-DD — when money leaves the account
+  targetDueMonth: string; // YYYY-MM — target statement month
+  accountId: string;
+  categoryId?: string;
+}
+
+export interface AnticipationResponse {
+  income: Transaction; // INCOME on the card (date = statement dueDate)
+  expense: Transaction; // EXPENSE on the account (date = purchaseDate)
 }
 
 export interface StatementStatus {

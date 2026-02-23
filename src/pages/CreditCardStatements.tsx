@@ -8,12 +8,17 @@ import {
   CheckCircle,
   Calendar,
   LockOpen,
+  Plus,
+  X,
+  TrendingDown,
 } from 'lucide-react';
 import {
   useCreditCardStatement,
   usePayCreditCardStatement,
   useReopenCreditCardStatement,
   useStatementStatus,
+  useCreateAnticipation,
+  useDeleteAnticipation,
 } from '../hooks/useCreditCardStatements';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
@@ -22,7 +27,20 @@ import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ConfirmationModal from '../components/ConfirmationModal';
 import MonthSelector from '../components/MonthSelector';
+import CurrencyInput from '../components/CurrencyInput';
 import { useTranslation } from 'react-i18next';
+
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+const emptyAnticipationForm = () => ({
+  name: '',
+  amount: 0,
+  purchaseDate: today(),
+  accountId: '',
+});
 
 const CreditCardStatements: React.FC = () => {
   const { cardId } = useParams<{ cardId: string }>();
@@ -38,6 +56,12 @@ const CreditCardStatements: React.FC = () => {
   const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
 
+  // Anticipation state
+  const [showAnticipationForm, setShowAnticipationForm] = useState(false);
+  const [anticipationForm, setAnticipationForm] = useState(emptyAnticipationForm);
+  const [anticipationFormError, setAnticipationFormError] = useState<string | null>(null);
+  const [deleteAnticipationId, setDeleteAnticipationId] = useState<string | null>(null);
+
   const {
     statement,
     loading: isLoadingStatement,
@@ -49,6 +73,8 @@ const CreditCardStatements: React.FC = () => {
     useStatementStatus(cardId || '', selectedMonth);
   const payStatementMutation = usePayCreditCardStatement();
   const reopenStatementMutation = useReopenCreditCardStatement();
+  const createAnticipationMutation = useCreateAnticipation();
+  const deleteAnticipationMutation = useDeleteAnticipation();
 
   const currentCard = creditCards?.find((c) => c.id === cardId);
 
@@ -78,8 +104,17 @@ const CreditCardStatements: React.FC = () => {
     }
   }, [accounts, selectedAccountId]);
 
+  // Pre-fill accountId in anticipation form when accounts load
+  useEffect(() => {
+    if (accounts && accounts.length > 0 && !anticipationForm.accountId) {
+      setAnticipationForm((f) => ({ ...f, accountId: accounts[0].id }));
+    }
+  }, [accounts]);
+
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
+    setShowAnticipationForm(false);
+    setAnticipationForm(emptyAnticipationForm);
   };
 
   const handlePayStatement = () => {
@@ -114,6 +149,53 @@ const CreditCardStatements: React.FC = () => {
     );
   };
 
+  const handleCreateAnticipation = () => {
+    const amount = Number(anticipationForm.amount);
+    if (!anticipationForm.name.trim()) {
+      setAnticipationFormError('Informe uma descrição.');
+      return;
+    }
+    if (amount <= 0) {
+      setAnticipationFormError('Informe um valor maior que zero.');
+      return;
+    }
+    if (!anticipationForm.accountId) {
+      setAnticipationFormError('Selecione uma conta.');
+      return;
+    }
+    if (!cardId) return;
+
+    setAnticipationFormError(null);
+    createAnticipationMutation.mutate(
+      {
+        cardId,
+        dto: {
+          name: anticipationForm.name.trim(),
+          amount,
+          purchaseDate: anticipationForm.purchaseDate,
+          targetDueMonth: selectedMonth,
+          accountId: anticipationForm.accountId,
+        },
+      },
+      {
+        onSuccess: () => {
+          setShowAnticipationForm(false);
+          setAnticipationForm(emptyAnticipationForm);
+        },
+      }
+    );
+  };
+
+  const handleConfirmDeleteAnticipation = () => {
+    if (!deleteAnticipationId || !cardId) return;
+    deleteAnticipationMutation.mutate(
+      { transactionId: deleteAnticipationId, cardId, month: selectedMonth },
+      {
+        onSuccess: () => setDeleteAnticipationId(null),
+      }
+    );
+  };
+
   const formatCurrency = (amount: number): string => {
     const { locale, currency } = getLocaleAndCurrency();
     return new Intl.NumberFormat(locale, {
@@ -132,6 +214,14 @@ const CreditCardStatements: React.FC = () => {
     });
   };
 
+  const formatDateShort = (dateString: string): string => {
+    const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+    });
+  };
+
   const isLoading =
     isLoadingStatement ||
     isLoadingAccounts ||
@@ -147,6 +237,16 @@ const CreditCardStatements: React.FC = () => {
       </div>
     );
   }
+
+  // Anticipations = INCOME transactions in the statement
+  const anticipations: Transaction[] =
+    statement?.transactions.filter((t) => t.type === 'INCOME') ?? [];
+  const expenseTransactions: Transaction[] =
+    statement?.transactions.filter((t) => t.type === 'EXPENSE') ?? [];
+
+  const hasAnticipations = anticipations.length > 0;
+  const incomeTotal = statement?.incomeTotal ?? 0;
+  const netTotal = statement?.netTotal ?? statement?.total ?? 0;
 
   return (
     <div className="space-y-6">
@@ -194,6 +294,7 @@ const CreditCardStatements: React.FC = () => {
       {statement ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Total — label changes when anticipations exist */}
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                 <DollarSign
@@ -203,11 +304,21 @@ const CreditCardStatements: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('credit_card_statement_total')}
+                  {hasAnticipations ? 'Total Bruto' : t('credit_card_statement_total')}
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(statement.total || 0)}
                 </p>
+                {hasAnticipations && (
+                  <>
+                    <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">
+                      Antecipado: {formatCurrency(incomeTotal)}
+                    </p>
+                    <p className="text-sm font-bold text-primary-600 dark:text-primary-400 mt-0.5">
+                      Líquido: {formatCurrency(netTotal)}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -292,6 +403,170 @@ const CreditCardStatements: React.FC = () => {
         </div>
       )}
 
+      {/* ── Anticipations Section ── */}
+      {statement && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
+          {/* Section header */}
+          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingDown size={18} className="text-green-600 dark:text-green-400" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Antecipações
+              </h2>
+              {hasAnticipations && (
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                  {anticipations.length}
+                </span>
+              )}
+            </div>
+            {!isStatementPaid && (
+              <button
+                onClick={() => {
+                  setShowAnticipationForm((v) => !v);
+                  setAnticipationFormError(null);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors"
+              >
+                <Plus size={15} />
+                Nova antecipação
+              </button>
+            )}
+          </div>
+
+          {/* Anticipation list */}
+          {anticipations.length === 0 ? (
+            <div className="px-4 py-5 text-sm text-gray-400 dark:text-gray-500 text-center">
+              Nenhuma antecipação registrada
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
+              {anticipations.map((a) => (
+                <div key={a.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {a.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {a.account?.name && `${a.account.name} • `}
+                      {formatDateShort(a.purchaseDate || a.date)}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-green-600 dark:text-green-400 shrink-0">
+                    +{formatCurrency(a.amount)}
+                  </span>
+                  {!isStatementPaid && (
+                    <button
+                      onClick={() => setDeleteAnticipationId(a.id)}
+                      className="p-1 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0"
+                      title="Remover antecipação"
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Inline form */}
+          {showAnticipationForm && (
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Nova antecipação — fatura {selectedMonth}
+              </h3>
+
+              {anticipationFormError && (
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+                  {anticipationFormError}
+                </p>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Descrição *
+                  </label>
+                  <input
+                    type="text"
+                    value={anticipationForm.name}
+                    onChange={(e) =>
+                      setAnticipationForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                    placeholder="Ex: Antecipação fatura março"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Valor *
+                  </label>
+                  <CurrencyInput
+                    value={anticipationForm.amount}
+                    onChange={(value) => setAnticipationForm((f) => ({ ...f, amount: value }))}
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Data do débito *
+                  </label>
+                  <input
+                    type="date"
+                    value={anticipationForm.purchaseDate}
+                    onChange={(e) =>
+                      setAnticipationForm((f) => ({ ...f, purchaseDate: e.target.value }))
+                    }
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Conta de débito *
+                  </label>
+                  <select
+                    value={anticipationForm.accountId}
+                    onChange={(e) =>
+                      setAnticipationForm((f) => ({ ...f, accountId: e.target.value }))
+                    }
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="">Selecione uma conta</option>
+                    {accounts?.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={() => {
+                    setShowAnticipationForm(false);
+                    setAnticipationForm(emptyAnticipationForm);
+                    setAnticipationFormError(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleCreateAnticipation}
+                  disabled={createAnticipationMutation.isPending}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
+                >
+                  {createAnticipationMutation.isPending ? 'Criando...' : 'Criar antecipação'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Transactions List */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
         <div className="p-4 border-b border-gray-100 dark:border-gray-700">
@@ -300,11 +575,9 @@ const CreditCardStatements: React.FC = () => {
           </h2>
         </div>
 
-        {statement &&
-        statement.transactions &&
-        statement.transactions.length > 0 ? (
+        {expenseTransactions.length > 0 ? (
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
-            {statement.transactions.map((transaction: Transaction) => (
+            {expenseTransactions.map((transaction: Transaction) => (
               <div
                 key={transaction.id}
                 className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
@@ -348,6 +621,18 @@ const CreditCardStatements: React.FC = () => {
         )}
       </div>
 
+      {/* Delete Anticipation Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!deleteAnticipationId}
+        title="Remover antecipação"
+        message="Tem certeza que deseja remover esta antecipação? O par de transações vinculadas será excluído."
+        confirmLabel={deleteAnticipationMutation.isPending ? 'Removendo...' : 'Remover'}
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmDeleteAnticipation}
+        onCancel={() => setDeleteAnticipationId(null)}
+        isLoading={deleteAnticipationMutation.isPending}
+      />
+
       {/* Reopen Statement Modal */}
       <ConfirmationModal
         isOpen={reopenModalOpen}
@@ -370,7 +655,7 @@ const CreditCardStatements: React.FC = () => {
         isOpen={payModalOpen}
         title={t('pay_credit_card_statement')}
         message={t('pay_credit_card_statement_message', {
-          amount: formatCurrency(statement?.total || 0),
+          amount: formatCurrency(statement?.netTotal ?? statement?.total ?? 0),
           cardName: currentCard?.name
         })}
         confirmLabel={

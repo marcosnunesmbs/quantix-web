@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { CreateAccountRequest } from '../types/apiTypes';
 import { getAccounts, createAccount, updateAccount, deleteAccount, getAccountTransactions } from '../services/accountsApi';
 import { queryKeys } from '../lib/queryClient';
+import { getApiErrorMessage } from '../lib/utils';
 
 export const useAccounts = () => {
   const queryClient = useQueryClient();
@@ -19,8 +20,8 @@ export const useAccounts = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Conta criada com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao criar conta.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao criar conta.'));
     },
   });
 
@@ -33,8 +34,8 @@ export const useAccounts = () => {
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       toast.success('Conta atualizada com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao atualizar conta.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao atualizar conta.'));
     },
   });
 
@@ -46,8 +47,8 @@ export const useAccounts = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success('Conta excluída com sucesso!');
     },
-    onError: () => {
-      toast.error('Erro ao excluir conta.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Erro ao excluir conta.'));
     },
   });
 
