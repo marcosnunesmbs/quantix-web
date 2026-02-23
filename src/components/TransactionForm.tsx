@@ -421,6 +421,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
       installments: formData.isInstallment ? formData.installments : undefined,
       targetDueMonth: formData.type === 'CARTAO' ? formData.targetDueMonth : undefined,
       purchaseDate: formData.type === 'CARTAO' ? formData.date : undefined,
+      paid: formData.type !== 'CARTAO' ? formData.paid : undefined,
       recurrence: recurrenceData,
     };
 
