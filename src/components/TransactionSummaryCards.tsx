@@ -19,7 +19,7 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({
 }) => {
   const { t } = useTranslation();
   const totalIncomePaid = transactions
-    .filter((tx) => tx.type === 'INCOME' && tx.paid)
+    .filter((tx) => tx.type === 'INCOME' && tx.paid && !tx.linkedTransactionId)
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const totalExpensesPaid = transactions
@@ -27,7 +27,7 @@ const TransactionSummaryCards: React.FC<TransactionSummaryCardsProps> = ({
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const pendingIncome = transactions
-    .filter((tx) => tx.type === 'INCOME' && !tx.paid)
+    .filter((tx) => tx.type === 'INCOME' && !tx.paid && !tx.linkedTransactionId)
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const pendingExpenses = transactions
