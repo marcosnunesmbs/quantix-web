@@ -1,5 +1,5 @@
 import api from './api';
-import { CreditCard, Statement, StatementStatus, PaymentStatementRequest } from '../types/apiTypes';
+import { CreditCard, Statement, StatementStatus, PaymentStatementRequest, CreateAnticipationRequest, StatementAnticipation } from '../types/apiTypes';
 
 export interface CreateCreditCardRequest {
   name: string;
@@ -101,4 +101,24 @@ export const reopenCreditCardStatement = async (id: string, month: string): Prom
   }
 };
 
-// Additional credit card-related API functions can be added here as needed
+export const createAnticipation = async (
+  cardId: string,
+  month: string,
+  data: CreateAnticipationRequest,
+): Promise<StatementAnticipation> => {
+  const response = await api.post(
+    `/credit-cards/${cardId}/statements/${month}/anticipations`,
+    data,
+  );
+  return response.data.data || response.data;
+};
+
+export const deleteAnticipation = async (
+  cardId: string,
+  month: string,
+  anticipationId: string,
+): Promise<void> => {
+  await api.delete(
+    `/credit-cards/${cardId}/statements/${month}/anticipations/${anticipationId}`,
+  );
+};

@@ -28,6 +28,8 @@ export interface Transaction {
   paid: boolean;
   purchaseDate?: string; // date format - for credit card transactions
   createdAt: string; // date-time format
+  isAnticipationTransaction?: boolean;
+  isStatementPaymentTransaction?: boolean;
 }
 
 export type RecurrenceUpdateMode = 'SINGLE' | 'PENDING' | 'ALL';
@@ -52,6 +54,17 @@ export interface RecurrenceRule {
   createdAt: string; // date-time format
 }
 
+export interface StatementAnticipation {
+  id: string;
+  creditCardId: string;
+  month: string; // YYYY-MM
+  amount: number;
+  description?: string;
+  accountId: string;
+  transactionId: string;
+  createdAt: string;
+}
+
 export interface Statement {
   cardId: string;
   periodStart: string; // date format
@@ -60,6 +73,15 @@ export interface Statement {
   transactions: Transaction[];
   total: number;
   availableLimit: number;
+  anticipatedAmount?: number;
+  netTotal?: number;
+  anticipations?: StatementAnticipation[];
+}
+
+export interface CreateAnticipationRequest {
+  amount: number;
+  description?: string;
+  accountId: string;
 }
 
 export interface StatementStatus {

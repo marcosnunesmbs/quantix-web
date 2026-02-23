@@ -8,12 +8,16 @@ import {
   CheckCircle,
   Calendar,
   LockOpen,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import {
   useCreditCardStatement,
   usePayCreditCardStatement,
   useReopenCreditCardStatement,
   useStatementStatus,
+  useCreateAnticipation,
+  useDeleteAnticipation,
 } from '../hooks/useCreditCardStatements';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
@@ -38,6 +42,11 @@ const CreditCardStatements: React.FC = () => {
   const [reopenModalOpen, setReopenModalOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
 
+  const [anticipationFormOpen, setAnticipationFormOpen] = useState(false);
+  const [anticipationAmount, setAnticipationAmount] = useState('');
+  const [anticipationDescription, setAnticipationDescription] = useState('');
+  const [anticipationAccountId, setAnticipationAccountId] = useState('');
+
   const {
     statement,
     loading: isLoadingStatement,
@@ -49,6 +58,8 @@ const CreditCardStatements: React.FC = () => {
     useStatementStatus(cardId || '', selectedMonth);
   const payStatementMutation = usePayCreditCardStatement();
   const reopenStatementMutation = useReopenCreditCardStatement();
+  const createAnticipationMutation = useCreateAnticipation();
+  const deleteAnticipationMutation = useDeleteAnticipation();
 
   const currentCard = creditCards?.find((c) => c.id === cardId);
 
@@ -109,6 +120,37 @@ const CreditCardStatements: React.FC = () => {
       {
         onSuccess: () => {
           setReopenModalOpen(false);
+        },
+      }
+    );
+  };
+
+  // Reset anticipation account when accounts load
+  useEffect(() => {
+    if (accounts && accounts.length > 0 && !anticipationAccountId) {
+      setAnticipationAccountId(accounts[0].id);
+    }
+  }, [accounts, anticipationAccountId]);
+
+  const handleCreateAnticipation = () => {
+    if (!cardId || !anticipationAccountId) return;
+    const amount = parseFloat(anticipationAmount.replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) return;
+    createAnticipationMutation.mutate(
+      {
+        cardId,
+        month: selectedMonth,
+        data: {
+          amount,
+          description: anticipationDescription || undefined,
+          accountId: anticipationAccountId,
+        },
+      },
+      {
+        onSuccess: () => {
+          setAnticipationFormOpen(false);
+          setAnticipationAmount('');
+          setAnticipationDescription('');
         },
       }
     );
@@ -202,12 +244,32 @@ const CreditCardStatements: React.FC = () => {
                 />
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {t('credit_card_statement_total')}
-                </p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(statement.total || 0)}
-                </p>
+                {statement.anticipatedAmount && statement.anticipatedAmount > 0 ? (
+                  <>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      {t('credit_card_statement_total')} (bruto)
+                    </p>
+                    <p className="text-base font-semibold text-gray-700 dark:text-gray-300 line-through">
+                      {formatCurrency(statement.total || 0)}
+                    </p>
+                    <p className="text-xs text-orange-500 dark:text-orange-400 font-medium">
+                      − {formatCurrency(statement.anticipatedAmount)} antecipado
+                    </p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(statement.netTotal ?? statement.total ?? 0)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">a pagar</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('credit_card_statement_total')}
+                    </p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">
+                      {formatCurrency(statement.total || 0)}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -292,6 +354,125 @@ const CreditCardStatements: React.FC = () => {
         </div>
       )}
 
+      {/* Anticipations Section */}
+      {statement && !isStatementPaid && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-3">
+            Antecipações
+          </h3>
+
+          {statement.anticipations && statement.anticipations.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {statement.anticipations.map((ant) => (
+                <div
+                  key={ant.id}
+                  className="flex items-center justify-between py-2 px-3 bg-orange-50 dark:bg-orange-900/10 rounded-lg border border-orange-100 dark:border-orange-800/30"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                      {ant.description || 'Antecipação parcial'}
+                    </p>
+                    <p className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                      {formatCurrency(ant.amount)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      deleteAnticipationMutation.mutate({
+                        cardId: cardId!,
+                        month: selectedMonth,
+                        anticipationId: ant.id,
+                      })
+                    }
+                    disabled={deleteAnticipationMutation.isPending}
+                    className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50 transition-colors"
+                    title="Remover antecipação"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {anticipationFormOpen ? (
+            <div className="space-y-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Valor (R$)
+                  </label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={anticipationAmount}
+                    onChange={(e) => setAnticipationAmount(e.target.value)}
+                    placeholder="0,00"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Descrição (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={anticipationDescription}
+                    onChange={(e) => setAnticipationDescription(e.target.value)}
+                    placeholder="Ex: Antecipação parcial"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                  Conta de débito
+                </label>
+                <select
+                  value={anticipationAccountId}
+                  onChange={(e) => setAnticipationAccountId(e.target.value)}
+                  className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  {accounts?.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCreateAnticipation}
+                  disabled={createAnticipationMutation.isPending || !anticipationAmount}
+                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  {createAnticipationMutation.isPending ? 'Salvando…' : 'Confirmar'}
+                </button>
+                <button
+                  onClick={() => {
+                    setAnticipationFormOpen(false);
+                    setAnticipationAmount('');
+                    setAnticipationDescription('');
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setAnticipationFormOpen(true)}
+              className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
+            >
+              <Plus size={16} />
+              Antecipar Valor
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Transactions List */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
         <div className="p-4 border-b border-gray-100 dark:border-gray-700">
@@ -370,7 +551,7 @@ const CreditCardStatements: React.FC = () => {
         isOpen={payModalOpen}
         title={t('pay_credit_card_statement')}
         message={t('pay_credit_card_statement_message', {
-          amount: formatCurrency(statement?.total || 0),
+          amount: formatCurrency(statement?.netTotal ?? statement?.total ?? 0),
           cardName: currentCard?.name
         })}
         confirmLabel={

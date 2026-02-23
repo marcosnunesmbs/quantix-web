@@ -186,8 +186,12 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   // ── Partition transactions ───────────────────────────────────────────────
 
-  const regularTransactions = transactions.filter((t) => !t.creditCardId);
-  const creditCardTransactions = transactions.filter((t) => !!t.creditCardId);
+  const regularTransactions = transactions.filter(
+    (t) => !t.creditCardId || t.isStatementPaymentTransaction,
+  );
+  const creditCardTransactions = transactions.filter(
+    (t) => !!t.creditCardId && !t.isStatementPaymentTransaction,
+  );
 
   const pendingRegular = [...regularTransactions]
     .filter((t) => !t.paid)
@@ -234,6 +238,18 @@ const TransactionList: React.FC<TransactionListProps> = ({
               >
                 <Banknote size={10} />
                 {transaction.account.name}
+              </span>
+            )}
+            {transaction.isAnticipationTransaction && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                <CreditCard size={10} />
+                Antecipação
+              </span>
+            )}
+            {transaction.isStatementPaymentTransaction && transaction.creditCard && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                <CreditCard size={10} />
+                Pgto fatura · {transaction.creditCard.name}
               </span>
             )}
           </div>
@@ -291,7 +307,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
           <span className="text-xs text-gray-400 dark:text-gray-500">Sem categoria</span>
         )}
 
-        {transaction.paid ? (
+        {transaction.paid && !transaction.isAnticipationTransaction ? (
           <button
             onClick={() => onUnpay && handleUnpayClick(transaction)}
             disabled={isUnpaying}
@@ -299,6 +315,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
           >
             {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Recebido' : 'Pago'}
           </button>
+        ) : transaction.paid ? (
+          <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+            {transaction.type === 'INCOME' ? 'Recebido' : 'Pago'}
+          </span>
         ) : (
           <button
             onClick={() => onPay && handlePayClick(transaction)}

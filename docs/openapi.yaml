@@ -186,7 +186,7 @@ components:
         availableLimit:
           type: number
           format: float
-          description: Available credit limit (limitAmount minus all pending unpaid expenses)
+          description: Available credit limit (limitAmount minus all pending unpaid expenses, plus existing anticipation payments)
           example: 3200.00
         createdAt:
           type: string
@@ -260,13 +260,66 @@ components:
         total:
           type: number
           format: float
-          description: Total amount of the statement
+          description: Gross total amount of the statement (before anticipations)
           example: 3450.00
+        anticipatedAmount:
+          type: number
+          format: float
+          description: Total amount already anticipated for this statement
+          example: 500.00
+        netTotal:
+          type: number
+          format: float
+          description: Net total (total minus anticipatedAmount)
+          example: 2950.00
+        anticipations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementAnticipation'
+          description: List of anticipations for this statement
         availableLimit:
           type: number
           format: float
-          description: Available credit limit
+          description: Available credit limit (already reflects anticipations)
           example: 1550.00
+
+    StatementAnticipation:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the anticipation
+          example: "ant_123456789"
+        creditCardId:
+          type: string
+          description: ID of the credit card
+          example: "cc_123456789"
+        month:
+          type: string
+          description: Statement month in YYYY-MM format
+          example: "2026-03"
+        amount:
+          type: number
+          format: float
+          description: Anticipation amount
+          example: 500.00
+        description:
+          type: string
+          description: Description of the anticipation
+          example: "Antecipação parcial fatura março"
+        accountId:
+          type: string
+          description: Account debited for this anticipation
+          example: "acc_123456789"
+        transactionId:
+          type: string
+          description: ID of the linked expense transaction
+          example: "txn_123456789"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the anticipation was created
+          example: "2026-02-23T10:00:00Z"
 
     StatementStatus:
       type: object
@@ -1009,6 +1062,147 @@ paths:
         '404':
           description: Credit card not found
 
+  /credit-cards/{id}/statements/{month}/anticipations:
+    post:
+      summary: Create a statement anticipation for a credit card
+      description: |
+        Creates a partial anticipation payment for an open credit card statement.
+        Automatically generates a linked EXPENSE transaction (paid=true) debited from the specified account.
+        Only allowed on open statements (not fully paid). Amount cannot exceed statement balance.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Statement month in YYYY-MM format
+          example: "2026-03"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - description
+                - accountId
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  minimum: 0.01
+                  description: Anticipation amount
+                  example: 500.00
+                description:
+                  type: string
+                  description: Description for the anticipation
+                  example: "Antecipação parcial fatura março"
+                accountId:
+                  type: string
+                  description: Account ID to debit the anticipation from
+                  example: "acc_123456789"
+      responses:
+        '201':
+          description: Anticipation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementAnticipation'
+        '400':
+          description: Invalid input, statement is closed, or amount exceeds statement balance
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
+    get:
+      summary: List anticipations for a credit card statement
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Statement month in YYYY-MM format
+          example: "2026-03"
+      responses:
+        '200':
+          description: List of anticipations for the statement
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatementAnticipation'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Credit card not found
+
+  /credit-cards/{id}/statements/{month}/anticipations/{anticipationId}:
+    delete:
+      summary: Delete a statement anticipation
+      description: |
+        Deletes an anticipation and its linked expense transaction in cascade.
+        Returns 400 if the statement is already fully paid.
+        Note: Deleting the linked expense transaction directly via `DELETE /transactions/{id}` is also supported and produces the same result (cascades to delete the anticipation).
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Credit card ID
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+          description: Statement month in YYYY-MM format
+          example: "2026-03"
+        - name: anticipationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Anticipation ID
+      responses:
+        '200':
+          description: Anticipation deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Anticipation deleted successfully"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Anticipation not found
+
   /credit-cards/{id}/pay-statement:
     post:
       summary: Mark all transactions in a credit card statement as paid
@@ -1351,6 +1545,7 @@ paths:
       description: |
         Update a transaction.
         **Note:** Transactions that have already been paid cannot be edited.
+        **Note:** Transactions linked to a statement anticipation (auto-generated expense transactions) cannot be edited — remove the anticipation via `DELETE /credit-cards/{id}/statements/{month}/anticipations/{anticipationId}` instead.
         For credit card transactions, you can use targetDueMonth to automatically calculate the date based on the credit card's due day.
 
         **Recurring Transactions - Editable Fields by Mode:**
@@ -1395,7 +1590,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Transaction'
         '400':
-          description: Invalid input or transaction is already paid
+          description: Invalid input, transaction is already paid, or transaction is linked to a statement anticipation
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -1403,6 +1598,10 @@ paths:
 
     delete:
       summary: Delete a transaction
+      description: |
+        Delete a transaction.
+        **Note:** Paid credit card transactions cannot be deleted.
+        **Note:** Deleting a transaction that is linked to a statement anticipation (`isAnticipationTransaction`) also deletes the associated anticipation record in cascade. Returns 400 if the statement is already fully paid.
       parameters:
         - name: id
           in: path
@@ -1428,6 +1627,8 @@ paths:
       responses:
         '200':
           description: Transaction deleted successfully
+        '400':
+          description: Cannot delete a paid credit card transaction, or statement is already closed (for anticipation-linked transactions)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
