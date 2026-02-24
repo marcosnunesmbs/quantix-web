@@ -3,6 +3,7 @@ import { Plus, X, ChevronLeft, ChevronRight, ArrowLeftRight, ArrowDownLeft, Arro
 import AccountForm from '../components/AccountForm';
 import AccountList from '../components/AccountList';
 import TransferModal from '../components/TransferModal';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
 import { useTransfers, useCreateTransfer, useUpdateTransfer, useDeleteTransfer } from '../hooks/useTransfers';
@@ -220,9 +221,25 @@ const AccountsPage: React.FC = () => {
         </div>
       </div>
 
-      {loading && <div className="text-center py-8">{t('loading_accounts')}</div>}
+      {loading && (
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <SkeletonLoader type="text" width="w-32" height="h-6" />
+              <SkeletonLoader type="text" width="w-48" height="h-4" />
+            </div>
+            <div className="flex gap-2">
+              <SkeletonLoader type="rect" width="w-36" height="h-10" className="rounded-lg" />
+              <SkeletonLoader type="rect" width="w-28" height="h-10" className="rounded-lg" />
+            </div>
+          </div>
+          {/* Account list skeleton */}
+          <SkeletonLoader type="list" lines={4} />
+        </div>
+      )}
       {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
-      
+
       {!loading && !error && (
         <div>
           <AccountList
@@ -239,6 +256,7 @@ const AccountsPage: React.FC = () => {
           onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
           initialData={editingAccount}
+          isSubmitting={false}
         />
       )}
 

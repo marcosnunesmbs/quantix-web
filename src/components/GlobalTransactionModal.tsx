@@ -9,9 +9,9 @@ import { CreateTransactionRequest } from '../types/apiTypes';
 
 const GlobalTransactionModal: React.FC = () => {
   const { isOpen, closeModal } = useTransactionModal();
-  const { createNewTransaction } = useTransactions();
+  const { createNewTransaction, isCreating } = useTransactions();
   const { accounts } = useAccounts();
-  const { createTransfer, isCreating } = useCreateTransfer();
+  const { createTransfer, isCreating: isTransferring } = useCreateTransfer();
   const [showTransferModal, setShowTransferModal] = useState(false);
 
   const handleFormSubmit = async (transactionData: CreateTransactionRequest) => {
@@ -44,7 +44,7 @@ const GlobalTransactionModal: React.FC = () => {
         accounts={accounts}
         onSubmit={handleTransferSubmit}
         onClose={() => setShowTransferModal(false)}
-        isSubmitting={isCreating}
+        isSubmitting={isTransferring}
       />
     );
   }
@@ -58,6 +58,7 @@ const GlobalTransactionModal: React.FC = () => {
           onSubmit={handleFormSubmit}
           onCancel={closeModal}
           onTransferSelect={handleTransferSelect}
+          isSubmitting={isCreating}
         />
       </div>
     </div>

@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { CreateAccountRequest } from '../types/apiTypes';
 import CurrencyInput from './CurrencyInput';
+import LoadingOverlay from './LoadingOverlay';
 
 interface AccountFormProps {
   onSubmit: (accountData: CreateAccountRequest) => void;
   onCancel: () => void;
   initialData?: Partial<CreateAccountRequest> & { id?: string };
+  isSubmitting?: boolean;
 }
 
-const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialData }) => {
+const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialData, isSubmitting }) => {
   const [formData, setFormData] = useState<CreateAccountRequest>({
     name: initialData?.name || '',
     type: initialData?.type || 'BANK_ACCOUNT',
@@ -31,8 +33,10 @@ const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialDa
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
-        <div className="p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md relative">
+        <div className="relative">
+          <LoadingOverlay isLoading={!!isSubmitting} message="Salvando conta..." />
+          <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               {initialData ? 'Edit Account' : 'Add Account'}
@@ -91,7 +95,7 @@ const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialDa
                 required
               />
             </div>
-            
+
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 type="button"
@@ -108,6 +112,7 @@ const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, initialDa
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </div>

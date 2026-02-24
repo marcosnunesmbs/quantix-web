@@ -9,6 +9,7 @@ import TransactionFilters, {
   TransactionFiltersState,
 } from '../components/TransactionFilters';
 import MonthSelector from '../components/MonthSelector';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
@@ -132,7 +133,27 @@ const TransactionsPage: React.FC = () => {
         </div>
       </div>
 
-      {loading && <div className="text-center py-8">{t('loading_transactions')}</div>}
+      {loading && (
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <SkeletonLoader type="text" width="w-40" height="h-6" />
+              <SkeletonLoader type="text" width="w-64" height="h-4" />
+            </div>
+            <div className="flex gap-2">
+              <SkeletonLoader type="rect" width="w-32" height="h-10" className="rounded-lg" />
+              <SkeletonLoader type="rect" width="w-10" height="h-10" className="rounded-lg" />
+            </div>
+          </div>
+          {/* Summary cards skeleton */}
+          <SkeletonLoader type="stats" />
+          {/* Filters skeleton */}
+          <SkeletonLoader type="rect" width="w-full" height="h-12" className="rounded-lg" />
+          {/* Transaction list skeleton */}
+          <SkeletonLoader type="list" lines={5} />
+        </div>
+      )}
       {error && <div className="text-center py-8 text-red-500">{t('error')}: {error}</div>}
 
       {!loading && !error && (

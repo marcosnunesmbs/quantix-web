@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, Repeat, CreditCard, Plus, ArrowDownLeft, ArrowUpRight, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import { CreateTransactionRequest, Category, Account, CreditCard as CreditCardType, CreateCategoryRequest } from '../types/apiTypes';
 import CurrencyInput from './CurrencyInput';
+import LoadingOverlay from './LoadingOverlay';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
@@ -47,6 +48,7 @@ interface TransactionFormProps {
   onSubmit: (transactionData: CreateTransactionRequest) => void;
   onCancel: () => void;
   onTransferSelect?: () => void;
+  isSubmitting?: boolean;
 }
 
 const today = () => new Date().toISOString().split('T')[0];
@@ -94,7 +96,7 @@ const typeHeaderColors: Record<TransactionFormType, { gradient: string; back: st
   },
 };
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, onTransferSelect }) => {
+const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, onTransferSelect, isSubmitting }) => {
   // Data fetching hooks
   const { categories, loading: categoriesLoading, createNewCategory } = useCategories();
   const { accounts, loading: accountsLoading } = useAccounts();
@@ -540,7 +542,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
         </div>
 
         {/* Form Content - Scrollable */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 p-6">
+        <div className="relative flex-1 overflow-y-auto">
+          <LoadingOverlay isLoading={!!isSubmitting} message="Salvando transação..." />
+          <form onSubmit={handleSubmit} className="space-y-4 p-6">
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -947,6 +951,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           )}
 
         </form>
+        </div>
 
         {/* Footer - Fixed with Action Buttons */}
         <div className="flex-shrink-0 grid grid-cols-2 gap-0 border-t border-gray-200 dark:border-gray-700">

@@ -4,6 +4,7 @@ import SummaryCard from '../components/SummaryCard';
 import MonthSelector from '../components/MonthSelector';
 import DashboardCreditCardInvoices from '../components/DashboardCreditCardInvoices';
 import CategoryPieChart from '../components/CategoryPieChart';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useSummary } from '../hooks/useSummary';
 import { useSettings } from '../hooks/useSettings';
 import { useTranslation } from 'react-i18next';
@@ -67,18 +68,47 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Loading / Error */}
+      {/* Loading */}
       {loading && (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          {t('loading_financial_summary')}
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <SkeletonLoader type="text" width="w-48" height="h-8" />
+              <SkeletonLoader type="text" width="w-32" height="h-4" />
+            </div>
+            <SkeletonLoader type="rect" width="w-32" height="h-10" className="rounded-full" />
+          </div>
+          {/* Summary cards skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonLoader type="card" className="min-h-[300px]" />
+            <div className="grid grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonLoader key={i} type="stats" className="col-span-1" />
+              ))}
+            </div>
+          </div>
+          {/* Credit cards section skeleton */}
+          <div className="space-y-3">
+            <SkeletonLoader type="text" width="w-48" height="h-6" />
+            <SkeletonLoader type="list" lines={2} />
+          </div>
+          {/* Charts skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SkeletonLoader type="card" className="h-64" />
+            <SkeletonLoader type="card" className="h-64" />
+          </div>
         </div>
       )}
+
+      {/* Error */}
       {error && (
         <div className="text-center py-8 text-red-500">
           {t('error')}: {error}
         </div>
       )}
 
+      {/* Content */}
       {!loading && !error && summary && (
         <>
           {/* Top Section: Balance Card (left) + 2x2 Summary Cards (right) */}

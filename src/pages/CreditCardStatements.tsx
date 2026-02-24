@@ -231,9 +231,20 @@ const CreditCardStatements: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <SkeletonLoader type="card" />
-        <SkeletonLoader type="card" />
-        <SkeletonLoader type="card" />
+        {/* Header skeleton */}
+        <div className="flex items-center gap-4">
+          <SkeletonLoader type="circle" width="w-10" height="h-10" />
+          <div className="space-y-2">
+            <SkeletonLoader type="text" width="w-48" height="h-6" />
+            <SkeletonLoader type="text" width="w-32" height="h-4" />
+          </div>
+        </div>
+        {/* Month selector skeleton */}
+        <SkeletonLoader type="rect" width="w-full" height="h-14" className="rounded-xl" />
+        {/* Statement summary skeleton */}
+        <SkeletonLoader type="card" className="h-40" />
+        {/* Transactions skeleton */}
+        <SkeletonLoader type="list" lines={5} />
       </div>
     );
   }

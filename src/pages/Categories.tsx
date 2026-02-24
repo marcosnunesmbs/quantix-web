@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import CategoryForm from '../components/CategoryForm';
 import CategoryList from '../components/CategoryList';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useCategories } from '../hooks/useCategories';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types/apiTypes';
 import { useTranslation } from 'react-i18next';
@@ -63,7 +64,20 @@ const CategoriesPage: React.FC = () => {
         </button>
       </div>
 
-      {loading && <div className="text-center py-8">{t('loading_categories')}</div>}
+      {loading && (
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <SkeletonLoader type="text" width="w-32" height="h-6" />
+              <SkeletonLoader type="text" width="w-48" height="h-4" />
+            </div>
+            <SkeletonLoader type="rect" width="w-32" height="h-10" className="rounded-lg" />
+          </div>
+          {/* Category list skeleton */}
+          <SkeletonLoader type="list" lines={5} />
+        </div>
+      )}
       {error && <div className="text-center py-8 text-red-500">Erro: {error}</div>}
 
       {!loading && !error && (
@@ -79,6 +93,7 @@ const CategoriesPage: React.FC = () => {
           mode="create"
           onSubmit={handleCreateSubmit}
           onCancel={() => setShowCreateForm(false)}
+          isSubmitting={false}
         />
       )}
 
@@ -88,6 +103,7 @@ const CategoriesPage: React.FC = () => {
           category={editingCategory}
           onSubmit={handleEditSubmit}
           onCancel={() => setEditingCategory(null)}
+          isSubmitting={false}
         />
       )}
     </div>

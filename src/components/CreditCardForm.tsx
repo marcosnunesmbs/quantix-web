@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { CreateCreditCardRequest } from '../types/apiTypes';
 import CurrencyInput from './CurrencyInput';
+import LoadingOverlay from './LoadingOverlay';
 
 interface CreditCardFormProps {
   onSubmit: (cardData: CreateCreditCardRequest) => void;
   onCancel: () => void;
   initialData?: CreateCreditCardRequest;
+  isSubmitting?: boolean;
 }
 
-const CreditCardForm: React.FC<CreditCardFormProps> = ({ onSubmit, onCancel, initialData }) => {
+const CreditCardForm: React.FC<CreditCardFormProps> = ({ onSubmit, onCancel, initialData, isSubmitting }) => {
   const [formData, setFormData] = useState<CreateCreditCardRequest>(
     initialData || {
       name: '',
@@ -35,20 +37,21 @@ const CreditCardForm: React.FC<CreditCardFormProps> = ({ onSubmit, onCancel, ini
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md relative">
+        <LoadingOverlay isLoading={!!isSubmitting} message="Salvando cartão..." />
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               {initialData ? 'Edit Credit Card' : 'Add Credit Card'}
             </h2>
-            <button 
+            <button
               onClick={onCancel}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               <X size={20} />
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

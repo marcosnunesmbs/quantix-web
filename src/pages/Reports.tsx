@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Calendar } from 'lucide-react';
 import MonthSelector from '../components/MonthSelector';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useSummary } from '../hooks/useSummary';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
@@ -104,7 +105,27 @@ const ReportsPage: React.FC = () => {
 
       {/* Content Area */}
       <div className="max-w-7xl mx-auto py-8">
-        {loading && <div className="text-center py-12 text-gray-500">Carregando relatório...</div>}
+        {loading && (
+          <div className="space-y-6">
+            {/* Tab header skeleton */}
+            <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonLoader key={i} type="rect" width="w-24" height="h-10" className="rounded-lg" />
+              ))}
+            </div>
+            {/* Summary cards skeleton */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonLoader key={i} type="card" className="h-32" />
+              ))}
+            </div>
+            {/* Charts skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <SkeletonLoader type="card" className="h-64 lg:col-span-2" />
+              <SkeletonLoader type="card" className="h-64" />
+            </div>
+          </div>
+        )}
         {error && <div className="text-center py-12 text-red-500">Erro ao carregar: {error}</div>}
 
         {!loading && !error && summary && stats && (

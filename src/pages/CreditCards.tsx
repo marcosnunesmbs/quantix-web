@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import CreditCardForm from '../components/CreditCardForm';
 import CreditCardList from '../components/CreditCardList';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { useCreditCards } from '../hooks/useCreditCards';
 import { CreateCreditCardRequest } from '../services/creditCardsApi';
 import { getTransactions } from '../services/transactionsApi';
@@ -104,9 +105,22 @@ const CreditCardsPage: React.FC = () => {
         </button>
       </div>
 
-      {loading && <div className="text-center py-8">{t('loading_credit_cards')}</div>}
+      {loading && (
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <SkeletonLoader type="text" width="w-40" height="h-6" />
+              <SkeletonLoader type="text" width="w-48" height="h-4" />
+            </div>
+            <SkeletonLoader type="rect" width="w-40" height="h-10" className="rounded-lg" />
+          </div>
+          {/* Credit card list skeleton */}
+          <SkeletonLoader type="list" lines={3} />
+        </div>
+      )}
       {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
-      
+
       {!loading && !error && (
         <div>
           <CreditCardList 
@@ -118,10 +132,11 @@ const CreditCardsPage: React.FC = () => {
       )}
 
       {showForm && (
-        <CreditCardForm 
-          onSubmit={handleFormSubmit} 
+        <CreditCardForm
+          onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
           initialData={editingCard}
+          isSubmitting={false}
         />
       )}
     </div>

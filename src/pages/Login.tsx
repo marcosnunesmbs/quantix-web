@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useI18n } from '../context/I18nContext';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
   const [password, setPassword] = useState('');
@@ -9,6 +10,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { syncFromApi } = useI18n();
+  const { t } = useTranslation();
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -70,12 +72,12 @@ const Login = () => {
               </div>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading}
               className="w-full bg-primary-600 text-white py-3 rounded-xl font-bold hover:bg-primary-700 transition-colors shadow-lg shadow-primary-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {isLoading ? 'Verifying...' : 'Sign In'}
+                {isLoading ? t('verifying') : t('sign_in')}
             </button>
         </form>
       </div>

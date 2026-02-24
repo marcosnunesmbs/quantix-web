@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types/apiTypes';
+import LoadingOverlay from './LoadingOverlay';
 
 const PRESET_COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6',
@@ -12,6 +13,7 @@ interface CategoryFormCreateProps {
   onSubmit: (categoryData: CreateCategoryRequest) => void;
   onCancel: () => void;
   defaultType?: 'INCOME' | 'EXPENSE';
+  isSubmitting?: boolean;
 }
 
 interface CategoryFormEditProps {
@@ -19,12 +21,14 @@ interface CategoryFormEditProps {
   category: Category;
   onSubmit: (data: UpdateCategoryRequest) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
 type CategoryFormProps = CategoryFormCreateProps | CategoryFormEditProps;
 
 const CategoryForm: React.FC<CategoryFormProps> = (props) => {
   const isEdit = props.mode === 'edit';
+  const isSubmitting = props.isSubmitting ?? false;
 
   const [name, setName] = useState(isEdit ? (props as CategoryFormEditProps).category.name : '');
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>(
@@ -45,7 +49,8 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md relative">
+        <LoadingOverlay isLoading={isSubmitting} message="Salvando categoria..." />
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
