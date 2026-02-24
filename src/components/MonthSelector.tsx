@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface MonthSelectorProps {
   selectedMonth: string;
@@ -7,6 +8,8 @@ interface MonthSelectorProps {
 }
 
 const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, onMonthChange }) => {
+  const { t } = useTranslation();
+
   const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onMonthChange(e.target.value);
   };
@@ -44,7 +47,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, onMonthCha
       <button
         onClick={handlePreviousMonth}
         className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        title="Mês anterior"
+        title={t('previous_month')}
       >
         <ChevronLeft size={20} />
       </button>
@@ -60,7 +63,7 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, onMonthCha
       <button
         onClick={handleNextMonth}
         className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        title="Próximo mês"
+        title={t('next_month')}
       >
         <ChevronRight size={20} />
       </button>

@@ -8,6 +8,7 @@ import { useAccounts } from '../hooks/useAccounts';
 import { useCreditCards } from '../hooks/useCreditCards';
 import { useStatementStatus } from '../hooks/useCreditCardStatements';
 import CategoryForm from './CategoryForm';
+import { useTranslation } from 'react-i18next';
 
 type TransactionFormType = 'RECEITA' | 'DESPESA' | 'CARTAO';
 
@@ -56,17 +57,17 @@ const today = () => new Date().toISOString().split('T')[0];
 const isToday = (dateStr: string) => dateStr === today();
 
 // Generate available target due months (current month + 3 months ahead)
-const generateTargetDueMonths = (): Array<{ value: string; label: string }> => {
+const generateTargetDueMonths = (t: (key: string) => string): Array<{ value: string; label: string }> => {
   const months: Array<{ value: string; label: string }> = [];
   const now = new Date();
-  const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
   for (let i = 0; i < 4; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
     const year = d.getFullYear();
     const month = d.getMonth();
     const value = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const label = `${monthNames[month]}/${year}`;
+    const label = `${t(monthKeys[month])}/${year}`;
     months.push({ value, label });
   }
 
@@ -97,6 +98,8 @@ const typeHeaderColors: Record<TransactionFormType, { gradient: string; back: st
 };
 
 const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, onTransferSelect, isSubmitting }) => {
+  const { t } = useTranslation();
+  
   // Data fetching hooks
   const { categories, loading: categoriesLoading, createNewCategory } = useCategories();
   const { accounts, loading: accountsLoading } = useAccounts();
@@ -118,32 +121,32 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
   const typeOptions: TransactionTypeOption[] = [
     {
       value: 'RECEITA',
-      label: 'Entrada',
+      label: t('entry'),
       icon: <ArrowDownLeft className="w-6 h-6" />,
       color: 'text-emerald-600 dark:text-emerald-400',
       bgColor: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30',
-      description: 'Dinheiro que você recebe'
+      description: t('money_you_receive')
     },
     {
       value: 'DESPESA',
-      label: 'Saída',
+      label: t('exit'),
       icon: <ArrowUpRight className="w-6 h-6" />,
       color: 'text-red-600 dark:text-red-400',
       bgColor: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30',
-      description: 'Gastos e despesas'
+      description: t('expenses_and_spending')
     },
     {
       value: 'CARTAO',
-      label: 'Cartão',
+      label: t('card'),
       icon: <CreditCard className="w-6 h-6" />,
       color: 'text-purple-600 dark:text-purple-400',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30',
-      description: 'Compras no cartão de crédito'
+      description: t('credit_card_purchases')
     }
   ];
 
   const getInitialFormData = (): TransactionFormData => {
-    const targetDueMonths = generateTargetDueMonths();
+    const targetDueMonths = generateTargetDueMonths(t);
     return {
       type: 'DESPESA',
       description: '',
@@ -171,7 +174,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
   const { isPaid: isCurrentMonthPaid } = useStatementStatus(selectedCardId, currentMonth);
 
   // Available target due months — exclude current month if its statement is already paid
-  const availableTargetDueMonths = generateTargetDueMonths().filter(
+  const availableTargetDueMonths = generateTargetDueMonths(t).filter(
     (m) => !(m.value === currentMonth && isCurrentMonthPaid)
   );
 
@@ -202,12 +205,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
   // Get available payment methods (excluding CREDIT for RECEITA/DESPESA)
   const getAvailablePaymentMethods = useCallback((): Array<{ value: string; label: string }> => {
     const allMethods = [
-      { value: 'CASH', label: 'Dinheiro' },
-      { value: 'PIX', label: 'PIX' },
-      { value: 'DEBIT', label: 'Débito' },
+      { value: 'CASH', label: t('cash') },
+      { value: 'PIX', label: t('pix') },
+      { value: 'DEBIT', label: t('debit') },
     ];
     return allMethods;
-  }, []);
+  }, [t]);
 
   // Handle type selection from selector
   const handleSelectType = (newType: TransactionFormType) => {
@@ -348,44 +351,44 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
 
     if (formData.type === 'CARTAO') {
       if (!formData.creditCardId) {
-        errors.push('Selecione um cartão de crédito');
+        errors.push(t('validation_credit_card_required'));
       }
       if (formData.isInstallment && (!formData.installments || formData.installments < 2)) {
-        errors.push('Parcelamento requer no mínimo 2 parcelas');
+        errors.push(t('minimum_2_installments'));
       }
     }
 
     if ((formData.type === 'RECEITA' || formData.type === 'DESPESA') && !formData.accountId) {
-      errors.push('Selecione uma conta');
+      errors.push(t('validation_account_required'));
     }
 
     if ((formData.type === 'DESPESA' || formData.type === 'RECEITA') && formData.isRecurring) {
       if (!formData.recurrence?.frequency) {
-        errors.push('Selecione a frequência da recorrência');
+        errors.push(t('validation_frequency_required'));
       }
       if (!formData.recurrence?.interval || formData.recurrence.interval < 1) {
-        errors.push('Intervalo deve ser no mínimo 1');
+        errors.push(t('validation_interval_minimum'));
       }
       if (formData.hasRecurrenceEnd) {
         if (formData.recurrenceEndType === 'date' && !formData.recurrence?.endDate) {
-          errors.push('Data de término é obrigatória');
+          errors.push(t('validation_end_date_required'));
         }
         if (formData.recurrenceEndType === 'count' && (!formData.recurrence?.occurrences || formData.recurrence.occurrences < 1)) {
-          errors.push('Quantidade de repetições deve ser no mínimo 1');
+          errors.push(t('validation_occurrences_minimum'));
         }
       }
     }
 
     if (formData.amount <= 0) {
-      errors.push('Valor deve ser maior que zero');
+      errors.push(t('validation_amount_greater_than_zero'));
     }
 
     if (!formData.description.trim()) {
-      errors.push('Descrição é obrigatória');
+      errors.push(t('validation_description_required'));
     }
 
     if (!formData.categoryId) {
-      errors.push('Selecione uma categoria');
+      errors.push(t('validation_category_required'));
     }
 
     return errors;
@@ -463,8 +466,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 <X size={20} className="text-white" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-white mb-1">Nova Transação</h1>
-                <p className="text-primary-100 text-sm">Selecione o tipo de transação</p>
+                <h1 className="text-2xl font-bold text-white mb-1">{t('new_transaction')}</h1>
+                <p className="text-primary-100 text-sm">{t('select_transaction_type')}</p>
               </div>
             </div>
           </div>
@@ -498,8 +501,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                   <ArrowLeftRight className="w-6 h-6" />
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Transferência</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Mover saldo entre contas</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">{t('transfer')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('move_balance_between_accounts')}</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" />
@@ -523,7 +526,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 onClick={() => setShowTypeSelector(true)}
                 className={`${typeHeaderColors[formData.type].back} text-sm font-medium flex items-center gap-1 mb-2 transition-colors`}
               >
-                ← Voltar
+                ← {t('back')}
               </button>
               <h2 className="text-2xl font-bold text-white">
                 {typeOptions.find(o => o.value === formData.type)?.label}
@@ -543,12 +546,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
 
         {/* Form Content - Scrollable */}
         <div className="relative flex-1 overflow-y-auto">
-          <LoadingOverlay isLoading={!!isSubmitting} message="Salvando transação..." />
+          <LoadingOverlay isLoading={!!isSubmitting} message={t('loading')} />
           <form onSubmit={handleSubmit} className="space-y-4 p-6">
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Descrição *
+              {t('description')} *
             </label>
             <input
               type="text"
@@ -556,7 +559,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
               value={formData.description}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
-              placeholder="Ex: Supermercado, Salário..."
+              placeholder={t('description_placeholder')}
               required
             />
           </div>
@@ -564,7 +567,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           {/* Amount */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Valor (R$) *
+              {t('amount_label')} *
             </label>
             <CurrencyInput
               value={formData.amount}
@@ -577,7 +580,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           {/* Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {formData.type === 'CARTAO' ? 'Data da compra *' : 'Data *'}
+              {formData.type === 'CARTAO' ? t('purchase_date') : t('date_label')} *
             </label>
             <input
               type="date"
@@ -592,11 +595,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           {/* Category - Filtered by type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Categoria *
+              {t('category_label')} *
             </label>
             {categoriesLoading ? (
               <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700 text-gray-500">
-                Carregando categorias...
+                {t('loading_categories')}
               </div>
             ) : (
               <div className="flex gap-2">
@@ -607,7 +610,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
                   required
                 >
-                  <option value="">Selecione uma categoria</option>
+                  <option value="">{t('select_category')}</option>
                   {filteredCategories.map((category: Category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
@@ -618,14 +621,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                   type="button"
                   onClick={() => setShowCategoryForm(true)}
                   className="px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg transition-colors font-medium"
-                  title="Adicionar nova categoria"
+                  title={t('add_new_category')}
                 >
                   <Plus size={20} />
                 </button>
               </div>
             )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {formData.type === 'RECEITA' ? '💚 Apenas categorias de receita' : '💔 Apenas categorias de despesa'}
+              {formData.type === 'RECEITA' ? t('income_categories_only') : t('expense_categories_only')}
             </p>
           </div>
 
@@ -633,7 +636,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           {formData.type !== 'CARTAO' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Método de Pagamento
+                {t('payment_method')}
               </label>
               <select
                 name="paymentMethod"
@@ -641,7 +644,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
               >
-                <option value="">Selecione...</option>
+                <option value="">{t('select_payment_method')}</option>
                 {availablePaymentMethods.map(method => (
                   <option key={method.value} value={method.value}>
                     {method.label}
@@ -657,11 +660,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
               {/* Credit Card Selector */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Cartão de Crédito *
+                  {t('credit_card_label')} *
                 </label>
                 {creditCardsLoading ? (
                   <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700">
-                    Carregando...
+                    {t('loading')}
                   </div>
                 ) : (
                   <select
@@ -671,10 +674,10 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white transition-all"
                     required
                   >
-                    <option value="">Selecione um cartão</option>
+                    <option value="">{t('select_credit_card')}</option>
                     {creditCards.map((card: CreditCardType) => (
                       <option key={card.id} value={card.id}>
-                        {card.name} ({card.brand || 'Sem marca'})
+                        {card.name} ({card.brand || t('no_category_short')})
                       </option>
                     ))}
                   </select>
@@ -692,7 +695,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                   className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded cursor-pointer"
                 />
                 <label htmlFor="isInstallment" className="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
-                  Parcelar compra?
+                  {t('installments_toggle')}
                 </label>
               </div>
 
@@ -700,7 +703,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
               {formData.isInstallment && (
                 <div className="animate-fadeIn">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Número de Parcelas *
+                    {t('installment_count_label')} *
                   </label>
                   <input
                     type="number"
@@ -713,14 +716,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                     placeholder="Ex: 3"
                     required={formData.isInstallment}
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Mínimo 2 parcelas</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('minimum_2_installments')}</p>
                 </div>
               )}
 
               {/* Target Due Month */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Mês de vencimento da fatura *
+                  {t('target_due_month')} *
                 </label>
                 <select
                   name="targetDueMonth"
@@ -735,7 +738,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">A compra será incluída nesta fatura</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('purchase_included_statement')}</p>
               </div>
             </div>
           )}
@@ -744,11 +747,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           {formData.type !== 'CARTAO' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Conta *
+                {t('account')} *
               </label>
               {accountsLoading ? (
                 <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-700">
-                  Carregando...
+                  {t('loading')}
                 </div>
               ) : (
                 <select
@@ -758,7 +761,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-all"
                   required
                 >
-                  <option value="">Selecione uma conta</option>
+                  <option value="">{t('select_account_short')}</option>
                   {accounts.map((account: Account) => (
                     <option key={account.id} value={account.id}>
                       {account.name}
@@ -781,9 +784,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
               />
               <label htmlFor="paid" className="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
-                Já está pago?
+                {t('paid')}
                 <span className="text-xs text-gray-500 dark:text-gray-400 block font-normal">
-                  {isToday(formData.date) ? '✓ Data de hoje' : '○ Data futura'}
+                  {isToday(formData.date) ? '✓ ' + t('current') : '○ ' + t('projected')}
                 </span>
               </label>
             </div>
@@ -803,7 +806,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 />
                 <label htmlFor="isRecurring" className="flex-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
                   <Repeat size={16} />
-                  <span>{formData.type === 'RECEITA' ? 'Receita recorrente?' : 'Despesa recorrente?'}</span>
+                  <span>{formData.type === 'RECEITA' ? t('income') + ' ' + t('recurring_toggle').replace('?', '') : t('expense') + ' ' + t('recurring_toggle').replace('?', '')}</span>
                 </label>
               </div>
 
@@ -811,7 +814,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-emerald-200 dark:border-emerald-800' : 'border-amber-200 dark:border-amber-800'}`}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Frequência *
+                      {t('frequency')} *
                     </label>
                     <select
                       name="frequency"
@@ -820,15 +823,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                       className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
                       required={formData.isRecurring}
                     >
-                      <option value="MONTHLY">Mensal</option>
-                      <option value="WEEKLY">Semanal</option>
-                      <option value="YEARLY">Anual</option>
+                      <option value="MONTHLY">{t('monthly')}</option>
+                      <option value="WEEKLY">{t('weekly')}</option>
+                      <option value="YEARLY">{t('yearly')}</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Intervalo (a cada X)
+                      {t('interval')} (a cada X)
                     </label>
                     <input
                       type="number"
@@ -840,7 +843,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                       className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
                     />
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Ex: 2 = a cada 2 {formData.recurrence?.frequency === 'MONTHLY' ? 'meses' : formData.recurrence?.frequency === 'WEEKLY' ? 'semanas' : 'anos'}
+                      {t('interval_info', { interval: formData.recurrence?.interval || 1, period: formData.recurrence?.frequency === 'MONTHLY' ? t('monthly') : formData.recurrence?.frequency === 'WEEKLY' ? t('weekly') : t('yearly') })}
                     </p>
                   </div>
 
@@ -854,7 +857,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                       className={`h-4 w-4 border-gray-300 rounded cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
                     />
                     <label htmlFor="hasRecurrenceEnd" className="flex-1 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer font-medium">
-                      Determinar prazo (opcional)
+                      {t('recurrence_end_type')} ({t('optional')})
                     </label>
                   </div>
 
@@ -862,7 +865,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                     <div className={`space-y-3 animate-fadeIn border-t pt-3 ${formData.type === 'RECEITA' ? 'border-emerald-200 dark:border-emerald-800' : 'border-amber-200 dark:border-amber-800'}`}>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Tipo de encerramento *
+                          {t('recurrence_end_type')} *
                         </label>
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
@@ -876,7 +879,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                               className={`h-4 w-4 border-gray-300 cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
                             />
                             <label htmlFor="endTypeDate" className="flex-1 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                              Data final
+                              {t('end_date')}
                             </label>
                           </div>
                           <div className="flex items-center gap-3">
@@ -890,7 +893,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                               className={`h-4 w-4 border-gray-300 cursor-pointer ${formData.type === 'RECEITA' ? 'text-emerald-600 focus:ring-emerald-500' : 'text-amber-600 focus:ring-amber-500'}`}
                             />
                             <label htmlFor="endTypeCount" className="flex-1 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                              Quantidade de repetições
+                              {t('occurrence_count')}
                             </label>
                           </div>
                         </div>
@@ -899,7 +902,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                       {formData.recurrenceEndType === 'date' && (
                         <div className="animate-fadeIn">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Data de término *
+                            {t('recurrence_end_date_label')} *
                           </label>
                           <input
                             type="date"
@@ -909,14 +912,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                             min={formData.date}
                             className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
                           />
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">A transação será criada até esta data</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('recurrence_end_date_info')}</p>
                         </div>
                       )}
 
                       {formData.recurrenceEndType === 'count' && (
                         <div className="animate-fadeIn">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Número de repetições *
+                            {t('recurrence_occurrences_label')} *
                           </label>
                           <input
                             type="number"
@@ -928,7 +931,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                             className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white transition-all ${formData.type === 'RECEITA' ? 'focus:ring-emerald-500' : 'focus:ring-amber-500'}`}
                             placeholder="Ex: 12"
                           />
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total de vezes que a transação será criada (mínimo 1)</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('recurrence_occurrences_info')}</p>
                         </div>
                       )}
                     </div>
@@ -941,7 +944,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
           {/* Validation Messages */}
           {submitAttempted && validationErrors.length > 0 && (
             <div className="p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl">
-              <p className="text-sm font-bold text-red-700 dark:text-red-300 mb-2">⚠️ Corrija os seguintes erros:</p>
+              <p className="text-sm font-bold text-red-700 dark:text-red-300 mb-2">⚠️ {t('correct_errors')}</p>
               <ul className="text-xs text-red-600 dark:text-red-400 list-disc list-inside space-y-1">
                 {validationErrors.map((error, idx) => (
                   <li key={idx}>{error}</li>
@@ -960,7 +963,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
             onClick={onCancel}
             className="px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-all first:rounded-bl-2xl"
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button
             type="submit"
@@ -972,7 +975,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, o
                 : 'bg-gray-400 cursor-not-allowed opacity-50'
             }`}
           >
-            {submitAttempted && validationErrors.length > 0 ? '✓ Corrigir' : 'Salvar'}
+            {submitAttempted && validationErrors.length > 0 ? t('correct_errors') : t('save')}
           </button>
         </div>
       </div>

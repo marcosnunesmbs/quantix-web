@@ -125,7 +125,7 @@ const SettingsPage: React.FC = () => {
   };
 
   if (loading && !settings) {
-    return <div className="p-6 text-center">Loading settings...</div>;
+    return <div className="p-6 text-center">{t('settings_loading')}</div>;
   }
 
   return (
@@ -139,15 +139,15 @@ const SettingsPage: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         <div className="flex items-center gap-2 mb-5">
           <Palette size={18} className="text-primary-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Aparência</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings_appearance')}</h2>
         </div>
 
         {/* Light / Dark toggle */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Tema</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings_theme')}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {theme === 'dark' ? 'Modo escuro ativo' : 'Modo claro ativo'}
+              {theme === 'dark' ? t('settings_dark_mode_active') : t('settings_light_mode_active')}
             </p>
           </div>
           <button
@@ -179,7 +179,7 @@ const SettingsPage: React.FC = () => {
 
         {/* Accent colour swatches */}
         <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Cor de destaque</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('settings_accent_color')}</p>
           <div className="grid grid-cols-4 gap-3">
             {ACCENT_COLORS.map((color) => (
               <button
@@ -228,12 +228,12 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <User size={18} className="text-primary-500" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('profile')}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings_profile')}</h2>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                User Name
+                {t('settings_user_name')}
               </label>
               <input
                 type="text"
@@ -241,7 +241,7 @@ const SettingsPage: React.FC = () => {
                 value={formData.userName}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Your Name"
+                placeholder={t('settings_user_name_placeholder')}
               />
             </div>
           </div>
@@ -249,13 +249,13 @@ const SettingsPage: React.FC = () => {
           <div className="border-t border-gray-100 dark:border-gray-700 pt-6 space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Globe size={18} className="text-primary-500" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('localization')}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings_localization')}</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Language
+                  {t('settings_language')}
                 </label>
                 <select
                   name="language"
@@ -263,14 +263,14 @@ const SettingsPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                 >
-                  <option value="pt-BR">Português (Brasil)</option>
+                  <option value="pt-BR">{t('portuguese')}</option>
                   <option value="en-US">{t('english')}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Currency
+                  {t('settings_currency')}
                 </label>
                 <select
                   name="currency"
@@ -278,10 +278,10 @@ const SettingsPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                 >
-                  <option value="BRL">BRL (R$)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
+                  <option value="BRL">{t('brl')}</option>
+                  <option value="USD">{t('usd')}</option>
+                  <option value="EUR">{t('eur')}</option>
+                  <option value="GBP">{t('gbp')}</option>
                 </select>
               </div>
             </div>
@@ -304,16 +304,16 @@ const SettingsPage: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         <div className="flex items-center gap-2 mb-5">
           <Download size={18} className="text-primary-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Dados</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('settings_data')}</h2>
         </div>
 
         <div className="space-y-4">
           {/* Export */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Exportar dados</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings_export_data')}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Baixe um backup completo em JSON
+                {t('settings_export_data_desc')}
               </p>
             </div>
             <button
@@ -323,7 +323,7 @@ const SettingsPage: React.FC = () => {
               className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download size={16} />
-              {isExporting ? 'Exportando...' : 'Exportar'}
+              {isExporting ? t('settings_exporting') : t('settings_export')}
             </button>
           </div>
 
@@ -332,9 +332,9 @@ const SettingsPage: React.FC = () => {
           {/* Import */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Importar dados</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings_import_data')}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Restaure dados a partir de um backup
+                {t('settings_import_data_desc')}
               </p>
             </div>
             <button
@@ -344,7 +344,7 @@ const SettingsPage: React.FC = () => {
               className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Upload size={16} />
-              {isImporting ? 'Importando...' : 'Importar'}
+              {isImporting ? t('settings_importing') : t('settings_import')}
             </button>
             <input
               ref={fileInputRef}
@@ -363,7 +363,7 @@ const SettingsPage: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 max-w-md w-full space-y-4">
             <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
               <AlertTriangle size={20} />
-              <h3 className="text-lg font-semibold">Confirmar importação</h3>
+              <h3 className="text-lg font-semibold">{t('settings_confirm_import')}</h3>
             </div>
 
             <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
@@ -389,7 +389,7 @@ const SettingsPage: React.FC = () => {
 
             {/* Mode selector */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Modo de importação</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings_import_mode')}</p>
               <div className="flex gap-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -401,8 +401,8 @@ const SettingsPage: React.FC = () => {
                     className="accent-primary-600"
                   />
                   <div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Incrementar</span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Adiciona registros novos, ignora existentes</p>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings_increment_mode')}</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings_increment_mode_desc')}</p>
                   </div>
                 </label>
               </div>
@@ -417,8 +417,8 @@ const SettingsPage: React.FC = () => {
                     className="accent-primary-600"
                   />
                   <div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Substituir</span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Apaga todos os dados e substitui pelo backup</p>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('settings_replace_mode')}</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings_replace_mode_desc')}</p>
                   </div>
                 </label>
               </div>
@@ -427,7 +427,7 @@ const SettingsPage: React.FC = () => {
             {importMode === 'reset' && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
                 <p className="text-xs text-red-700 dark:text-red-400 font-medium">
-                  Atenção: todos os dados atuais serão apagados permanentemente.
+                  {t('settings_warning_reset_data')}
                 </p>
               </div>
             )}
@@ -441,7 +441,7 @@ const SettingsPage: React.FC = () => {
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Cancelar
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -453,7 +453,7 @@ const SettingsPage: React.FC = () => {
                     : 'bg-primary-600 hover:bg-primary-700'
                 }`}
               >
-                {isImporting ? 'Importando...' : importMode === 'reset' ? 'Substituir dados' : 'Importar'}
+                {isImporting ? t('settings_importing') : importMode === 'reset' ? t('settings_replace_data') : t('settings_import')}
               </button>
             </div>
           </div>

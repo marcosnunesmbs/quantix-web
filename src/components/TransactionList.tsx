@@ -3,6 +3,7 @@ import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat, ArrowDownLeft, Arro
 import { Transaction } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from 'react-i18next';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -90,6 +91,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   isPaying,
   isUnpaying,
 }) => {
+  const { t } = useTranslation();
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     transaction: Transaction | null;
@@ -249,7 +251,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             <button
               onClick={() => onEdit(transaction)}
               className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              title="Editar"
+              title={t('edit')}
             >
               <Pencil size={16} />
             </button>
@@ -258,7 +260,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             <button
               onClick={() => handleDeleteClick(transaction)}
               className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-              title="Excluir"
+              title={t('delete')}
             >
               <Trash2 size={16} />
             </button>
@@ -299,8 +301,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
         {transaction.paid ? (
           transaction.linkedTransactionId && transaction.type === 'EXPENSE' ? (
-            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 cursor-default" title="Pago automaticamente via antecipação">
-              Pago
+            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 cursor-default" title={t('auto_paid_via_anticipation')}>
+              {t('paid')}
             </span>
           ) : (
           <button
@@ -308,7 +310,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             disabled={isUnpaying}
             className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 disabled:opacity-50 transition-colors cursor-pointer"
           >
-            {isUnpaying ? '...' : transaction.type === 'INCOME' ? 'Recebido' : 'Pago'}
+            {isUnpaying ? '...' : transaction.type === 'INCOME' ? t('received') : t('paid')}
           </button>
           )
         ) : (
@@ -317,7 +319,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             disabled={isPaying}
             className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200 disabled:opacity-50 transition-colors cursor-pointer"
           >
-            {isPaying ? '...' : transaction.type === 'INCOME' ? 'Pendente' : 'Pendente'}
+            {isPaying ? '...' : t('pending')}
           </button>
         )}
       </div>
@@ -341,7 +343,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             <span className="font-bold text-gray-900 dark:text-white text-sm">{group.cardName}</span>
             {group.dueDate && (
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                Vence {group.dueDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                {t('due_on', { date: group.dueDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) })}
               </p>
             )}
           </div>
@@ -358,7 +360,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
       >
         <span>
           {group.transactions.length}{' '}
-          {group.transactions.length === 1 ? 'transação' : 'transações'}
+          {group.transactions.length === 1 ? t('transaction_one') : t('transaction_other')}
         </span>
         <ChevronDown
           size={14}
@@ -378,7 +380,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
               {/* Category pill / Antecipação badge — desktop only */}
               {isAnticipation ? (
                 <span className="shrink-0 hidden md:inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                  Antecipação
+                  {t('anticipation')}
                 </span>
               ) : tx.category ? (
                 <span
@@ -418,7 +420,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                       <button
                         onClick={() => onEdit(tx)}
                         className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        title="Editar"
+                        title={t('edit')}
                       >
                         <Pencil size={13} />
                       </button>
@@ -427,7 +429,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                       <button
                         onClick={() => handleDeleteClick(tx)}
                         className="p-0.5 text-gray-300 dark:text-gray-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                        title="Excluir"
+                        title={t('delete')}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -440,7 +442,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
             {/* Category pill / Antecipação badge — mobile only */}
             {isAnticipation ? (
               <span className="md:hidden inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 w-fit">
-                Antecipação
+                {t('anticipation')}
               </span>
             ) : tx.category ? (
               <span
@@ -469,7 +471,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
           className="flex items-center gap-1 text-xs text-blue-500 dark:text-blue-400 hover:text-blue-600 transition-colors"
         >
           <Info size={12} />
-          Pagar via fatura
+          {t('pay_via_invoice')}
         </button>
         <span
           className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
@@ -478,7 +480,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
               : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
           }`}
         >
-          {group.paid ? 'Fatura paga' : 'Pendente'}
+          {group.paid ? t('invoice_paid') : t('pending')}
         </span>
       </div>
     </div>
@@ -490,7 +492,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   if (!transactions || transactions.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center text-gray-500 dark:text-gray-400">
-        Nenhuma transação encontrada
+        {t('no_transactions_found')}
       </div>
     );
   }
@@ -503,7 +505,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {hasPending && (
         <>
           <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Pendentes</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('pending')}</h3>
             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -517,7 +519,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {hasPaid && (
         <>
           <div className="flex items-center gap-3 mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Pagas</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('paid')}</h3>
             <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -530,9 +532,9 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
-        title="Excluir Transação"
-        message={`Tem certeza que deseja excluir a transação "${deleteModal.transaction?.name}"? Esta ação não pode ser desfeita.`}
-        confirmLabel="Excluir"
+        title={t('delete_transaction_title')}
+        message={t('delete_transaction_message', { transactionName: deleteModal.transaction?.name })}
+        confirmLabel={t('delete')}
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleteModal({ isOpen: false, transaction: null })}
       >
@@ -540,12 +542,12 @@ const TransactionList: React.FC<TransactionListProps> = ({
           <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800 text-left">
             <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-300">
               <CreditCard size={16} />
-              <span className="text-sm font-medium">Esta é uma compra parcelada</span>
+              <span className="text-sm font-medium">{t('installment_transaction_info')}</span>
             </div>
             <div className="space-y-2">
               {([
-                ['SINGLE', 'Excluir apenas esta parcela'],
-                ['PENDING', 'Esta e as próximas (pendentes)'],
+                ['SINGLE', t('delete_only_this_installment')],
+                ['PENDING', t('this_and_next_pending')],
               ] as const).map(([value, label]) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -566,13 +568,13 @@ const TransactionList: React.FC<TransactionListProps> = ({
           <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 text-left">
             <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-300">
               <Repeat size={16} />
-              <span className="text-sm font-medium">Esta é uma transação recorrente</span>
+              <span className="text-sm font-medium">{t('recurring_transaction_info')}</span>
             </div>
             <div className="space-y-2">
               {([
-                ['SINGLE', 'Excluir apenas esta transação'],
-                ['PENDING', 'Esta e as próximas (pendentes)'],
-                ['ALL', 'Todas as transações da série'],
+                ['SINGLE', t('delete_only_this_transaction')],
+                ['PENDING', t('this_and_next_pending')],
+                ['ALL', t('all_series_transactions')],
               ] as const).map(([value, label]) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -594,10 +596,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {/* Pay Confirmation Modal */}
       <ConfirmationModal
         isOpen={payModal.isOpen}
-        title="Confirmar Pagamento"
-        message={`Deseja marcar a transação "${payModal.transactionName}" como paga?`}
-        confirmLabel="Confirmar"
-        cancelLabel="Cancelar"
+        title={t('confirm_payment_title')}
+        message={t('confirm_payment_message', { transactionName: payModal.transactionName })}
+        confirmLabel={t('confirm')}
+        cancelLabel={t('cancel')}
         onConfirm={handleConfirmPay}
         onCancel={() => setPayModal({ isOpen: false, transactionId: null, transactionName: '' })}
         isLoading={isPaying}
@@ -606,10 +608,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {/* Unpay Confirmation Modal */}
       <ConfirmationModal
         isOpen={unpayModal.isOpen}
-        title="Desfazer Pagamento"
-        message={`Deseja marcar "${unpayModal.transactionName}" como ${unpayModal.transactionType === 'INCOME' ? 'não recebida' : 'não paga'}?`}
-        confirmLabel="Confirmar"
-        cancelLabel="Cancelar"
+        title={t('unpay_title')}
+        message={t('unpay_message', { status: unpayModal.transactionType === 'INCOME' ? t('unpaid') : t('pending') })}
+        confirmLabel={t('confirm')}
+        cancelLabel={t('cancel')}
         onConfirm={handleConfirmUnpay}
         onCancel={() =>
           setUnpayModal({

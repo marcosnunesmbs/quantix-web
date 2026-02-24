@@ -4,6 +4,7 @@ import { Transaction } from '../types/apiTypes';
 import { useCategories } from '../hooks/useCategories';
 import { useAccounts } from '../hooks/useAccounts';
 import CurrencyInput from './CurrencyInput';
+import { useTranslation } from 'react-i18next';
 
 interface TransactionEditModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
   onSave,
   transaction
 }) => {
+  const { t } = useTranslation();
   const { categories } = useCategories();
   const { accounts } = useAccounts();
   
@@ -118,7 +120,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md flex flex-col max-h-[90vh]">
         <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Editar Transação</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('edit_transaction')}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <X size={24} />
           </button>
@@ -129,7 +131,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Descrição
+                {t('description')}
               </label>
               <input
                 type="text"
@@ -143,7 +145,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Valor
+                {t('amount')}
               </label>
               <CurrencyInput
                 value={amount}
@@ -155,14 +157,14 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
             {/* Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Categoria
+                {t('category_label')}
               </label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
               >
-                <option value="">Sem categoria</option>
+                <option value="">{t('no_category')}</option>
                 {filteredCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -178,7 +180,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                 {isCreditCardTransaction ? (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Mês de vencimento da fatura
+                      {t('target_due_month')}
                     </label>
                     <select
                       value={targetDueMonth}
@@ -191,12 +193,12 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">A compra será movida para esta fatura</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('purchase_moved_statement')}</p>
                   </div>
                 ) : (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Data
+                      {t('date')}
                     </label>
                     <input
                       type="date"
@@ -213,30 +215,30 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Método de Pagamento
+                        {t('payment_method')}
                       </label>
                       <select
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="CASH">Dinheiro</option>
-                        <option value="PIX">Pix</option>
-                        <option value="DEBIT">Débito</option>
-                        <option value="CREDIT">Crédito</option>
+                        <option value="CASH">{t('cash')}</option>
+                        <option value="PIX">{t('pix')}</option>
+                        <option value="DEBIT">{t('debit')}</option>
+                        <option value="CREDIT">{t('credit')}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Conta
+                        {t('account')}
                       </label>
                       <select
                         value={accountId}
                         onChange={(e) => setAccountId(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="">Selecione uma conta</option>
+                        <option value="">{t('select_account_short')}</option>
                         {accounts.map((acc) => (
                           <option key={acc.id} value={acc.id}>
                             {acc.name}
@@ -255,7 +257,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                 <div className="flex items-center gap-2 mb-2 text-amber-700 dark:text-amber-300">
                   <CreditCard size={16} />
                   <span className="text-sm font-medium">
-                    Esta é uma compra parcelada
+                    {t('installment_transaction_info')}
                     {transaction?.installmentNumber && transaction?.installmentTotal
                       ? ` (${transaction.installmentNumber}/${transaction.installmentTotal})`
                       : ''}
@@ -272,7 +274,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                       className="text-amber-600 focus:ring-amber-500"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Alterar apenas esta parcela
+                      {t('delete_only_this_installment')}
                     </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -285,7 +287,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                       className="text-amber-600 focus:ring-amber-500"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Esta e as próximas (pendentes)
+                      {t('this_and_next_pending')}
                     </span>
                   </label>
                 </div>
@@ -297,7 +299,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
               <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                 <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-300">
                   <Repeat size={16} />
-                  <span className="text-sm font-medium">Esta é uma transação recorrente</span>
+                  <span className="text-sm font-medium">{t('recurring_transaction_info')}</span>
                 </div>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -310,7 +312,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Alterar apenas esta transação
+                      {t('delete_only_this_transaction')}
                     </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -323,7 +325,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Esta e as próximas (pendentes)
+                      {t('this_and_next_pending')}
                     </span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -336,7 +338,7 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Todas as transações da série (passadas e futuras)
+                      {t('all_series_transactions')}
                     </span>
                   </label>
                 </div>
@@ -350,17 +352,17 @@ const TransactionEditModal: React.FC<TransactionEditModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-md transition-colors"
             >
-              Cancelar
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Salvando...' : (
+              {isSubmitting ? t('saving') : (
                 <>
                   <Save size={18} />
-                  Salvar
+                  {t('save')}
                 </>
               )}
             </button>

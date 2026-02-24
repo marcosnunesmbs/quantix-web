@@ -152,15 +152,15 @@ const CreditCardStatements: React.FC = () => {
   const handleCreateAnticipation = () => {
     const amount = Number(anticipationForm.amount);
     if (!anticipationForm.name.trim()) {
-      setAnticipationFormError('Informe uma descrição.');
+      setAnticipationFormError(t('statement_validation_description'));
       return;
     }
     if (amount <= 0) {
-      setAnticipationFormError('Informe um valor maior que zero.');
+      setAnticipationFormError(t('statement_validation_amount'));
       return;
     }
     if (!anticipationForm.accountId) {
-      setAnticipationFormError('Selecione uma conta.');
+      setAnticipationFormError(t('statement_validation_account'));
       return;
     }
     if (!cardId) return;
@@ -315,7 +315,7 @@ const CreditCardStatements: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {hasAnticipations ? 'Total Bruto' : t('credit_card_statement_total')}
+                  {hasAnticipations ? t('statement_gross_total') : t('credit_card_statement_total')}
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {formatCurrency(statement.total || 0)}
@@ -323,10 +323,10 @@ const CreditCardStatements: React.FC = () => {
                 {hasAnticipations && (
                   <>
                     <p className="text-xs text-green-600 dark:text-green-400 font-medium mt-0.5">
-                      Antecipado: {formatCurrency(incomeTotal)}
+                      {t('statement_anticipated')}: {formatCurrency(incomeTotal)}
                     </p>
                     <p className="text-sm font-bold text-primary-600 dark:text-primary-400 mt-0.5">
-                      Líquido: {formatCurrency(netTotal)}
+                      {t('statement_net')}: {formatCurrency(netTotal)}
                     </p>
                   </>
                 )}
@@ -422,7 +422,7 @@ const CreditCardStatements: React.FC = () => {
             <div className="flex items-center gap-2">
               <TrendingDown size={18} className="text-green-600 dark:text-green-400" />
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Antecipações
+                {t('statement_anticipations_title')}
               </h2>
               {hasAnticipations && (
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
@@ -439,7 +439,7 @@ const CreditCardStatements: React.FC = () => {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors"
               >
                 <Plus size={15} />
-                Nova antecipação
+                {t('statement_new_anticipation')}
               </button>
             )}
           </div>
@@ -447,7 +447,7 @@ const CreditCardStatements: React.FC = () => {
           {/* Anticipation list */}
           {anticipations.length === 0 ? (
             <div className="px-4 py-5 text-sm text-gray-400 dark:text-gray-500 text-center">
-              Nenhuma antecipação registrada
+              {t('statement_no_anticipations')}
             </div>
           ) : (
             <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
@@ -469,7 +469,7 @@ const CreditCardStatements: React.FC = () => {
                     <button
                       onClick={() => setDeleteAnticipationId(a.id)}
                       className="p-1 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors shrink-0"
-                      title="Remover antecipação"
+                      title={t('statement_remove_anticipation')}
                     >
                       <X size={15} />
                     </button>
@@ -483,7 +483,7 @@ const CreditCardStatements: React.FC = () => {
           {showAnticipationForm && (
             <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 space-y-3">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Nova antecipação — fatura {selectedMonth}
+                {t('statement_new_anticipation_subtitle', { selectedMonth })}
               </h3>
 
               {anticipationFormError && (
@@ -495,7 +495,7 @@ const CreditCardStatements: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Descrição *
+                    {t('statement_description_label')}
                   </label>
                   <input
                     type="text"
@@ -503,14 +503,14 @@ const CreditCardStatements: React.FC = () => {
                     onChange={(e) =>
                       setAnticipationForm((f) => ({ ...f, name: e.target.value }))
                     }
-                    placeholder="Ex: Antecipação fatura março"
+                    placeholder={t('anticipation_description_placeholder')}
                     className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Valor *
+                    {t('statement_value_label')}
                   </label>
                   <CurrencyInput
                     value={anticipationForm.amount}
@@ -521,7 +521,7 @@ const CreditCardStatements: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Data do débito *
+                    {t('statement_debit_date_label')}
                   </label>
                   <input
                     type="date"
@@ -535,7 +535,7 @@ const CreditCardStatements: React.FC = () => {
 
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Conta de débito *
+                    {t('statement_debit_account_label')}
                   </label>
                   <select
                     value={anticipationForm.accountId}
@@ -544,7 +544,7 @@ const CreditCardStatements: React.FC = () => {
                     }
                     className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
-                    <option value="">Selecione uma conta</option>
+                    <option value="">{t('statement_select_account')}</option>
                     {accounts?.map((acc) => (
                       <option key={acc.id} value={acc.id}>
                         {acc.name}
@@ -563,14 +563,14 @@ const CreditCardStatements: React.FC = () => {
                   }}
                   className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                 >
-                  Cancelar
+                  {t('statement_cancel')}
                 </button>
                 <button
                   onClick={handleCreateAnticipation}
                   disabled={createAnticipationMutation.isPending}
                   className="px-4 py-2 text-sm font-semibold rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
                 >
-                  {createAnticipationMutation.isPending ? 'Criando...' : 'Criar antecipação'}
+                  {createAnticipationMutation.isPending ? t('statement_creating') : t('statement_create_anticipation')}
                 </button>
               </div>
             </div>
@@ -635,10 +635,10 @@ const CreditCardStatements: React.FC = () => {
       {/* Delete Anticipation Confirmation Modal */}
       <ConfirmationModal
         isOpen={!!deleteAnticipationId}
-        title="Remover antecipação"
-        message="Tem certeza que deseja remover esta antecipação? O par de transações vinculadas será excluído."
-        confirmLabel={deleteAnticipationMutation.isPending ? 'Removendo...' : 'Remover'}
-        cancelLabel="Cancelar"
+        title={t('remove_anticipation_title')}
+        message={t('remove_anticipation_message')}
+        confirmLabel={deleteAnticipationMutation.isPending ? t('statement_removing') : t('statement_remove')}
+        cancelLabel={t('statement_cancel')}
         onConfirm={handleConfirmDeleteAnticipation}
         onCancel={() => setDeleteAnticipationId(null)}
         isLoading={deleteAnticipationMutation.isPending}

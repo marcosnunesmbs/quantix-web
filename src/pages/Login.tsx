@@ -38,7 +38,7 @@ const Login = () => {
       await syncFromApi();
       navigate('/');
     } catch (err) {
-      setError('Invalid password. Please try again.');
+      setError(t('login_invalid_password'));
     } finally {
       setIsLoading(false);
     }
@@ -49,18 +49,18 @@ const Login = () => {
       <div className="bg-white w-full max-w-md p-8 rounded-3xl shadow-xl border border-gray-100">
         <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary-600 mb-2">Quantix</h1>
-            <p className="text-gray-500">Welcome! Please enter your password.</p>
+            <p className="text-gray-500">{t('login_welcome')}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input 
-                    type="password" 
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('login_password_label')}</label>
+                <input
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                    placeholder="Enter your password"
+                    placeholder={t('login_password_placeholder')}
                     required
                     disabled={isLoading}
                 />

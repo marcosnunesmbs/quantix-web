@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { getTransactions, createTransaction, payTransaction, unpayTransaction, deleteTransaction, updateTransaction } from '../services/transactionsApi';
 import { queryKeys } from '../lib/queryClient';
 import { CreateTransactionRequest } from '../types/apiTypes';
@@ -16,6 +17,7 @@ export const useTransactions = (
   accountId?: string
 ) => {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const { data: transactions = [], isLoading, error } = useQuery({
     queryKey: queryKeys.transactions(month, creditCardId, startDate, endDate, paid, type, categoryId, accountId),
@@ -30,10 +32,10 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Transação criada com sucesso!');
+      toast.success(t('toast_transaction_created'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao criar transação.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_creating_transaction')));
     },
   });
 
@@ -46,10 +48,10 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Transação atualizada com sucesso!');
+      toast.success(t('toast_transaction_updated'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao atualizar transação.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_updating_transaction')));
     },
   });
 
@@ -61,10 +63,10 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Transação marcada como paga!');
+      toast.success(t('toast_transaction_paid'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao marcar transação como paga.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_paying_transaction')));
     },
   });
 
@@ -75,10 +77,10 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      toast.success('Pagamento desfeito com sucesso!');
+      toast.success(t('toast_payment_undone'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao desfazer pagamento.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_unpaying_transaction')));
     },
   });
 
@@ -90,10 +92,10 @@ export const useTransactions = (
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Transação excluída com sucesso!');
+      toast.success(t('toast_transaction_deleted'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao excluir transação.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_deleting_transaction')));
     },
   });
 

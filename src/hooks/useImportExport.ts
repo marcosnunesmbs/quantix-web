@@ -1,11 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { exportData, importData } from '../services/importExportApi';
 import { ImportRequest } from '../types/apiTypes';
 import { queryKeys } from '../lib/queryClient';
 import { getApiErrorMessage } from '../lib/utils';
 
 export const useImportExport = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const exportMutation = useMutation({
@@ -21,10 +23,10 @@ export const useImportExport = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success('Dados exportados com sucesso!');
+      toast.success(t('toast_data_exported'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao exportar dados.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_exporting')));
     },
   });
 
@@ -38,10 +40,10 @@ export const useImportExport = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Dados importados com sucesso!');
+      toast.success(t('toast_data_imported'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao importar dados.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_importing')));
     },
   });
 

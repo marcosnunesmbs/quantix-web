@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -17,13 +18,18 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   title,
   message,
-  confirmLabel = 'Confirmar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
   isLoading = false,
   children,
 }) => {
+  const { t } = useTranslation();
+  
+  const defaultConfirmLabel = confirmLabel || t('confirm');
+  const defaultCancelLabel = cancelLabel || t('cancel');
+
   if (!isOpen) return null;
 
   return (
@@ -62,7 +68,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
-              {cancelLabel}
+              {defaultCancelLabel}
             </button>
             <button
               onClick={onConfirm}
@@ -72,10 +78,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               {isLoading ? (
                 <>
                   <span className="animate-spin">⏳</span>
-                  Processando...
+                  {t('processing')}
                 </>
               ) : (
-                confirmLabel
+                defaultConfirmLabel
               )}
             </button>
           </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest } from '../types/apiTypes';
 import LoadingOverlay from './LoadingOverlay';
+import { useTranslation } from 'react-i18next';
 
 const PRESET_COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6',
@@ -27,6 +28,7 @@ interface CategoryFormEditProps {
 type CategoryFormProps = CategoryFormCreateProps | CategoryFormEditProps;
 
 const CategoryForm: React.FC<CategoryFormProps> = (props) => {
+  const { t } = useTranslation();
   const isEdit = props.mode === 'edit';
   const isSubmitting = props.isSubmitting ?? false;
 
@@ -50,11 +52,11 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md relative">
-        <LoadingOverlay isLoading={isSubmitting} message="Salvando categoria..." />
+        <LoadingOverlay isLoading={isSubmitting} message={t('saving')} />
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              {isEdit ? 'Editar Categoria' : 'Add Category'}
+              {isEdit ? t('edit_category') : t('add_category')}
             </h2>
             <button
               onClick={props.onCancel}
@@ -68,14 +70,14 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
             {/* Name */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Nome
+                {t('name')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                placeholder="Nome da categoria"
+                placeholder={t('category_name')}
                 required
               />
             </div>
@@ -84,7 +86,7 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
             {!isEdit && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Tipo
+                  {t('type')}
                 </label>
                 <select
                   value={type}
@@ -92,8 +94,8 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                   required
                 >
-                  <option value="INCOME">Receita</option>
-                  <option value="EXPENSE">Despesa</option>
+                  <option value="INCOME">{t('income')}</option>
+                  <option value="EXPENSE">{t('expense')}</option>
                 </select>
               </div>
             )}
@@ -101,7 +103,7 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
             {/* Color */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Cor
+                {t('category_color')}
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {PRESET_COLORS.map((c) => (
@@ -126,14 +128,14 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   className="w-8 h-8 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
-                  title="Escolher cor personalizada"
+                  title={t('choose_custom_color')}
                 />
-                <span className="text-xs text-gray-500 dark:text-gray-400">Cor personalizada</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('custom_color')}</span>
                 <span
                   className="ml-auto inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white"
                   style={{ backgroundColor: color }}
                 >
-                  {name || 'Preview'}
+                  {name || t('preview')}
                 </span>
               </div>
             </div>
@@ -144,13 +146,13 @@ const CategoryForm: React.FC<CategoryFormProps> = (props) => {
                 onClick={props.onCancel}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
               >
-                Cancelar
+                {t('cancel')}
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
               >
-                {isEdit ? 'Salvar' : 'Adicionar'}
+                {isEdit ? t('save') : t('add')}
               </button>
             </div>
           </form>

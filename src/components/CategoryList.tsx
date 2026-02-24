@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trash2, Pencil } from 'lucide-react';
 import { Category } from '../types/apiTypes';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from 'react-i18next';
 
 interface CategoryListProps {
   categories: Category[];
@@ -10,6 +11,7 @@ interface CategoryListProps {
 }
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; categoryId: string | null; categoryName: string }>({
     isOpen: false,
     categoryId: null,
@@ -38,7 +40,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onEdit, onDelet
   if (!categories || categories.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center text-gray-500 dark:text-gray-400">
-        No categories found
+        {t('no_categories_found')}
       </div>
     );
   }
@@ -61,7 +63,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onEdit, onDelet
                     className="text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block text-white"
                     style={{ backgroundColor: category.color ?? (category.type === 'INCOME' ? '#22c55e' : '#ef4444') }}
                   >
-                    {category.type === 'INCOME' ? 'Receita' : 'Despesa'}
+                    {category.type === 'INCOME' ? t('income') : t('expense')}
                   </span>
                 </div>
               </div>
@@ -74,7 +76,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onEdit, onDelet
                   className="p-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Pencil size={16} />
-                  Editar
+                  {t('edit')}
                 </button>
               )}
               {onDelete && (
@@ -83,7 +85,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onEdit, onDelet
                   className="p-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Trash2 size={16} />
-                  Excluir
+                  {t('delete')}
                 </button>
               )}
             </div>
@@ -93,9 +95,9 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onEdit, onDelet
 
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
-        title="Excluir Categoria"
-        message={`Tem certeza que deseja excluir a categoria "${deleteModal.categoryName}"?`}
-        confirmLabel="Excluir"
+        title={t('delete_category_title')}
+        message={t('delete_category_message', { categoryName: deleteModal.categoryName })}
+        confirmLabel={t('delete')}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

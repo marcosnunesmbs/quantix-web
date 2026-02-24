@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { getStatementStatus, payCreditCardStatement, reopenCreditCardStatement } from '../services/creditCardsApi';
 import { createAnticipation } from '../services/anticipationsApi';
 import { deleteTransaction } from '../services/transactionsApi';
@@ -23,6 +24,7 @@ export const useStatementStatus = (cardId: string, month: string) => {
 };
 
 export const usePayCreditCardStatement = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -38,15 +40,16 @@ export const usePayCreditCardStatement = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Fatura paga com sucesso!');
+      toast.success(t('toast_invoice_paid'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao pagar fatura.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_paying_invoice')));
     },
   });
 };
 
 export const useReopenCreditCardStatement = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -62,15 +65,16 @@ export const useReopenCreditCardStatement = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Fatura reaberta com sucesso!');
+      toast.success(t('toast_invoice_reopened'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao reabrir fatura.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_reopening_invoice')));
     },
   });
 };
 
 export const useCreateAnticipation = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -85,15 +89,16 @@ export const useCreateAnticipation = () => {
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
-      toast.success('Antecipação criada com sucesso!');
+      toast.success(t('toast_anticipation_created'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao criar antecipação.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_creating_anticipation')));
     },
   });
 };
 
 export const useDeleteAnticipation = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -109,10 +114,10 @@ export const useDeleteAnticipation = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Antecipação removida.');
+      toast.success(t('toast_anticipation_removed'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao remover antecipação.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_removing_anticipation')));
     },
   });
 };

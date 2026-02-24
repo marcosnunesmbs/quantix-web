@@ -1,13 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { PaymentStatementRequest } from '../types/apiTypes';
 import { getCreditCards, createCreditCard, updateCreditCard, deleteCreditCard, getCreditCardStatement, payCreditCardStatement, CreateCreditCardRequest } from '../services/creditCardsApi';
 import { queryKeys } from '../lib/queryClient';
 import { getApiErrorMessage } from '../lib/utils';
 
 export const useCreditCards = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  
+
   const { data: creditCards = [], isLoading, error } = useQuery({
     queryKey: queryKeys.creditCards,
     queryFn: getCreditCards,
@@ -17,10 +19,10 @@ export const useCreditCards = () => {
     mutationFn: createCreditCard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Cartão criado com sucesso!');
+      toast.success(t('toast_card_created'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao criar cartão.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_creating_card')));
     },
   });
 
@@ -29,10 +31,10 @@ export const useCreditCards = () => {
       updateCreditCard(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Cartão atualizado com sucesso!');
+      toast.success(t('toast_card_updated'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao atualizar cartão.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_updating_card')));
     },
   });
 
@@ -40,10 +42,10 @@ export const useCreditCards = () => {
     mutationFn: deleteCreditCard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.creditCards });
-      toast.success('Cartão excluído com sucesso!');
+      toast.success(t('toast_card_deleted'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao excluir cartão.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_deleting_card')));
     },
   });
 
@@ -56,10 +58,10 @@ export const useCreditCards = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Fatura paga com sucesso!');
+      toast.success(t('toast_invoice_paid'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao pagar fatura.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_paying_invoice')));
     },
   });
 

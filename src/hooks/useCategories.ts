@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../services/categoriesApi';
 import { queryKeys } from '../lib/queryClient';
 import { getApiErrorMessage } from '../lib/utils';
 
 export const useCategories = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: categories = [], isLoading, error } = useQuery({
@@ -16,10 +18,10 @@ export const useCategories = () => {
     mutationFn: createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories });
-      toast.success('Categoria criada com sucesso!');
+      toast.success(t('toast_category_created'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao criar categoria.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_creating_category')));
     },
   });
 
@@ -27,10 +29,10 @@ export const useCategories = () => {
     mutationFn: updateCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories });
-      toast.success('Categoria atualizada com sucesso!');
+      toast.success(t('toast_category_updated'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao atualizar categoria.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_updating_category')));
     },
   });
 
@@ -38,10 +40,10 @@ export const useCategories = () => {
     mutationFn: deleteCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories });
-      toast.success('Categoria excluída com sucesso!');
+      toast.success(t('toast_category_deleted'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao excluir categoria.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_deleting_category')));
     },
   });
 

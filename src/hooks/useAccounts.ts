@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { CreateAccountRequest } from '../types/apiTypes';
 import { getAccounts, createAccount, updateAccount, deleteAccount, getAccountTransactions } from '../services/accountsApi';
 import { queryKeys } from '../lib/queryClient';
 import { getApiErrorMessage } from '../lib/utils';
 
 export const useAccounts = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: accounts = [], isLoading, error } = useQuery({
@@ -18,10 +20,10 @@ export const useAccounts = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Conta criada com sucesso!');
+      toast.success(t('toast_account_created'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao criar conta.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_creating_account')));
     },
   });
 
@@ -32,10 +34,10 @@ export const useAccounts = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.account(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Conta atualizada com sucesso!');
+      toast.success(t('toast_account_updated'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao atualizar conta.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_updating_account')));
     },
   });
 
@@ -45,10 +47,10 @@ export const useAccounts = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success('Conta excluída com sucesso!');
+      toast.success(t('toast_account_deleted'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao excluir conta.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_deleting_account')));
     },
   });
 

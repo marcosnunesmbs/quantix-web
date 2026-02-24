@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { getSettings, updateSettings, createSettings } from '../services/settingsApi';
 import { queryKeys } from '../lib/queryClient';
 import { Settings } from '../types/apiTypes';
@@ -9,6 +10,7 @@ import { getApiErrorMessage } from '../lib/utils';
 const STORAGE_KEY = 'quantix_settings';
 
 export const useSettings = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const getStoredSettings = (): Settings | undefined => {
@@ -38,10 +40,10 @@ export const useSettings = () => {
     onSuccess: (updatedSettings) => {
       queryClient.setQueryData(queryKeys.settings, updatedSettings);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
-      toast.success('Configurações salvas com sucesso!');
+      toast.success(t('toast_settings_saved'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao salvar configurações.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_saving_settings')));
     },
   });
 
@@ -50,10 +52,10 @@ export const useSettings = () => {
     onSuccess: (newSettings) => {
       queryClient.setQueryData(queryKeys.settings, newSettings);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-      toast.success('Configurações salvas com sucesso!');
+      toast.success(t('toast_settings_saved'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao salvar configurações.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_saving_settings')));
     },
   });
 

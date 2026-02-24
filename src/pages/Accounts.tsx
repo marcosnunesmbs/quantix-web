@@ -84,8 +84,7 @@ const AccountsPage: React.FC = () => {
       setShowForm(false);
       setEditingAccount(undefined);
     } catch (err) {
-      console.error('Error saving account:', err);
-      // In a real app, you might want to show an error message to the user
+      console.error(t('error_saving_account'), err);
     }
   };
 
@@ -102,12 +101,11 @@ const AccountsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
+    if (window.confirm(t('confirm_delete_account'))) {
       try {
         await removeAccount(id);
       } catch (err) {
-        console.error('Error deleting account:', err);
-        // In a real app, you might want to show an error message to the user
+        console.error(t('error_deleting_account'), err);
       }
     }
   };
@@ -209,7 +207,7 @@ const AccountsPage: React.FC = () => {
             className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <ArrowLeftRight size={16} />
-            Transferência
+            {t('transfer')}
           </button>
           <button
             onClick={() => setShowForm(true)}
@@ -238,7 +236,7 @@ const AccountsPage: React.FC = () => {
           <SkeletonLoader type="list" lines={4} />
         </div>
       )}
-      {error && <div className="text-center py-8 text-red-500">Error: {error}</div>}
+      {error && <div className="text-center py-8 text-red-500">{t('error')}: {error}</div>}
 
       {!loading && !error && (
         <div>
@@ -286,24 +284,24 @@ const AccountsPage: React.FC = () => {
               <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
                 <Trash2 size={20} className="text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Excluir transferência</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('delete_transfer')}</h3>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Tem certeza que deseja excluir esta transferência? Esta ação não pode ser desfeita.
+              {t('confirm_delete_transfer')}
             </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setDeleteConfirmTransferId(null)}
                 className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Cancelar
+                {t('cancel')}
               </button>
               <button
                 onClick={handleDeleteTransferConfirm}
                 disabled={isDeletingTransfer}
                 className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isDeletingTransfer ? <span className="animate-pulse">Excluindo...</span> : 'Excluir'}
+                {isDeletingTransfer ? t('deleting') : t('delete')}
               </button>
             </div>
           </div>
@@ -321,7 +319,7 @@ const AccountsPage: React.FC = () => {
                   {t('movements')} - {selectedAccount.name}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  {sortedMovements.length} {sortedMovements.length === 1 ? 'movimentação' : 'movimentações'}
+                  {sortedMovements.length} {sortedMovements.length === 1 ? t('movements_count_one') : t('movements_count_other')}
                 </p>
               </div>
               <button
@@ -337,14 +335,14 @@ const AccountsPage: React.FC = () => {
               {/* Month Filter */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                  Mês (prioritário)
+                  {t('month_priority')}
                 </label>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handlePreviousMonth}
                     disabled={movementsStartDate || movementsEndDate ? true : false}
                     className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Mês anterior"
+                    title={t('previous_month')}
                   >
                     <ChevronLeft size={20} />
                   </button>
@@ -360,7 +358,7 @@ const AccountsPage: React.FC = () => {
                     onClick={handleNextMonth}
                     disabled={movementsStartDate || movementsEndDate ? true : false}
                     className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Próximo mês"
+                    title={t('next_month')}
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -371,7 +369,7 @@ const AccountsPage: React.FC = () => {
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Data início
+                    {t('start_date')}
                   </label>
                   <input
                     type="date"
@@ -384,7 +382,7 @@ const AccountsPage: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Data fim
+                    {t('end_date')}
                   </label>
                   <input
                     type="date"
@@ -413,8 +411,8 @@ const AccountsPage: React.FC = () => {
                       const otherAccountId = isOutgoing ? tr.destinationAccountId : tr.sourceAccountId;
                       const otherAccount = accounts.find(a => a.id === otherAccountId);
                       const label = isOutgoing
-                        ? `Transferência → ${otherAccount?.name ?? ''}`
-                        : `Transferência ← ${otherAccount?.name ?? ''}`;
+                        ? `${t('transfer_out')} ${otherAccount?.name ?? ''}`
+                        : `${t('transfer_in')} ${otherAccount?.name ?? ''}`;
                       return (
                         <div key={`tr-${tr.id}`} className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                           <div className="flex-1 min-w-0">
@@ -429,20 +427,20 @@ const AccountsPage: React.FC = () => {
                               <p className={`font-semibold ${isOutgoing ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                 {isOutgoing ? '-' : '+'}{formatCurrency(tr.amount)}
                               </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Transferência</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{t('transfer')}</p>
                             </div>
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleEditTransfer(tr)}
                                 className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                                title="Editar transferência"
+                                title={t('edit_transfer')}
                               >
                                 <Pencil size={14} />
                               </button>
                               <button
                                 onClick={() => setDeleteConfirmTransferId(tr.id)}
                                 className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                                title="Excluir transferência"
+                                title={t('delete_transfer_button')}
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -479,7 +477,7 @@ const AccountsPage: React.FC = () => {
                             )}
                             {isAnticipation && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                                Antecipação
+                                {t('anticipation')}
                               </span>
                             )}
                           </div>

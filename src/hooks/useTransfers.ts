@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { CreateTransferRequest } from '../types/apiTypes';
 import { createTransfer, updateTransfer, deleteTransfer, getTransfers } from '../services/transfersApi';
 import { queryKeys } from '../lib/queryClient';
@@ -25,6 +26,7 @@ export const useTransfers = (
 };
 
 export const useCreateTransfer = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -33,10 +35,10 @@ export const useCreateTransfer = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transfers'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Transferência realizada com sucesso!');
+      toast.success(t('toast_transfer_completed'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao realizar transferência.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_transfer')));
     },
   });
 
@@ -47,6 +49,7 @@ export const useCreateTransfer = () => {
 };
 
 export const useUpdateTransfer = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -56,10 +59,10 @@ export const useUpdateTransfer = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transfers'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Transferência atualizada com sucesso!');
+      toast.success(t('toast_transfer_updated'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao atualizar transferência.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_updating_transfer')));
     },
   });
 
@@ -70,6 +73,7 @@ export const useUpdateTransfer = () => {
 };
 
 export const useDeleteTransfer = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -78,10 +82,10 @@ export const useDeleteTransfer = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts });
       queryClient.invalidateQueries({ queryKey: ['transfers'] });
       queryClient.invalidateQueries({ queryKey: ['summary'] });
-      toast.success('Transferência excluída com sucesso!');
+      toast.success(t('toast_transfer_deleted'));
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Erro ao excluir transferência.'));
+      toast.error(getApiErrorMessage(error, t('toast_error_deleting_transfer')));
     },
   });
 
