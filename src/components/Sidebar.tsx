@@ -1,4 +1,4 @@
-import { LayoutGrid, PieChart, Wallet, LogOut, ArrowLeftRight, CreditCard, Settings } from 'lucide-react';
+import { LayoutGrid, PieChart, Wallet, LogOut, ArrowLeftRight, CreditCard, Settings, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { t } from 'i18next';
@@ -17,11 +17,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     navigate('/login');
   };
 
-  const navItems = [
+const navItems = [
     { icon: LayoutGrid, path: '/', label: t('dashboard') },
     { icon: Wallet, path: '/accounts', label: t('accounts') },
     { icon: ArrowLeftRight, path: '/transactions', label: t('transactions') },
     { icon: CreditCard, path: '/credit-cards', label: t('credit_cards') },
+    { icon: RefreshCw, path: '/subscriptions', label: t('subscriptions') },
     { icon: PieChart, path: '/reports', label: t('reports') },
     { icon: LayoutGrid, path: '/categories', label: t('categories') },
     { icon: Settings, path: '/settings', label: t('settings') },

@@ -8,12 +8,26 @@ export interface Category {
   createdAt: string; // date-time format
 }
 
+export interface Subscription {
+  id: string;
+  name: string;
+  amount: number;
+  billingDay: number;
+  creditCardId: string;
+  creditCard?: CreditCard;
+  categoryId?: string;
+  category?: Category;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Transaction {
   id: string;
   type: 'INCOME' | 'EXPENSE';
   name: string;
   amount: number;
-  date: string; // date format
+  date: string;
   categoryId?: string;
   category?: Category;
   paymentMethod?: 'CASH' | 'PIX' | 'DEBIT' | 'CREDIT';
@@ -26,9 +40,11 @@ export interface Transaction {
   accountId?: string;
   account?: Account;
   paid: boolean;
-  purchaseDate?: string; // date format - for credit card transactions
-  linkedTransactionId?: string; // anticipation pair
-  createdAt: string; // date-time format
+  purchaseDate?: string;
+  linkedTransactionId?: string;
+  subscriptionId?: string;
+  subscription?: Subscription;
+  createdAt: string;
 }
 
 export type RecurrenceUpdateMode = 'SINGLE' | 'PENDING' | 'ALL';
@@ -264,4 +280,21 @@ export interface ErrorResponse {
   statusCode: number;
   error: string;
   message: string;
+}
+
+export interface CreateSubscriptionRequest {
+  name: string;
+  amount: number;
+  billingDay: number;
+  creditCardId: string;
+  categoryId?: string;
+}
+
+export interface UpdateSubscriptionRequest {
+  name?: string;
+  amount?: number;
+  billingDay?: number;
+  creditCardId?: string;
+  categoryId?: string;
+  active?: boolean;
 }

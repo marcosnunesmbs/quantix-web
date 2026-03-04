@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat, ArrowDownLeft, ArrowUpRight, ChevronDown } from 'lucide-react';
+import { CreditCard, Banknote, Trash2, Pencil, Info, Repeat, ArrowDownLeft, ArrowUpRight, ChevronDown, RefreshCw } from 'lucide-react';
 import { Transaction } from '../types/apiTypes';
 import { getLocaleAndCurrency } from '../utils/settingsUtils';
 import ConfirmationModal from './ConfirmationModal';
@@ -244,6 +244,12 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 {transaction.account.name}
               </span>
             )}
+            {transaction.subscriptionId && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                <RefreshCw size={10} />
+                {t('subscription')}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -396,8 +402,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
               )}
 
               {/* Name */}
-              <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate" title={tx.name}>
-                {tx.name}
+              <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate flex items-center gap-1.5" title={tx.name}>
+                {tx.subscriptionId && (
+                  <RefreshCw size={12} className="text-purple-500 dark:text-purple-400 shrink-0" />
+                )}
+                <span className="truncate">{tx.name}</span>
                 {tx.installmentTotal && tx.installmentTotal > 1 ? (
                   <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
                     {tx.installmentNumber}/{tx.installmentTotal}

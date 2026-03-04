@@ -911,6 +911,119 @@ paths:
       security: *ref_9
       summary: Delete a transfer
       tags: *ref_10
+  /subscriptions:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionDto'
+      responses:
+        '201':
+          description: Subscription created successfully.
+        '400':
+          description: Invalid input.
+        '404':
+          description: Credit card not found.
+      security: &ref_11
+        - api-key: []
+      summary: Create a new subscription
+      tags: &ref_12
+        - subscriptions
+    get:
+      operationId: findAll
+      parameters: []
+      responses:
+        '200':
+          description: List of subscriptions.
+      security: *ref_11
+      summary: Get all subscriptions
+      tags: *ref_12
+  /subscriptions/active:
+    get:
+      operationId: findActive
+      parameters: []
+      responses:
+        '200':
+          description: List of active subscriptions.
+      security: *ref_11
+      summary: Get all active subscriptions
+      tags: *ref_12
+  /subscriptions/{id}:
+    get:
+      operationId: findOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription found.
+        '404':
+          description: Subscription not found.
+      security: *ref_11
+      summary: Get a subscription by ID
+      tags: *ref_12
+    patch:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubscriptionDto'
+      responses:
+        '200':
+          description: Subscription updated successfully.
+        '404':
+          description: Subscription or credit card not found.
+      security: *ref_11
+      summary: Update a subscription
+      tags: *ref_12
+    delete:
+      operationId: remove
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription deactivated successfully.
+        '404':
+          description: Subscription not found.
+      security: *ref_11
+      summary: Deactivate a subscription (soft delete)
+      tags: *ref_12
+  /subscriptions/{id}/permanent:
+    delete:
+      operationId: hardDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription deleted permanently.
+        '404':
+          description: Subscription not found.
+      security: *ref_11
+      summary: Permanently delete a subscription
+      tags: *ref_12
 info:
   title: Quantix Personal Finance Manager API
   description: >-
@@ -948,14 +1061,14 @@ info:
 
     All API endpoints are relative to: `http://localhost:3000/api`
           
-  version: 0.4.0
+  version: 0.4.1
   contact:
     name: Quantix Support
-    url: https://github.com/marcos-venicius/quantix
+    url: https://github.com/marcosnunesmbs/quantix
     email: support@example.com
   license:
     name: MIT
-    url: https://github.com/marcos-venicius/quantix/blob/main/LICENSE
+    url: https://github.com/marcosnunesmbs/quantix/blob/main/LICENSE
 tags: []
 servers: []
 components:
@@ -1039,7 +1152,7 @@ components:
         type:
           type: string
           description: Type of the transaction
-          enum: &ref_11
+          enum: &ref_13
             - INCOME
             - EXPENSE
           example: EXPENSE
@@ -1065,7 +1178,7 @@ components:
         paymentMethod:
           type: string
           description: Method of payment
-          enum: &ref_12
+          enum: &ref_14
             - CASH
             - PIX
             - DEBIT
@@ -1262,7 +1375,7 @@ components:
         type:
           type: string
           description: Type of the transaction
-          enum: *ref_11
+          enum: *ref_13
           example: EXPENSE
         name:
           type: object
@@ -1286,7 +1399,7 @@ components:
         paymentMethod:
           type: string
           description: Method of payment
-          enum: *ref_12
+          enum: *ref_14
           example: CREDIT
         creditCardId:
           type: string
@@ -1449,7 +1562,7 @@ components:
         type:
           type: string
           description: Type of account
-          enum: &ref_13
+          enum: &ref_15
             - BANK_ACCOUNT
             - WALLET
             - SAVINGS_ACCOUNT
@@ -1520,7 +1633,7 @@ components:
         type:
           type: string
           description: Type of account
-          enum: *ref_13
+          enum: *ref_15
           example: BANK_ACCOUNT
         initialBalance:
           type: number
@@ -1698,5 +1811,66 @@ components:
           type: string
           description: Date of the transfer (YYYY-MM-DD)
           example: '2026-02-17'
+    CreateSubscriptionDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the subscription (e.g., Netflix, Spotify)
+          example: Netflix
+        amount:
+          type: number
+          description: Monthly amount charged
+          example: 55.9
+          minimum: 0.01
+        billingDay:
+          type: number
+          description: Day of the month when the subscription is charged (1-31)
+          example: 15
+          minimum: 1
+          maximum: 31
+        creditCardId:
+          type: string
+          description: ID of the credit card used for this subscription
+          example: cc_123456789
+        categoryId:
+          type: string
+          description: ID of the expense category
+          example: cat_123456789
+      required:
+        - name
+        - amount
+        - billingDay
+        - creditCardId
+    UpdateSubscriptionDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the subscription
+          example: Netflix Premium
+        amount:
+          type: number
+          description: Monthly amount charged
+          example: 79.9
+          minimum: 0.01
+        billingDay:
+          type: number
+          description: Day of the month when the subscription is charged (1-31)
+          example: 10
+          minimum: 1
+          maximum: 31
+        creditCardId:
+          type: string
+          description: ID of the credit card used for this subscription
+          example: cc_987654321
+        categoryId:
+          type: string
+          description: ID of the expense category
+          example: cat_123456789
+        active:
+          type: boolean
+          description: Whether the subscription is active
+          example: true
 security:
   - api-key: []

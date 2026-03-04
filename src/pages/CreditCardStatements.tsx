@@ -11,6 +11,7 @@ import {
   Plus,
   X,
   TrendingDown,
+  RefreshCw,
 } from 'lucide-react';
 import {
   useCreditCardStatement,
@@ -594,9 +595,14 @@ const CreditCardStatements: React.FC = () => {
                 className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {transaction.name}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    {transaction.subscriptionId && (
+                      <RefreshCw size={14} className="text-purple-500 dark:text-purple-400 shrink-0" />
+                    )}
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {transaction.name}
+                    </p>
+                  </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(transaction.purchaseDate || transaction.date)} •
                     <span

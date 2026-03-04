@@ -13,16 +13,17 @@ Quantix Finance Dashboard é uma aplicação web de finanças pessoais construí
 ## Componentes Principais e Responsabilidades
 
 ### Componentes de UI
-- **Layout Components**: `DashboardLayout`, `Header`, `Sidebar`
-- **Feature Components**: `TransactionList`, `AccountList`, `CreditCardList`, `CategoryForm`
-- **Reusable Components**: `ConfirmationModal`, `MonthSelector`, `ThemeToggle`
+- **Layout Components**: `DashboardLayout`, `Header`, `Sidebar`, `BottomNavigation`
+- **Feature Components**: `TransactionList`, `AccountList`, `CreditCardList`, `CategoryForm`, `SubscriptionList`, `SubscriptionForm`
+- **Reusable Components**: `ConfirmationModal`, `MonthSelector`, `ThemeToggle`, `SkeletonLoader`, `CurrencyInput`
 
 ### Hooks e Gerenciamento de Estado
-- **Hooks Customizados**: `useCategories`, `useAccounts`, `useCreditCards`, `useSummary`
+- **Hooks Customizados**: `useCategories`, `useAccounts`, `useCreditCards`, `useSummary`, `useSubscriptions`
 - **Context API**: `ThemeContext`, `I18nContext` para gerenciamento de estado global
+- **React Query**: Cache e sincronização de dados assíncronos
 
 ### Serviços e Integração
-- **API Services**: Camadas de serviço para comunicação com backend REST
+- **API Services**: Camadas de serviço para comunicação com backend REST (`subscriptionsApi`, `transactionsApi`, etc.)
 - **Utils**: Funções auxiliares como `getLocaleAndCurrency` para configurações regionais
 
 ## Estrutura de Pastas
@@ -30,10 +31,23 @@ Quantix Finance Dashboard é uma aplicação web de finanças pessoais construí
 ```
 src/
 ├── components/     # Componentes reutilizáveis
+│   ├── SubscriptionList.tsx    # Lista de assinaturas
+│   ├── SubscriptionForm.tsx    # Formulário de assinatura
+│   ├── TransactionList.tsx     # Lista de transações
+│   └── ...
 ├── pages/          # Componentes de página
+│   ├── Subscriptions.tsx       # Página de assinaturas
+│   ├── Transactions.tsx        # Página de transações
+│   └── ...
 ├── layouts/        # Componentes de layout
 ├── hooks/          # Hooks customizados
+│   ├── useSubscriptions.ts     # Hook para assinaturas
+│   ├── useCategories.ts
+│   └── ...
 ├── services/       # Integração com APIs
+│   ├── subscriptionsApi.ts     # API de assinaturas
+│   ├── transactionsApi.ts
+│   └── ...
 ├── types/          # Tipos TypeScript
 ├── utils/          # Funções utilitárias
 ├── locales/        # Arquivos de tradução

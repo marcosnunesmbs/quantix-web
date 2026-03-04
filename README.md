@@ -32,6 +32,7 @@ Quantix Finance é um dashboard financeiro moderno construído com React, TypeSc
 
 - **Dashboard Interativo**: Visão consolidada de finanças com gráficos e cards informativos
 - **Gestão de Transações**: Registro detalhado de histórico de transações
+- **Gestão de Assinaturas**: Controle de assinaturas recorrentes (Netflix, Spotify, etc.)
 - **Cartões de Crédito**: Controle de faturas e parcelamentos
 - **Temas Claro/Escuro**: Personalização de aparência com 8 cores de destaque
 - **Design Responsivo**: Otimizado para desktop e mobile
@@ -191,8 +192,8 @@ Com o MCP conectado, o agente pode consultar saldos, registrar transações, lis
 
 ```
 src/
-├── components/     # Componentes de UI reutilizáveis
-├── pages/          # Componentes de página (orquestram dados)
+├── components/     # Componentes de UI reutilizáveis (SubscriptionList, SubscriptionForm, etc.)
+├── pages/          # Componentes de página (Subscriptions.tsx, Transactions.tsx, etc.)
 ├── layouts/        # Layout principal com sidebar e header
 ├── hooks/          # Hooks com TanStack Query (toda a lógica de dados)
 ├── services/       # Funções Axios puras (sem React)
@@ -200,6 +201,18 @@ src/
 ├── types/          # Interfaces TypeScript (apiTypes.ts)
 └── lib/            # queryClient, utilitários (cn, validação)
 ```
+
+### Módulos Principais
+
+| Módulo | Descrição |
+|--------|-----------|
+| **Transactions** | CRUD de transações, pagamentos, parcelamentos, recorrências |
+| **Subscriptions** | Gestão de assinaturas recorrentes com ativação/desativação |
+| **Accounts** | Contas bancárias e saldos |
+| **Credit Cards** | Cartões, faturas e antecipações |
+| **Categories** | Categorias de receitas e despesas |
+| **Reports** | Relatórios e gráficos financeiros |
+| **Settings** | Configurações de usuário, idioma, moeda, temas |
 
 ## Outros Comandos
 

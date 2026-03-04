@@ -10,6 +10,7 @@ import CreditCards from './pages/CreditCards';
 import CreditCardStatements from './pages/CreditCardStatements';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Subscriptions from './pages/Subscriptions';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -19,7 +20,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
 
-          <Route element={<ProtectedRoute />}>
+<Route element={<ProtectedRoute />}>
             <Route element={<DashboardLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
@@ -29,6 +30,7 @@ function App() {
               <Route path="/credit-cards" element={<CreditCards />} />
               <Route path="/credit-cards/:cardId/statements" element={<CreditCardStatements />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
           </Route>
